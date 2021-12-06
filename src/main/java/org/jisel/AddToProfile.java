@@ -8,14 +8,14 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE})
-@Repeatable(AddToProfile.AddToProfiless.class)
+@Repeatable(AddToProfile.AddToProfilez.class)
 public @interface AddToProfile {
 
     String value();
 
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.TYPE)
-    @interface AddToProfiless {
+    @interface AddToProfilez {
         AddToProfile[] value();
     }
 }

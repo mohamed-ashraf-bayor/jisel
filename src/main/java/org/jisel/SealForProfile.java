@@ -8,14 +8,14 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD})
-@Repeatable(SealForProfile.SealForProfiless.class)
+@Repeatable(SealForProfile.SealForProfilez.class)
 public @interface SealForProfile {
 
     String value();
 
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.METHOD)
-    @interface SealForProfiless {
+    @interface SealForProfilez {
         SealForProfile[] value();
     }
 }
