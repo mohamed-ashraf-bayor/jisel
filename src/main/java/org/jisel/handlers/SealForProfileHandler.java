@@ -1,3 +1,24 @@
+/**
+ * Copyright (c) 2021-2022 Mohamed Ashraf Bayor.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package org.jisel.handlers;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -10,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
@@ -21,13 +41,11 @@ public final class SealForProfileHandler implements JiselAnnotationHandler {
     @Override
     public Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
                                                         final Set<Element> allAnnotatedElements,
-                                                        final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate,
-                                                        final Map<Element, Map<String, List<String>>> sealedInterfacesPermits) {
-        new SealForProfileInfoCollectionHandler().populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerate);
-        var statusReport = new SealForProfileUniqueParentInterfaceHandler().checkAndHandleUniqueParentInterface(sealedInterfacesToGenerate);
-        new SealForProfileParentChildInheritanceHandler().buildInheritanceRelations(sealedInterfacesToGenerate, sealedInterfacesPermits);
-        System.out.println(" \n\n>>>$$>>>>>>$$$>>>>$$>>>>> sealedInterfacesPermits: " + sealedInterfacesPermits);
-        System.out.println(" \n\n>>>>>>>>>>>>>>>>>> sealedInterfacesToGenerate: " + sealedInterfacesToGenerate);
+                                                        final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
+                                                        final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
+        new SealForProfileInfoCollectionHandler().populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByBloatedInterface);
+        var statusReport = new SealForProfileUniqueParentInterfaceHandler().checkAndHandleUniqueParentInterface(sealedInterfacesToGenerateByBloatedInterface);
+        new SealForProfileParentChildInheritanceHandler().buildInheritanceRelations(sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
         return statusReport;
     }
 }
@@ -38,41 +56,33 @@ final class SealForProfileInfoCollectionHandler implements AnnotationInfoCollect
     public void populateSealedInterfacesMap(final ProcessingEnvironment processingEnv,
                                             final Set<Element> allAnnotatedElements,
                                             final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate) {
-
         var annotatedMethodsByInterface = allAnnotatedElements.stream()
                 .filter(element -> ElementKind.METHOD.equals(element.getKind()))
                 .filter(element -> ElementKind.INTERFACE.equals(element.getEnclosingElement().getKind()))
                 .collect(groupingBy(Element::getEnclosingElement, toSet()));
-
         if (annotatedMethodsByInterface.isEmpty()) {
             return;
         }
-
+        // ...
         var annotatedMethodsByProfileByInterface = new HashMap<Element, Map<String, Set<Element>>>();
         annotatedMethodsByInterface.forEach(
                 (interfaceElement, annotatedMethodsElements) -> annotatedMethodsElements.forEach(
-                        annotatedMethod -> processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedMethod).forEach(
-                                annotationMirror -> annotationMirror.getElementValues().entrySet().forEach(
-                                        entry -> extractProfilesAndPopulateMaps(interfaceElement, entry.getValue().toString(), annotatedMethod, annotatedMethodsByProfileByInterface)
-                                )
+                        annotatedMethod -> extractProfilesAndPopulateMaps(
+                                interfaceElement,
+                                buildProvidedProfilesSet(processingEnv, annotatedMethod),
+                                annotatedMethod,
+                                annotatedMethodsByProfileByInterface
                         )
                 )
         );
-
         createParentInterfacesBasedOnCommonMethods(annotatedMethodsByProfileByInterface, sealedInterfacesToGenerate);
     }
 
-    // annotationValueAsString: sample values: singl value "profile1name", array: {@org.jisel.SealForProfile("profile2name"), @org.jisel.SealForProfile("profile3name"),...}
     private void extractProfilesAndPopulateMaps(final Element interfaceElement,
-                                                final String annotationValueAsString,
+                                                final Set<String> providedProfilesSet,
                                                 final Element annotatedMethod,
                                                 final Map<Element, Map<String, Set<Element>>> annotatedMethodsByProfileByInterface) {
-        var matcher = Pattern.compile("\"([^\"]*)\"").matcher(annotationValueAsString);
-        while (matcher.find()) {
-            var profile = matcher.group(1).trim();
-            if (profile.isBlank()) {
-                continue;
-            }
+        providedProfilesSet.forEach(profile -> {
             if (annotatedMethodsByProfileByInterface.containsKey(interfaceElement)) {
                 annotatedMethodsByProfileByInterface.get(interfaceElement).merge(
                         profile,
@@ -82,41 +92,36 @@ final class SealForProfileInfoCollectionHandler implements AnnotationInfoCollect
             } else {
                 annotatedMethodsByProfileByInterface.put(interfaceElement, new HashMap<>(Map.of(profile, new HashSet<>(Set.of(annotatedMethod)))));
             }
-        }
+        });
     }
 }
 
 final class SealForProfileParentChildInheritanceHandler implements ParentChildInheritanceHandler {
 
     @Override
-    public void buildInheritanceRelations(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate,
-                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermits) {
-
-        sealedInterfacesToGenerate.keySet().forEach(interfaceElement -> {
-
-            sealedInterfacesPermits.put(interfaceElement, new HashMap<>()); // start with initializing sealedInterfacesPermits with empty mutable maps
-
+    public void buildInheritanceRelations(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
+                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
+        sealedInterfacesToGenerateByBloatedInterface.keySet().forEach(interfaceElement -> {
+            sealedInterfacesPermitsByBloatedInterface.put(interfaceElement, new HashMap<>()); // start with initializing sealedInterfacesPermitsByBloatedInterface with empty mutable maps
             // promote profiles with empty methods to parent level
             var allProfilesToRemove = new HashSet<String>();
-            sealedInterfacesToGenerate.get(interfaceElement).keySet().forEach(concatenatedProfiles -> {
+            sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement).keySet().forEach(concatenatedProfiles -> {
                 var profilesArray = concatenatedProfiles.split(SEPARATOR);
                 if (profilesArray.length > 1) {
                     for (var profile : profilesArray) {
-                        var profileMethodsOpt = Optional.ofNullable(sealedInterfacesToGenerate.get(interfaceElement).get(profile));
+                        var profileMethodsOpt = Optional.ofNullable(sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement).get(profile));
                         if (profileMethodsOpt.isPresent() && profileMethodsOpt.get().isEmpty()) {
-                            sealedInterfacesToGenerate.get(interfaceElement).put(profile, sealedInterfacesToGenerate.get(interfaceElement).get(concatenatedProfiles));
-                            sealedInterfacesPermits.get(interfaceElement).put(profile, Arrays.stream(profilesArray).filter(profileName -> !profile.equals(profileName)).toList());
+                            sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement).put(profile, sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement).get(concatenatedProfiles));
+                            sealedInterfacesPermitsByBloatedInterface.get(interfaceElement).put(profile, Arrays.stream(profilesArray).filter(profileName -> !profile.equals(profileName)).toList());
                             allProfilesToRemove.add(concatenatedProfiles);
                             break;
                         }
                     }
                 }
             });
-
-            allProfilesToRemove.forEach(sealedInterfacesToGenerate.get(interfaceElement)::remove);
-
-            // and completing building sealedInterfacesPermits map
-            buildSealedInterfacesPermitsMap(interfaceElement, sealedInterfacesToGenerate, sealedInterfacesPermits);
+            allProfilesToRemove.forEach(sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement)::remove);
+            // and completing building sealedInterfacesPermitsByBloatedInterface map
+            buildSealedInterfacesPermitsMap(interfaceElement, sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
         });
     }
 }

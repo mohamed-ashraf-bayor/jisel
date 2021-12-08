@@ -1,3 +1,24 @@
+/**
+ * Copyright (c) 2021-2022 Mohamed Ashraf Bayor.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package org.jisel;
 
 import com.google.auto.service.AutoService;
@@ -22,6 +43,7 @@ import java.util.logging.Logger;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.joining;
 
 @SupportedAnnotationTypes({"org.jisel.SealForProfile", "org.jisel.SealForProfiles", "org.jisel.SealForProfile.SealForProfilez",
         "org.jisel.AddToProfile", "org.jisel.AddToProfiles", "org.jisel.AddToProfile.AddToProfilez"})
@@ -48,8 +70,8 @@ public class JiselAnnotationProcessor extends AbstractProcessor {
 
         var allAnnotatedSealForProfileElements = new HashSet<Element>();
         var allAnnotatedAddToProfileElements = new HashSet<Element>();
-        var sealedInterfacesToGenerate = new HashMap<Element, Map<String, Set<Element>>>();
-        var sealedInterfacesPermits = new HashMap<Element, Map<String, List<String>>>();
+        var sealedInterfacesToGenerateByBloatedInterface = new HashMap<Element, Map<String, Set<Element>>>();
+        var sealedInterfacesPermitsByBloatedInterface = new HashMap<Element, Map<String, List<String>>>();
 
         for (var annotation : annotations) {
             if (annotation.getSimpleName().toString().contains(SEAL_FOR_PROFILE)) {
@@ -61,20 +83,21 @@ public class JiselAnnotationProcessor extends AbstractProcessor {
         }
 
         // process all annotated interface methods annotated with @SealForProfile
-        var statusReport = sealForProfileHandler.handleAnnotatedElements(processingEnv, unmodifiableSet(allAnnotatedSealForProfileElements), sealedInterfacesToGenerate, sealedInterfacesPermits);
+        var statusReport = sealForProfileHandler.handleAnnotatedElements(processingEnv, unmodifiableSet(allAnnotatedSealForProfileElements), sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
         if (!statusReport.isEmpty()) {
             // TODO output log - create priv meth browse the map and output report per interface
         }
-        // TODO sealedInterfacesPermits here shld be getting only qlfd names of child classes
+        // TODO sealedInterfacesPermitsByBloatedInterface here shld be getting only qlfd names of child classes
 
         // process all annotated child class or interfaces annotated with @AddToProfile
-        statusReport = addToProfileHandler.handleAnnotatedElements(processingEnv, unmodifiableSet(allAnnotatedAddToProfileElements), unmodifiableMap(sealedInterfacesToGenerate), sealedInterfacesPermits);
-        if (!statusReport.isEmpty()) {
+        statusReport = addToProfileHandler.handleAnnotatedElements(processingEnv, unmodifiableSet(allAnnotatedAddToProfileElements), unmodifiableMap(sealedInterfacesToGenerateByBloatedInterface), sealedInterfacesPermitsByBloatedInterface);
+        if (!statusReport.values().stream().collect(joining()).isBlank()) {
             //  output log - create priv meth
+            log.warning("\t>\t" + statusReport);
         }
 
-//        System.out.println(" \n\n@@@@@@@@@@@@@ sealedInterfacesToGenerate: " + sealedInterfacesToGenerate);
-//        System.out.println("\n~~~~~~~~~~ ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~ \n sealedInterfacesPermits" + sealedInterfacesPermits);
+        System.out.println(" \n\n@@@@@@@@@@@@@ sealedInterfacesToGenerateByBloatedInterface: " + sealedInterfacesToGenerateByBloatedInterface);
+        System.out.println("\n~~~~~~~~~~ ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~ \n sealedInterfacesPermitsByBloatedInterface" + sealedInterfacesPermitsByBloatedInterface);
 
         return true;
     }
