@@ -21,5 +21,43 @@
  */
 package org.jisel.generator;
 
-public class SealedInterfaceSourceFileGenerator {
+import javax.annotation.processing.FilerException;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class SealedInterfaceSourceFileGenerator implements StringGenerator {
+
+    private final ProcessingEnvironment processingEnvironment;
+    private final SealedInterfaceContentGenerator sealedInterfaceContentGenerator;
+
+    public SealedInterfaceSourceFileGenerator(final ProcessingEnvironment processingEnvironment) {
+        this.processingEnvironment = processingEnvironment;
+        this.sealedInterfaceContentGenerator = new SealedInterfaceContentGenerator();
+    }
+
+    public void createSourceFiles(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
+                                  final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) throws IOException {
+        for (var sealedInterfacesToGenerateMapEntry : sealedInterfacesToGenerateByBloatedInterface.entrySet()) {
+            var bloatedInterfaceElement = sealedInterfacesToGenerateMapEntry.getKey();
+            var packageNameOpt = generatePackageName(bloatedInterfaceElement);
+            for (var sealedInterfacesToGenerate : sealedInterfacesToGenerateMapEntry.getValue().entrySet()) {
+                var profile = sealedInterfacesToGenerate.getKey();
+                var generatedSealedInterfaceName = sealedInterfaceNameConvention(profile, bloatedInterfaceElement);
+                try {
+                    var fileObject = processingEnvironment.getFiler().createSourceFile(packageNameOpt.isPresent() ? packageNameOpt.get() + DOT + generatedSealedInterfaceName : generatedSealedInterfaceName);
+                    try (var out = new PrintWriter(fileObject.openWriter())) {
+                        out.println(sealedInterfaceContentGenerator.generateContent(sealedInterfacesToGenerate, sealedInterfacesToGenerateMapEntry.getKey(), sealedInterfacesPermitsByBloatedInterface));
+                    }
+                } catch (FilerException e) {
+                    // File was already generated - do nothing
+                }
+            }
+            // TODO run the finalclass logic here before generating the files - 1 per bloatedinterf:  "_" + BloatedInterfceName + "FinalClass"
+        }
+    }
 }

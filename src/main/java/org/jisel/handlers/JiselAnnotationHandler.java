@@ -21,6 +21,8 @@
  */
 package org.jisel.handlers;
 
+import org.jisel.generator.StringGenerator;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
@@ -34,17 +36,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 
-public sealed interface JiselAnnotationHandler permits SealForProfileHandler, AddToProfileHandler, AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
+public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForProfileHandler, AddToProfileHandler, AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
 
     String SEPARATOR = ",";
-    String SEALED_PREFIX = "Sealed";
     String ADD_TO_PROFILE_REPORT_MSG = "1 or many provided profiles are not found in provided parent interfaces. Check your profiles names.";
     String JAVA_LANG_OBJECT = "java.lang.Object";
 
@@ -71,14 +70,6 @@ public sealed interface JiselAnnotationHandler permits SealForProfileHandler, Ad
                     }
                 });
         return providedProfilesSet;
-    }
-
-    default String removeSeparator(final String text) {
-        return asList(text.split(SEPARATOR)).stream().collect(joining());
-    }
-
-    default String sealedInterfaceNameConvention(final String profile, final Element interfaceElement) {
-        return format("%s%s%s", SEALED_PREFIX, removeSeparator(profile), interfaceElement.getSimpleName().toString());
     }
 }
 
@@ -184,7 +175,7 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
 
 sealed interface UniqueParentInterfaceHandler extends JiselAnnotationHandler permits SealForProfileUniqueParentInterfaceHandler {
 
-    String REPORT_MSG = "More than 1 Parent Sealed Interfaces will be generated. Check your profiles mapping.";
+    String REPORT_MSG = "More than 1 Top-Level Parent Sealed Interfaces will be generated. Check your profiles mapping.";
 
     default Map<Element, Optional<String>> checkUniqueParentInterfacePresence(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate) {
 

@@ -38,14 +38,24 @@ import static java.util.stream.Stream.concat;
 
 public final class SealForProfileHandler implements JiselAnnotationHandler {
 
+    final private AnnotationInfoCollectionHandler annotationInfoCollectionHandler;
+    final private UniqueParentInterfaceHandler uniqueParentInterfaceHandler;
+    final private ParentChildInheritanceHandler parentChildInheritanceHandler;
+
+    public SealForProfileHandler() {
+        this.annotationInfoCollectionHandler = new SealForProfileInfoCollectionHandler();
+        this.uniqueParentInterfaceHandler = new SealForProfileUniqueParentInterfaceHandler();
+        this.parentChildInheritanceHandler = new SealForProfileParentChildInheritanceHandler();
+    }
+
     @Override
     public Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
                                                         final Set<Element> allAnnotatedElements,
                                                         final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
-        new SealForProfileInfoCollectionHandler().populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByBloatedInterface);
-        var statusReport = new SealForProfileUniqueParentInterfaceHandler().checkAndHandleUniqueParentInterface(sealedInterfacesToGenerateByBloatedInterface);
-        new SealForProfileParentChildInheritanceHandler().buildInheritanceRelations(sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
+        annotationInfoCollectionHandler.populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByBloatedInterface);
+        var statusReport = uniqueParentInterfaceHandler.checkAndHandleUniqueParentInterface(sealedInterfacesToGenerateByBloatedInterface);
+        parentChildInheritanceHandler.buildInheritanceRelations(sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
         return statusReport;
     }
 }

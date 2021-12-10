@@ -19,14 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generator.helpers;
+package org.jisel.generator;
 
 import org.jisel.JiselAnnotationProcessor;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
+import java.util.List;
 import java.util.Properties;
 
 import static java.lang.String.format;
@@ -46,10 +46,10 @@ public final class JavaxGeneratedGenerator implements CodeGenerator {
                             date = "%s",
                             comments = "version: %s"
                         )
-                        """
-                , JiselAnnotationProcessor.class.getName()
-                , ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                , getAppVersion()
+                        """,
+                JiselAnnotationProcessor.class.getName(),
+                ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                getAppVersion()
         ));
     }
 
@@ -65,7 +65,7 @@ public final class JavaxGeneratedGenerator implements CodeGenerator {
     }
 
     @Override
-    public void generateCode(final StringBuilder recordClassContent, final Map<String, Object> params) {
-        buildGeneratedAnnotationSection(recordClassContent);
+    public void generateCode(final StringBuilder sealedInterfaceContent, final List<String> params) {
+        buildGeneratedAnnotationSection(sealedInterfaceContent);
     }
 }
