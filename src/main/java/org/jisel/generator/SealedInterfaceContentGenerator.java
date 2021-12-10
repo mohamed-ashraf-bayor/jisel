@@ -21,16 +21,14 @@
  */
 package org.jisel.generator;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.ExecutableType;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
 
 public final class SealedInterfaceContentGenerator implements StringGenerator {
 
@@ -46,29 +44,30 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
         this.methodsGenerator = new JiselMethodsGenerator();
     }
 
-    public String generateContent(final Map.Entry<String, Set<Element>> sealedInterfacesToGenerateEntrySet, final Element bloatedInterfaceElement,
-                                  final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
+    public String generateSealedInterfaceContent(final ProcessingEnvironment processingEnvironment,
+                                                 final Map.Entry<String, Set<Element>> sealedInterfacesToGenerateMapEntrySet,
+                                                 final Element bloatedInterfaceElement,
+                                                 final Map<String, List<String>> sealedInterfacesPermitsMap) {
         var sealedInterfaceContent = new StringBuilder();
         // package name
         generatePackageName(bloatedInterfaceElement).ifPresent(name -> sealedInterfaceContent.append(format("%s %s;%n%n", PACKAGE, name)));
         // javaxgenerated
         javaxGeneratedGenerator.generateCode(sealedInterfaceContent, null);
         // public sealed interface
-        var profile = sealedInterfacesToGenerateEntrySet.getKey();
+        var profile = sealedInterfacesToGenerateMapEntrySet.getKey();
         sealedInterfaceContent.append(format(
                 "%s %s ",
                 PUBLIC_SEALED_INTERFACE,
                 sealedInterfaceNameConvention(profile, bloatedInterfaceElement)
         ));
         // list of extends
-        extendsGenerator.generateExtendsClauseFromPermitsMapAndProcessedProfile(sealedInterfaceContent, sealedInterfacesPermitsByBloatedInterface.get(bloatedInterfaceElement), profile, bloatedInterfaceElement);
+        extendsGenerator.generateExtendsClauseFromPermitsMapAndProcessedProfile(processingEnvironment, sealedInterfaceContent, sealedInterfacesPermitsMap, profile, bloatedInterfaceElement);
         // list of permits
-        permitsGenerator.generatePermitsClauseFromPermitsMapAndProcessedProfile(sealedInterfaceContent, sealedInterfacesPermitsByBloatedInterface.get(bloatedInterfaceElement), profile, bloatedInterfaceElement);
-        // TODO generate permits for Final classes
+        permitsGenerator.generatePermitsClauseFromPermitsMapAndProcessedProfile(sealedInterfaceContent, sealedInterfacesPermitsMap, profile, bloatedInterfaceElement);
         // opening bracket after permits list
         sealedInterfaceContent.append(format(" %s%n ", OPENING_BRACKET));
         // list of methods
-        methodsGenerator.generateMethodsFromElementsSet(sealedInterfaceContent, sealedInterfacesToGenerateEntrySet.getValue());
+        methodsGenerator.generateAbstractMethodsFromElementsSet(sealedInterfaceContent, sealedInterfacesToGenerateMapEntrySet.getValue());
         // closing bracket
         sealedInterfaceContent.append(CLOSING_BRACKET);
         //
@@ -78,14 +77,29 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
 
 final class JiselExtendsGenerator implements ExtendsGenerator {
     @Override
-    public void generateExtendsClauseFromPermitsMapAndProcessedProfile(final StringBuilder sealedInterfaceContent, final Map<String, List<String>> permitsMap, final String processedProfile, final Element bloatedInterfaceElement) {
+    public void generateExtendsClauseFromPermitsMapAndProcessedProfile(final ProcessingEnvironment processingEnvironment,
+                                                                       final StringBuilder sealedInterfaceContent,
+                                                                       final Map<String, List<String>> permitsMap,
+                                                                       final String processedProfile,
+                                                                       final Element bloatedInterfaceElement) {
         Optional.ofNullable(permitsMap).ifPresent(nonNullPermitsMap -> {
-            var childrenList = nonNullPermitsMap.entrySet().stream()
+            var parentList = nonNullPermitsMap.entrySet().stream()
                     .filter(permitsMapEntry -> permitsMapEntry.getValue().contains(processedProfile))
                     .map(permitsMapEntry -> sealedInterfaceNameConvention(permitsMapEntry.getKey(), bloatedInterfaceElement))
                     .toList();
-            if (!childrenList.isEmpty()) {
-                generateCode(sealedInterfaceContent, childrenList);
+            if (!parentList.isEmpty()) {
+                generateCode(sealedInterfaceContent, parentList);
+            } else {
+                // only for bloatedInterface sealed interface generation, add interfaces it extends if any
+                if (bloatedInterfaceElement.getSimpleName().toString().equals(processedProfile)) {
+                    generateCode(
+                            sealedInterfaceContent,
+                            processingEnvironment.getTypeUtils().directSupertypes(bloatedInterfaceElement.asType()).stream()
+                                    .map(Object::toString)
+                                    .filter(superType -> !superType.contains(JAVA_LANG_OBJECT))
+                                    .toList()
+                    );
+                }
             }
         });
     }
@@ -93,10 +107,16 @@ final class JiselExtendsGenerator implements ExtendsGenerator {
 
 final class JiselPermitsGenerator implements PermitsGenerator {
     @Override
-    public void generatePermitsClauseFromPermitsMapAndProcessedProfile(final StringBuilder sealedInterfaceContent, final Map<String, List<String>> permitsMap, final String processedProfile, final Element bloatedInterfaceElement) {
+    public void generatePermitsClauseFromPermitsMapAndProcessedProfile(final StringBuilder sealedInterfaceContent,
+                                                                       final Map<String, List<String>> permitsMap,
+                                                                       final String processedProfile,
+                                                                       final Element bloatedInterfaceElement) {
+        addFinalClassToPermitsMap(permitsMap, bloatedInterfaceElement);
         var permitsMapOpt = Optional.ofNullable(permitsMap);
         if (permitsMapOpt.isPresent() && !permitsMapOpt.get().isEmpty()) {
-            Optional.ofNullable(permitsMapOpt.get().get(processedProfile)).ifPresent(childrenList -> generateCode(sealedInterfaceContent, sealedInterfaceNameConventionForList(childrenList, bloatedInterfaceElement)));
+            Optional.ofNullable(permitsMapOpt.get().get(processedProfile)).ifPresent(
+                    childrenList -> generateCode(sealedInterfaceContent, sealedInterfaceNameConventionForList(childrenList, bloatedInterfaceElement))
+            );
         }
     }
 }
@@ -104,7 +124,7 @@ final class JiselPermitsGenerator implements PermitsGenerator {
 final class JiselMethodsGenerator implements MethodsGenerator {
 
     @Override
-    public void generateMethodsFromElementsSet(final StringBuilder sealedInterfaceContent, final Set<Element> methodsSet) {
+    public void generateAbstractMethodsFromElementsSet(final StringBuilder sealedInterfaceContent, final Set<Element> methodsSet) {
         generateCode(
                 sealedInterfaceContent,
                 methodsSet.stream()
@@ -112,30 +132,28 @@ final class JiselMethodsGenerator implements MethodsGenerator {
                                 "%s %s%s",
                                 generateReturnType(element),
                                 generateMethodNameAndParameters(element),
-                                generateThrownExceptions(element).isEmpty() ? EMPTY_STRING : format(" throws %s", generateThrownExceptions(element))
+                                generateThrownExceptions(element).isEmpty()
+                                        ? SEMICOLON
+                                        : format(" throws %s", generateThrownExceptions(element) + SEMICOLON)
                         ))
                         .toList()
         );
     }
 
-    private String generateReturnType(final Element methodElement) {
-        return ((ExecutableType) methodElement.asType()).getReturnType().toString();
-    }
-
-    private String generateMethodNameAndParameters(final Element methodElement) {
-        var output = methodElement.toString();
-        if (methodHasArguments(methodElement)) {
-            int paramIdx = 0;
-            while (output.contains(COMMA_SEPARATOR)) {
-                output = output.replace(COMMA_SEPARATOR, WHITESPACE + PARAMETER_PREFIX + paramIdx + TEMP_PLACEHOLDER + WHITESPACE);
-                paramIdx++;
-            }
-            output = output.replace(CLOSING_PARENTHESIS, WHITESPACE + PARAMETER_PREFIX + paramIdx + CLOSING_PARENTHESIS).replaceAll(TEMP_PLACEHOLDER, COMMA_SEPARATOR);
-        }
-        return output;
-    }
-
-    private String generateThrownExceptions(final Element methodElement) {
-        return ((ExecutableType) methodElement.asType()).getThrownTypes().stream().map(Objects::toString).collect(joining(COMMA_SEPARATOR + WHITESPACE));
+    @Override
+    public void generateEmptyConcreteMethodsFromElementsSet(final StringBuilder sealedInterfaceContent, final Set<Element> methodsSet) {
+        generateCode(
+                sealedInterfaceContent,
+                methodsSet.stream()
+                        .map(methodElement -> format(
+                                "public %s %s %s",
+                                generateReturnType(methodElement),
+                                generateMethodNameAndParameters(methodElement),
+                                generateThrownExceptions(methodElement).isEmpty()
+                                        ? OPENING_BRACKET + generateDefaultReturnValueForMethod(methodElement) + SEMICOLON + CLOSING_BRACKET
+                                        : format("throws %s", generateThrownExceptions(methodElement) + WHITESPACE + OPENING_BRACKET + generateDefaultReturnValueForMethod(methodElement) + SEMICOLON + CLOSING_BRACKET)
+                        ))
+                        .toList()
+        );
     }
 }

@@ -38,9 +38,9 @@ import static java.util.stream.Stream.concat;
 
 public final class SealForProfileHandler implements JiselAnnotationHandler {
 
-    final private AnnotationInfoCollectionHandler annotationInfoCollectionHandler;
-    final private UniqueParentInterfaceHandler uniqueParentInterfaceHandler;
-    final private ParentChildInheritanceHandler parentChildInheritanceHandler;
+    private final AnnotationInfoCollectionHandler annotationInfoCollectionHandler;
+    private final UniqueParentInterfaceHandler uniqueParentInterfaceHandler;
+    private final ParentChildInheritanceHandler parentChildInheritanceHandler;
 
     public SealForProfileHandler() {
         this.annotationInfoCollectionHandler = new SealForProfileInfoCollectionHandler();
@@ -116,7 +116,7 @@ final class SealForProfileParentChildInheritanceHandler implements ParentChildIn
             // promote profiles with empty methods to parent level
             var allProfilesToRemove = new HashSet<String>();
             sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement).keySet().forEach(concatenatedProfiles -> {
-                var profilesArray = concatenatedProfiles.split(SEPARATOR);
+                var profilesArray = concatenatedProfiles.split(COMMA_SEPARATOR);
                 if (profilesArray.length > 1) {
                     for (var profile : profilesArray) {
                         var profileMethodsOpt = Optional.ofNullable(sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement).get(profile));

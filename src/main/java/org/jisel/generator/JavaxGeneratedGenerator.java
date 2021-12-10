@@ -65,7 +65,7 @@ public final class JavaxGeneratedGenerator implements CodeGenerator {
     }
 
     @Override
-    public void generateCode(final StringBuilder sealedInterfaceContent, final List<String> params) {
-        buildGeneratedAnnotationSection(sealedInterfaceContent);
+    public void generateCode(final StringBuilder classOrInterfaceContent, final List<String> params) {
+        buildGeneratedAnnotationSection(classOrInterfaceContent);
     }
 }

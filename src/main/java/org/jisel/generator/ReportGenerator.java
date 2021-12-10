@@ -21,5 +21,5 @@
  */
 package org.jisel.generator;
 
-public class JiselFinalClassGenerator {
+public class ReportGenerator {
 }

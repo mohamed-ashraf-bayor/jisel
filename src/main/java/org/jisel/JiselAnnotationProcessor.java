@@ -23,13 +23,12 @@ package org.jisel;
 
 import com.google.auto.service.AutoService;
 import org.jisel.generator.SealedInterfaceSourceFileGenerator;
+import org.jisel.generator.StringGenerator;
 import org.jisel.handlers.AddToProfileHandler;
 import org.jisel.handlers.JiselAnnotationHandler;
 import org.jisel.handlers.SealForProfileHandler;
 
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.FilerException;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -50,27 +49,31 @@ import static java.lang.String.format;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILE;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILES;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILEZ;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILE;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILES;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZ;
 
-@SupportedAnnotationTypes({"org.jisel.SealForProfile", "org.jisel.SealForProfiles", "org.jisel.SealForProfile.SealForProfilez",
-        "org.jisel.AddToProfile", "org.jisel.AddToProfiles", "org.jisel.AddToProfile.AddToProfilez"})
+@SupportedAnnotationTypes({ORG_JISEL_SEAL_FOR_PROFILE, ORG_JISEL_SEAL_FOR_PROFILES, ORG_JISEL_SEAL_FOR_PROFILEZ,
+        ORG_JISEL_ADD_TO_PROFILE, ORG_JISEL_ADD_TO_PROFILES, ORG_JISEL_ADD_TO_PROFILEZ})
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
-public class JiselAnnotationProcessor extends AbstractProcessor {
+public class JiselAnnotationProcessor extends AbstractProcessor implements StringGenerator {
 
     private final Logger log = Logger.getLogger(JiselAnnotationProcessor.class.getName());
 
-    private static final String SEAL_FOR_PROFILE = "SealForProfile";
-    private static final String ADD_TO_PROFILE = "AddToProfile";
+    private final JiselAnnotationHandler sealForProfileHandler;
 
-    private static final String STATUS_REPORT_TITLE = "JISEL GENERATION REPORT";
+    private final JiselAnnotationHandler addToProfileHandler;
 
-    private JiselAnnotationHandler sealForProfileHandler;
-
-    private JiselAnnotationHandler addToProfileHandler;
+    private final SealedInterfaceSourceFileGenerator sealedInterfaceSourceFileGenerator;
 
     public JiselAnnotationProcessor() {
         this.sealForProfileHandler = new SealForProfileHandler();
         this.addToProfileHandler = new AddToProfileHandler();
+        this.sealedInterfaceSourceFileGenerator = new SealedInterfaceSourceFileGenerator();
     }
 
     @Override
@@ -90,7 +93,7 @@ public class JiselAnnotationProcessor extends AbstractProcessor {
                 sealedInterfacesToGenerateByBloatedInterface,
                 sealedInterfacesPermitsByBloatedInterface
         );
-        displayStatusReport(statusReport, SealForProfile.class);
+        displayStatusReport(statusReport, SEAL_FOR_PROFILE);
 
         // process all child classes or interfaces annotated with @AddToProfile
         statusReport = addToProfileHandler.handleAnnotatedElements(
@@ -99,16 +102,16 @@ public class JiselAnnotationProcessor extends AbstractProcessor {
                 unmodifiableMap(sealedInterfacesToGenerateByBloatedInterface),
                 sealedInterfacesPermitsByBloatedInterface
         );
-        displayStatusReport(statusReport, AddToProfile.class);
+        displayStatusReport(statusReport, ADD_TO_PROFILE);
 
         try {
-            new SealedInterfaceSourceFileGenerator(processingEnv).createSourceFiles(sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
+            var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(processingEnv, sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
+            if (!generatedFiles.isEmpty()) {
+                log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining("\n"))));
+            }
         } catch (IOException e) {
-            log.log(Level.SEVERE, format("Error generating sealed interfaces", e));
+            log.log(Level.SEVERE, FILE_GENERATION_ERROR, e);
         }
-
-        System.out.println(" \n\n@@@@@@@@@@@@@ sealedInterfacesToGenerateByBloatedInterface: " + sealedInterfacesToGenerateByBloatedInterface);
-        System.out.println("\n~~~~~~~~~~ ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~ \n sealedInterfacesPermitsByBloatedInterface" + sealedInterfacesPermitsByBloatedInterface);
 
         return true;
     }
@@ -125,15 +128,15 @@ public class JiselAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void displayStatusReport(final Map<Element, String> statusReport, final Class annotation) {
+    private void displayStatusReport(final Map<Element, String> statusReport, final String annotationName) {
         if (!statusReport.values().stream().collect(joining()).isBlank()) {
-            var output = new StringBuilder(format("%n%s - @%s(s)%n", STATUS_REPORT_TITLE, annotation.getSimpleName()));
+            var output = new StringBuilder(format("%n%s - @%s(s)%n", STATUS_REPORT_TITLE, annotationName));
             statusReport.entrySet().forEach(mapEntry -> {
                 if (!mapEntry.getValue().isBlank()) {
                     output.append(format("\t> %s: %s%n", mapEntry.getKey().getSimpleName().toString(), mapEntry.getValue()));
                 }
             });
-            log.warning(output.toString());
+            log.warning(output::toString);
         }
     }
 }

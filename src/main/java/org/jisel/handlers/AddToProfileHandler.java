@@ -27,7 +27,6 @@ import javax.lang.model.element.ElementKind;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -95,7 +94,7 @@ public final class AddToProfileHandler implements JiselAnnotationHandler {
 
     private Set<String> buildProvidedInterfacesSet(final ProcessingEnvironment processingEnv, final Element annotatedClassOrInterface) {
         return processingEnv.getTypeUtils().directSupertypes(annotatedClassOrInterface.asType()).stream()
-                .map(Objects::toString)
+                .map(Object::toString)
                 .filter(typeString -> !typeString.contains(JAVA_LANG_OBJECT))
                 .collect(toSet());
     }
@@ -108,7 +107,7 @@ public final class AddToProfileHandler implements JiselAnnotationHandler {
         var found = false;
         for (var bloatedInterfaceProvidedProfile : bloatedInterfaceProvidedProfilesList) { // might contain SEPARATOR
             for (var addToProfileProvidedProfile : addToProfileProvidedProfilesSet) {
-                if (asList(bloatedInterfaceProvidedProfile.split(SEPARATOR)).contains(addToProfileProvidedProfile)) {
+                if (asList(bloatedInterfaceProvidedProfile.split(COMMA_SEPARATOR)).contains(addToProfileProvidedProfile)) {
                     sealedInterfacesPermitsByBloatedInterface.get(bloatedInterfaceElement).merge(
                             bloatedInterfaceProvidedProfile,
                             asList(annotatedClassOrInterface.toString()),

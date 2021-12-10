@@ -40,12 +40,9 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
+import static org.jisel.generator.StringGenerator.removeSeparator;
 
 public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForProfileHandler, AddToProfileHandler, AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
-
-    String SEPARATOR = ",";
-    String ADD_TO_PROFILE_REPORT_MSG = "1 or many provided profiles are not found in provided parent interfaces. Check your profiles names.";
-    String JAVA_LANG_OBJECT = "java.lang.Object";
 
     String ANNOTATION_VALUES_REGEX = "\"([^\"]*)\"";
 
@@ -54,12 +51,18 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
                                                  Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
                                                  Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface);
 
+    /**
+     * @param processingEnv
+     * @param annotatedClassOrInterface
+     * @return
+     */
     default Set<String> buildProvidedProfilesSet(final ProcessingEnvironment processingEnv, final Element annotatedClassOrInterface) {
+      // annotationRawValueAsString: sample values: singl value "profile1name", array: {@org.jisel.SealForProfile("profile2name"), @org.jisel.SealForProfile("profile3name"),...}
         var providedProfilesSet = new HashSet<String>();
         processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedClassOrInterface).stream()
                 .flatMap(annotationMirror -> annotationMirror.getElementValues().entrySet().stream())
                 .map(entry -> entry.getValue().toString())
-                .forEach(annotationRawValueAsString -> { // annotationRawValueAsString: sample values: singl value "profile1name", array: {@org.jisel.SealForProfile("profile2name"), @org.jisel.SealForProfile("profile3name"),...}
+                .forEach(annotationRawValueAsString -> {
                     var matcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(annotationRawValueAsString);
                     while (matcher.find()) {
                         var profile = matcher.group(1).trim();
@@ -115,7 +118,7 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
             var found = false;
             for (int j = processProfileIndex + 1; j < totalProfiles; j++) {
                 if (methodsSetsList.get(j).contains(methodElement)) {
-                    concatenatedProfiles.append(SEPARATOR).append(profilesList.get(j));
+                    concatenatedProfiles.append(COMMA_SEPARATOR).append(profilesList.get(j));
                     found = true;
                 }
             }
@@ -149,8 +152,8 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
                                                  final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate,
                                                  final Map<Element, Map<String, List<String>>> sealedInterfacesPermits) {
         sealedInterfacesPermits.get(interfaceElement).putAll(sealedInterfacesToGenerate.get(interfaceElement).keySet().stream()
-                .filter(profiles -> profiles.contains(SEPARATOR))
-                .collect(toMap(profiles -> profiles, profiles -> asList(profiles.split(SEPARATOR)))));
+                .filter(profiles -> profiles.contains(COMMA_SEPARATOR))
+                .collect(toMap(profiles -> profiles, profiles -> asList(profiles.split(COMMA_SEPARATOR)))));
         // parent interf permits all, if there are other permits already existing then the profiles in those permits lists should be removed from parent interf permits list
         var parentInterfaceSimpleName = interfaceElement.getSimpleName().toString();
         var allPermittedProfiles = sealedInterfacesPermits.get(interfaceElement).values().stream().flatMap(Collection::stream).collect(toSet());
@@ -175,14 +178,12 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
 
 sealed interface UniqueParentInterfaceHandler extends JiselAnnotationHandler permits SealForProfileUniqueParentInterfaceHandler {
 
-    String REPORT_MSG = "More than 1 Top-Level Parent Sealed Interfaces will be generated. Check your profiles mapping.";
-
     default Map<Element, Optional<String>> checkUniqueParentInterfacePresence(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate) {
 
         var providedProfilesListByInterface = new HashMap<Element, List<String>>();
         sealedInterfacesToGenerate.forEach(
                 (interfaceElement, annotatedMethodsByProfile) -> annotatedMethodsByProfile.keySet().stream()
-                        .filter(concatenatedProfiles -> !concatenatedProfiles.contains(SEPARATOR)).forEach(
+                        .filter(concatenatedProfiles -> !concatenatedProfiles.contains(COMMA_SEPARATOR)).forEach(
                                 profileName -> providedProfilesListByInterface.merge(
                                         interfaceElement,
                                         asList(profileName),
