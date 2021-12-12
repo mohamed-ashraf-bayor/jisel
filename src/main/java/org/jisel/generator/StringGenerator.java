@@ -1,7 +1,6 @@
 package org.jisel.generator;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.type.ExecutableType;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -39,6 +38,9 @@ public interface StringGenerator {
 
     String SEAL_FOR_PROFILE = "SealForProfile";
     String ADD_TO_PROFILE = "AddToProfile";
+    String PROFILE_NAME_ATTRIBUTE = "profileName()";
+    String INTERFACE_NAME_ATTRIBUTE = "interfaceName()";
+    String ANNOTATION_VALUES_REGEX = "\"([^\"]*)\"";
 
     String STATUS_REPORT_TITLE = "JISEL GENERATION REPORT";
 
@@ -49,7 +51,6 @@ public interface StringGenerator {
     String ORG_JISEL_SEAL_FOR_PROFILES = "org.jisel.SealForProfiles";
     String ORG_JISEL_SEAL_FOR_PROFILEZ = "org.jisel.SealForProfile.SealForProfilez";
     String ORG_JISEL_ADD_TO_PROFILE = "org.jisel.AddToProfile";
-    String ORG_JISEL_ADD_TO_PROFILES = "org.jisel.AddToProfiles";
     String ORG_JISEL_ADD_TO_PROFILEZ = "org.jisel.AddToProfile.AddToProfilez";
 
     String DEFAULT_BOOLEAN_VALUE = "false";
@@ -58,8 +59,14 @@ public interface StringGenerator {
 
     String[] METHODS_TO_EXCLUDE = {"getClass", "wait", "notifyAll", "hashCode", "equals", "notify", "toString"};
 
-    String ADD_TO_PROFILE_REPORT_MSG = "1 or many provided profiles are not found in provided parent interfaces. Check your profiles names.";
-    String REPORT_MSG = "More than 1 Top-Level Parent Sealed Interfaces will be generated. Check your profiles mapping.";
+    String ADD_TO_PROFILE_REPORT_MSG = "1 or many provided profiles are not found in the provided parent interfaces. Check your profiles and/or parent interfaces names.";
+    String SEAL_FOR_PROFILE_REPORT_MSG = "More than 1 Top-Level Parent Sealed Interfaces will be generated. Check your profiles mapping.";
+
+    String JISEL_REPORT_SUFFIX = "Report.txt";
+
+    String JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER = "Created sealed interfaces:";
+
+    String JISEL_REPORT_CHILDREN_HEADER = "Children:";
 
     static String removeSeparator(final String text) {
         return asList(text.split(COMMA_SEPARATOR)).stream().collect(joining());
@@ -67,8 +74,8 @@ public interface StringGenerator {
 
     default String sealedInterfaceNameConvention(final String profile, final Element interfaceElement) {
         var nameSuffix = removeSeparator(profile).equals(interfaceElement.getSimpleName().toString()) ? EMPTY_STRING : interfaceElement.getSimpleName().toString();
-        // any profile name starting w _ is returned as it is
-        return removeSeparator(profile).startsWith(UNDERSCORE) ? removeSeparator(profile) : format(
+        // any profile name starting w _ (final classes names) or containing a dot (classes annotated with addtoprofile) is returned as is
+        return removeSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeSeparator(profile) : format(
                 "%s%s%s",
                 SEALED_PREFIX,
                 removeSeparator(profile),
@@ -79,7 +86,7 @@ public interface StringGenerator {
     default List<String> sealedInterfaceNameConventionForList(final List<String> profiles, final Element interfaceElement) {
         final UnaryOperator<String> nameSuffix = profile -> removeSeparator(profile).equals(interfaceElement.getSimpleName().toString()) ? EMPTY_STRING : interfaceElement.getSimpleName().toString();
         return profiles.stream()
-                .map(profile -> removeSeparator(profile).startsWith(UNDERSCORE) ? removeSeparator(profile) : format(
+                .map(profile -> removeSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeSeparator(profile) : format(
                         "%s%s%s",
                         SEALED_PREFIX,
                         removeSeparator(profile),
@@ -87,22 +94,13 @@ public interface StringGenerator {
                 )).toList();
     }
 
-    default Optional<String> generatePackageName(final Element bloatedInterfaceName) {
-        var qualifiedClassName = bloatedInterfaceName.toString();
+    default Optional<String> generatePackageName(final Element largeInterfaceName) {
+        var qualifiedClassName = largeInterfaceName.toString();
         int lastDot = qualifiedClassName.lastIndexOf('.');
         return lastDot > 0 ? Optional.of(qualifiedClassName.substring(0, lastDot)) : Optional.empty();
     }
 
     default String removeDoubleSpaceOccurrences(final String text) {
         return text.replace(WHITESPACE + WHITESPACE, WHITESPACE);
-    }
-
-    default String generateDefaultReturnValueForMethod(final Element methodElement) {
-        return switch (((ExecutableType) methodElement.asType()).getReturnType().getKind()) {
-            case BOOLEAN -> RETURN + WHITESPACE + DEFAULT_BOOLEAN_VALUE;
-            case VOID -> RETURN;
-            case BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, CHAR -> RETURN + WHITESPACE + DEFAULT_NUMBER_VALUE;
-            default -> RETURN + WHITESPACE + DEFAULT_NULL_VALUE;
-        };
     }
 }

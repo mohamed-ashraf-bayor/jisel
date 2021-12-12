@@ -49,7 +49,7 @@ public sealed interface CodeGenerator permits JavaxGeneratedGenerator, ExtendsGe
 
 sealed interface ExtendsGenerator extends CodeGenerator, StringGenerator permits JiselExtendsGenerator {
 
-    void generateExtendsClauseFromPermitsMapAndProcessedProfile(ProcessingEnvironment processingEnvironment, StringBuilder sealedInterfaceContent, Map<String, List<String>> permitsMap, String processedProfile, Element bloatedInterfaceElement);
+    void generateExtendsClauseFromPermitsMapAndProcessedProfile(ProcessingEnvironment processingEnvironment, StringBuilder sealedInterfaceContent, Map<String, List<String>> permitsMap, String processedProfile, Element largeInterfaceElement);
 
     @Override
     default void generateCode(final StringBuilder classOrInterfaceContent, final List<String> params) {
@@ -67,7 +67,7 @@ sealed interface ExtendsGenerator extends CodeGenerator, StringGenerator permits
 
 sealed interface PermitsGenerator extends CodeGenerator, StringGenerator permits JiselPermitsGenerator {
 
-    void generatePermitsClauseFromPermitsMapAndProcessedProfile(StringBuilder sealedInterfaceContent, Map<String, List<String>> permitsMap, String processedProfile, Element bloatedInterfaceElement);
+    void generatePermitsClauseFromPermitsMapAndProcessedProfile(StringBuilder sealedInterfaceContent, Map<String, List<String>> permitsMap, String processedProfile, Element largeInterfaceElement);
 
     @Override
     default void generateCode(final StringBuilder classOrInterfaceContent, final List<String> params) {
@@ -78,15 +78,16 @@ sealed interface PermitsGenerator extends CodeGenerator, StringGenerator permits
         ));
     }
 
-    default void addFinalClassToPermitsMap(final Map<String, List<String>> permitsMap, final Element bloatedInterfaceElement) {
-        var finalClassName = UNDERSCORE + bloatedInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
+    default void addFinalClassToPermitsMap(final Map<String, List<String>> permitsMap, final Element largeInterfaceElement) {
+        var finalClassName = UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
         var childlessProfiles = permitsMap.values().stream()
                 .flatMap(Collection::stream)
                 .distinct()
                 .filter(childProfileName -> permitsMap.keySet().stream().noneMatch(parentProfile -> parentProfile.equals(childProfileName)))
                 .filter(childProfileName -> !finalClassName.equals(childProfileName)) // if finalClassName found remove it from the new list
+                .filter(childProfileName -> !childProfileName.contains(DOT)) // also skip all qualifiedname classes add by @addToProfile
                 .toList();
-        childlessProfiles.forEach(childLessProfile -> permitsMap.put(childLessProfile, asList(finalClassName)));
+        childlessProfiles.forEach(childlessProfile -> permitsMap.put(childlessProfile, asList(finalClassName)));
     }
 }
 
@@ -124,5 +125,14 @@ sealed interface MethodsGenerator extends CodeGenerator, StringGenerator permits
 
     default String generateThrownExceptions(final Element methodElement) {
         return ((ExecutableType) methodElement.asType()).getThrownTypes().stream().map(Object::toString).collect(joining(COMMA_SEPARATOR + WHITESPACE));
+    }
+
+    default String generateDefaultReturnValueForMethod(final Element methodElement) {
+        return switch (((ExecutableType) methodElement.asType()).getReturnType().getKind()) {
+            case BOOLEAN -> RETURN + WHITESPACE + DEFAULT_BOOLEAN_VALUE;
+            case VOID -> RETURN;
+            case BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, CHAR -> RETURN + WHITESPACE + DEFAULT_NUMBER_VALUE;
+            default -> RETURN + WHITESPACE + DEFAULT_NULL_VALUE;
+        };
     }
 }

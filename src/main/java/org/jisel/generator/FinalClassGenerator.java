@@ -44,11 +44,11 @@ public class FinalClassGenerator implements StringGenerator {
         this.methodsGenerator = new JiselMethodsGenerator();
     }
 
-    public String generateFinalClassContent(final ProcessingEnvironment processingEnvironment, final Element bloatedInterfaceElement, final Map<String, List<String>> sealedInterfacesPermitsMap) {
-        var finalClassName = UNDERSCORE + bloatedInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
+    public String generateFinalClassContent(final ProcessingEnvironment processingEnvironment, final Element largeInterfaceElement, final Map<String, List<String>> sealedInterfacesPermitsMap) {
+        var finalClassName = UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
         var finalClassContent = new StringBuilder();
         // package name
-        generatePackageName(bloatedInterfaceElement).ifPresent(name -> finalClassContent.append(format("%s %s;%n%n", PACKAGE, name)));
+        generatePackageName(largeInterfaceElement).ifPresent(name -> finalClassContent.append(format("%s %s;%n%n", PACKAGE, name)));
         // javaxgenerated
         javaxGeneratedGenerator.generateCode(finalClassContent, null);
         // public final class
@@ -58,13 +58,13 @@ public class FinalClassGenerator implements StringGenerator {
                 finalClassName
         ));
         // list of implements
-        extendsGenerator.generateExtendsClauseFromPermitsMapAndProcessedProfile(processingEnvironment, finalClassContent, sealedInterfacesPermitsMap, finalClassName, bloatedInterfaceElement);
+        extendsGenerator.generateExtendsClauseFromPermitsMapAndProcessedProfile(processingEnvironment, finalClassContent, sealedInterfacesPermitsMap, finalClassName, largeInterfaceElement);
         // opening bracket after permits list
         finalClassContent.append(format(" %s%n ", OPENING_BRACKET));
         // list of methods
         methodsGenerator.generateEmptyConcreteMethodsFromElementsSet(
                 finalClassContent,
-                processingEnvironment.getElementUtils().getAllMembers((TypeElement) bloatedInterfaceElement).stream()
+                processingEnvironment.getElementUtils().getAllMembers((TypeElement) largeInterfaceElement).stream()
                         .filter(element -> ElementKind.METHOD.equals(element.getKind()))
                         .filter(element -> asList(METHODS_TO_EXCLUDE).stream().noneMatch(excludedMeth -> element.toString().contains(excludedMeth + OPENING_PARENTHESIS)))
                         .collect(toSet())

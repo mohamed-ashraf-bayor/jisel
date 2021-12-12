@@ -24,6 +24,7 @@ package org.jisel.generator;
 import javax.annotation.processing.FilerException;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -35,24 +36,27 @@ public class SealedInterfaceSourceFileGenerator implements StringGenerator {
 
     private final SealedInterfaceContentGenerator sealedInterfaceContentGenerator;
     private final FinalClassGenerator finalClassGenerator;
+    private final ReportGenerator reportGenerator;
 
     public SealedInterfaceSourceFileGenerator() {
         this.sealedInterfaceContentGenerator = new SealedInterfaceContentGenerator();
         this.finalClassGenerator = new FinalClassGenerator();
+        this.reportGenerator = new ReportGenerator();
     }
 
     public List<String> createSourceFiles(final ProcessingEnvironment processingEnvironment,
-                                          final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
-                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) throws IOException {
+                                          final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) throws IOException {
         var generatedFiles = new ArrayList<String>();
-        for (var sealedInterfacesToGenerateMapEntrySet : sealedInterfacesToGenerateByBloatedInterface.entrySet()) {
-            var bloatedInterfaceElement = sealedInterfacesToGenerateMapEntrySet.getKey();
+        for (var sealedInterfacesToGenerateMapEntrySet : sealedInterfacesToGenerateByLargeInterface.entrySet()) {
+            var largeInterfaceElement = sealedInterfacesToGenerateMapEntrySet.getKey();
             for (var sealedInterfacesToGenerate : sealedInterfacesToGenerateMapEntrySet.getValue().entrySet()) {
                 var profile = sealedInterfacesToGenerate.getKey();
-                var generatedSealedInterfaceName = sealedInterfaceNameConvention(profile, bloatedInterfaceElement);
-                createSealedInterfaceFile(processingEnvironment, generatedFiles, sealedInterfacesPermitsByBloatedInterface.get(bloatedInterfaceElement), bloatedInterfaceElement, sealedInterfacesToGenerate, generatedSealedInterfaceName);
+                var generatedSealedInterfaceName = sealedInterfaceNameConvention(profile, largeInterfaceElement);
+                createSealedInterfaceFile(processingEnvironment, generatedFiles, sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement), largeInterfaceElement, sealedInterfacesToGenerate, generatedSealedInterfaceName);
             }
-            createFinalClassFile(processingEnvironment, generatedFiles, bloatedInterfaceElement, sealedInterfacesPermitsByBloatedInterface.get(bloatedInterfaceElement));
+            createFinalClassFile(processingEnvironment, generatedFiles, largeInterfaceElement, sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement));
+            createJiselReportFile(processingEnvironment, generatedFiles, largeInterfaceElement, sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement), sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement));
         }
         return generatedFiles;
     }
@@ -60,15 +64,15 @@ public class SealedInterfaceSourceFileGenerator implements StringGenerator {
     private void createSealedInterfaceFile(final ProcessingEnvironment processingEnvironment,
                                            final List<String> generatedFiles,
                                            final Map<String, List<String>> sealedInterfacesPermitsMap,
-                                           final Element bloatedInterfaceElement,
+                                           final Element largeInterfaceElement,
                                            final Map.Entry<String, Set<Element>> sealedInterfacesToGenerateMapEntrySet,
                                            final String generatedSealedInterfaceName) throws IOException {
-        var packageNameOpt = generatePackageName(bloatedInterfaceElement);
+        var packageNameOpt = generatePackageName(largeInterfaceElement);
         try {
             var qualifiedName = packageNameOpt.isPresent() ? packageNameOpt.get() + DOT + generatedSealedInterfaceName : generatedSealedInterfaceName;
             var fileObject = processingEnvironment.getFiler().createSourceFile(qualifiedName);
             try (var out = new PrintWriter(fileObject.openWriter())) {
-                out.println(sealedInterfaceContentGenerator.generateSealedInterfaceContent(processingEnvironment, sealedInterfacesToGenerateMapEntrySet, bloatedInterfaceElement, sealedInterfacesPermitsMap));
+                out.println(sealedInterfaceContentGenerator.generateSealedInterfaceContent(processingEnvironment, sealedInterfacesToGenerateMapEntrySet, largeInterfaceElement, sealedInterfacesPermitsMap));
             }
             generatedFiles.add(qualifiedName);
         } catch (FilerException e) {
@@ -78,16 +82,36 @@ public class SealedInterfaceSourceFileGenerator implements StringGenerator {
 
     private void createFinalClassFile(final ProcessingEnvironment processingEnvironment,
                                       final List<String> generatedFiles,
-                                      final Element bloatedInterfaceElement,
+                                      final Element largeInterfaceElement,
                                       final Map<String, List<String>> sealedInterfacesPermitsMap) throws IOException {
-        var packageNameOpt = generatePackageName(bloatedInterfaceElement);
+        var packageNameOpt = generatePackageName(largeInterfaceElement);
         try {
             var qualifiedName = packageNameOpt.isPresent()
-                    ? packageNameOpt.get() + DOT + UNDERSCORE + bloatedInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX
-                    : UNDERSCORE + bloatedInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
+                    ? packageNameOpt.get() + DOT + UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX
+                    : UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
             var fileObject = processingEnvironment.getFiler().createSourceFile(qualifiedName);
             try (var out = new PrintWriter(fileObject.openWriter())) {
-                out.println(finalClassGenerator.generateFinalClassContent(processingEnvironment, bloatedInterfaceElement, sealedInterfacesPermitsMap));
+                out.println(finalClassGenerator.generateFinalClassContent(processingEnvironment, largeInterfaceElement, sealedInterfacesPermitsMap));
+            }
+            generatedFiles.add(qualifiedName);
+        } catch (FilerException e) {
+            // File was already generated - do nothing
+        }
+    }
+
+    private void createJiselReportFile(final ProcessingEnvironment processingEnvironment,
+                                       final List<String> generatedFiles,
+                                       final Element largeInterfaceElement,
+                                       final Map<String, Set<Element>> sealedInterfacesToGenerateMap,
+                                       final Map<String, List<String>> sealedInterfacesPermitsMap) throws IOException {
+        var packageNameOpt = generatePackageName(largeInterfaceElement);
+        try {
+            var qualifiedName = packageNameOpt.isPresent()
+                    ? packageNameOpt.get() + DOT + UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + JISEL_REPORT_SUFFIX
+                    : UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + JISEL_REPORT_SUFFIX;
+            var fileObject = processingEnvironment.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, packageNameOpt.isPresent() ? packageNameOpt.get() : EMPTY_STRING, UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + JISEL_REPORT_SUFFIX);
+            try (var out = new PrintWriter(fileObject.openWriter())) {
+                out.println(reportGenerator.generateReportForBloatedInterface(largeInterfaceElement, sealedInterfacesToGenerateMap, sealedInterfacesPermitsMap));
             }
             generatedFiles.add(qualifiedName);
         } catch (FilerException e) {

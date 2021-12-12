@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
@@ -44,20 +45,41 @@ import static org.jisel.generator.StringGenerator.removeSeparator;
 
 public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForProfileHandler, AddToProfileHandler, AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
 
-    String ANNOTATION_VALUES_REGEX = "\"([^\"]*)\"";
-
     Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
                                                  Set<Element> allAnnotatedElements,
-                                                 Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
-                                                 Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface);
+                                                 Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                 Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
+
+    default Map<String, Set<String>> buildAddToProfileProvidedProfilesMap(final ProcessingEnvironment processingEnv, final Element annotatedClassOrInterface) {
+        var providedProfilesMap = new HashMap<String, Set<String>>();
+        var annotationRawValueAsString = processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedClassOrInterface).stream()
+                .map(Object::toString)
+                .collect(joining(COMMA_SEPARATOR));
+        var matcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(annotationRawValueAsString);
+        var interfaceName = EMPTY_STRING;
+        var profileName = EMPTY_STRING;
+        while (matcher.find()) {
+            var profileOrInterface = matcher.group(1).trim();
+            if (profileOrInterface.contains(DOT)) {
+                interfaceName = profileOrInterface;
+            } else {
+                profileName = profileOrInterface;
+            }
+            if (!interfaceName.isBlank() && !profileName.isBlank()) {
+                providedProfilesMap.merge(interfaceName, new HashSet<>(Set.of(profileName)), (currentSet, newSet) -> concat(currentSet.stream(), newSet.stream()).collect(toSet()));
+                profileName = interfaceName = EMPTY_STRING;
+            }
+        }
+        return providedProfilesMap;
+    }
 
     /**
      * @param processingEnv
      * @param annotatedClassOrInterface
      * @return
      */
-    default Set<String> buildProvidedProfilesSet(final ProcessingEnvironment processingEnv, final Element annotatedClassOrInterface) {
-      // annotationRawValueAsString: sample values: singl value "profile1name", array: {@org.jisel.SealForProfile("profile2name"), @org.jisel.SealForProfile("profile3name"),...}
+    default Set<String> buildSealForProfileProvidedProfilesSet(final ProcessingEnvironment processingEnv, final Element annotatedClassOrInterface) {
+        // annotationRawValueAsString: sample values: singl value "profile1name", array: {@org.jisel.SealForProfile("profile2name"), @org.jisel.SealForProfile("profile3name"),...}
         var providedProfilesSet = new HashSet<String>();
         processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedClassOrInterface).stream()
                 .flatMap(annotationMirror -> annotationMirror.getElementValues().entrySet().stream())
@@ -136,17 +158,17 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
     @Override
     default Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
                                                          final Set<Element> allAnnotatedElements,
-                                                         final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
-                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
-        populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByBloatedInterface);
+                                                         final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+        populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByLargeInterface);
         return Map.of(); // return empty map instead of null
     }
 }
 
 sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler permits SealForProfileParentChildInheritanceHandler {
 
-    void buildInheritanceRelations(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
-                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface);
+    void buildInheritanceRelations(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
 
     default void buildSealedInterfacesPermitsMap(final Element interfaceElement,
                                                  final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate,
@@ -169,9 +191,9 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
     @Override
     default Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
                                                          final Set<Element> allAnnotatedElements,
-                                                         final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
-                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
-        buildInheritanceRelations(sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
+                                                         final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+        buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
         return Map.of();
     }
 }
@@ -220,8 +242,8 @@ sealed interface UniqueParentInterfaceHandler extends JiselAnnotationHandler per
     @Override
     default Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
                                                          final Set<Element> allAnnotatedElements,
-                                                         final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
-                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
-        return checkAndHandleUniqueParentInterface(sealedInterfacesToGenerateByBloatedInterface);
+                                                         final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+        return checkAndHandleUniqueParentInterface(sealedInterfacesToGenerateByLargeInterface);
     }
 }

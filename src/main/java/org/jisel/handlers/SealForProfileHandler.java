@@ -51,11 +51,11 @@ public final class SealForProfileHandler implements JiselAnnotationHandler {
     @Override
     public Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
                                                         final Set<Element> allAnnotatedElements,
-                                                        final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
-                                                        final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
-        annotationInfoCollectionHandler.populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByBloatedInterface);
-        var statusReport = uniqueParentInterfaceHandler.checkAndHandleUniqueParentInterface(sealedInterfacesToGenerateByBloatedInterface);
-        parentChildInheritanceHandler.buildInheritanceRelations(sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
+                                                        final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                        final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+        annotationInfoCollectionHandler.populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByLargeInterface);
+        var statusReport = uniqueParentInterfaceHandler.checkAndHandleUniqueParentInterface(sealedInterfacesToGenerateByLargeInterface);
+        parentChildInheritanceHandler.buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
         return statusReport;
     }
 }
@@ -79,7 +79,7 @@ final class SealForProfileInfoCollectionHandler implements AnnotationInfoCollect
                 (interfaceElement, annotatedMethodsElements) -> annotatedMethodsElements.forEach(
                         annotatedMethod -> extractProfilesAndPopulateMaps(
                                 interfaceElement,
-                                buildProvidedProfilesSet(processingEnv, annotatedMethod),
+                                buildSealForProfileProvidedProfilesSet(processingEnv, annotatedMethod),
                                 annotatedMethod,
                                 annotatedMethodsByProfileByInterface
                         )
@@ -109,29 +109,29 @@ final class SealForProfileInfoCollectionHandler implements AnnotationInfoCollect
 final class SealForProfileParentChildInheritanceHandler implements ParentChildInheritanceHandler {
 
     @Override
-    public void buildInheritanceRelations(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
-                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
-        sealedInterfacesToGenerateByBloatedInterface.keySet().forEach(interfaceElement -> {
-            sealedInterfacesPermitsByBloatedInterface.put(interfaceElement, new HashMap<>()); // start with initializing sealedInterfacesPermitsByBloatedInterface with empty mutable maps
+    public void buildInheritanceRelations(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+        sealedInterfacesToGenerateByLargeInterface.keySet().forEach(interfaceElement -> {
+            sealedInterfacesPermitsByLargeInterface.put(interfaceElement, new HashMap<>()); // start with initializing sealedInterfacesPermitsByLargeInterface with empty mutable maps
             // promote profiles with empty methods to parent level
             var allProfilesToRemove = new HashSet<String>();
-            sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement).keySet().forEach(concatenatedProfiles -> {
+            sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).keySet().forEach(concatenatedProfiles -> {
                 var profilesArray = concatenatedProfiles.split(COMMA_SEPARATOR);
                 if (profilesArray.length > 1) {
                     for (var profile : profilesArray) {
-                        var profileMethodsOpt = Optional.ofNullable(sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement).get(profile));
+                        var profileMethodsOpt = Optional.ofNullable(sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).get(profile));
                         if (profileMethodsOpt.isPresent() && profileMethodsOpt.get().isEmpty()) {
-                            sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement).put(profile, sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement).get(concatenatedProfiles));
-                            sealedInterfacesPermitsByBloatedInterface.get(interfaceElement).put(profile, Arrays.stream(profilesArray).filter(profileName -> !profile.equals(profileName)).toList());
+                            sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).put(profile, sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).get(concatenatedProfiles));
+                            sealedInterfacesPermitsByLargeInterface.get(interfaceElement).put(profile, Arrays.stream(profilesArray).filter(profileName -> !profile.equals(profileName)).toList());
                             allProfilesToRemove.add(concatenatedProfiles);
                             break;
                         }
                     }
                 }
             });
-            allProfilesToRemove.forEach(sealedInterfacesToGenerateByBloatedInterface.get(interfaceElement)::remove);
-            // and completing building sealedInterfacesPermitsByBloatedInterface map
-            buildSealedInterfacesPermitsMap(interfaceElement, sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
+            allProfilesToRemove.forEach(sealedInterfacesToGenerateByLargeInterface.get(interfaceElement)::remove);
+            // and completing building sealedInterfacesPermitsByLargeInterface map
+            buildSealedInterfacesPermitsMap(interfaceElement, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
         });
     }
 }
@@ -148,7 +148,7 @@ final class SealForProfileUniqueParentInterfaceHandler implements UniqueParentIn
                 sealedInterfacesToGenerate.get(interfaceElement).put(interfaceElement.getSimpleName().toString(), sealedInterfacesToGenerate.get(interfaceElement).get(longestConcatenedProfilesStringOpt.get()));
                 sealedInterfacesToGenerate.get(interfaceElement).remove(longestConcatenedProfilesStringOpt.get());
             } else {
-                statusReport.put(interfaceElement, REPORT_MSG);
+                statusReport.put(interfaceElement, SEAL_FOR_PROFILE_REPORT_MSG);
             }
         });
         return statusReport;

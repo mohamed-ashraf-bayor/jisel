@@ -32,7 +32,8 @@ import java.lang.annotation.Target;
 @Repeatable(AddToProfile.AddToProfilez.class)
 public @interface AddToProfile {
 
-    String value();
+    String profileName();
+    String interfaceName();
 
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.TYPE)

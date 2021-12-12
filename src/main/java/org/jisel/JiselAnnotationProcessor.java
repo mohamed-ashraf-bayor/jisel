@@ -50,14 +50,13 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILE;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILES;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILEZ;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILE;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILES;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZ;
 
 @SupportedAnnotationTypes({ORG_JISEL_SEAL_FOR_PROFILE, ORG_JISEL_SEAL_FOR_PROFILES, ORG_JISEL_SEAL_FOR_PROFILEZ,
-        ORG_JISEL_ADD_TO_PROFILE, ORG_JISEL_ADD_TO_PROFILES, ORG_JISEL_ADD_TO_PROFILEZ})
+        ORG_JISEL_ADD_TO_PROFILE, ORG_JISEL_ADD_TO_PROFILEZ})
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
 public class JiselAnnotationProcessor extends AbstractProcessor implements StringGenerator {
@@ -81,8 +80,8 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
 
         var allAnnotatedSealForProfileElements = new HashSet<Element>();
         var allAnnotatedAddToProfileElements = new HashSet<Element>();
-        var sealedInterfacesToGenerateByBloatedInterface = new HashMap<Element, Map<String, Set<Element>>>();
-        var sealedInterfacesPermitsByBloatedInterface = new HashMap<Element, Map<String, List<String>>>();
+        var sealedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Set<Element>>>();
+        var sealedInterfacesPermitsByLargeInterface = new HashMap<Element, Map<String, List<String>>>();
 
         populateAllAnnotatedElementsSets(annotations, roundEnv, allAnnotatedSealForProfileElements, allAnnotatedAddToProfileElements);
 
@@ -90,8 +89,8 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
         var statusReport = sealForProfileHandler.handleAnnotatedElements(
                 processingEnv,
                 unmodifiableSet(allAnnotatedSealForProfileElements),
-                sealedInterfacesToGenerateByBloatedInterface,
-                sealedInterfacesPermitsByBloatedInterface
+                sealedInterfacesToGenerateByLargeInterface,
+                sealedInterfacesPermitsByLargeInterface
         );
         displayStatusReport(statusReport, SEAL_FOR_PROFILE);
 
@@ -99,15 +98,15 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
         statusReport = addToProfileHandler.handleAnnotatedElements(
                 processingEnv,
                 unmodifiableSet(allAnnotatedAddToProfileElements),
-                unmodifiableMap(sealedInterfacesToGenerateByBloatedInterface),
-                sealedInterfacesPermitsByBloatedInterface
+                unmodifiableMap(sealedInterfacesToGenerateByLargeInterface),
+                sealedInterfacesPermitsByLargeInterface
         );
         displayStatusReport(statusReport, ADD_TO_PROFILE);
 
         try {
-            var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(processingEnv, sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface);
+            var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(processingEnv, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
             if (!generatedFiles.isEmpty()) {
-                log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining("\n"))));
+                log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining(format("%n")))));
             }
         } catch (IOException e) {
             log.log(Level.SEVERE, FILE_GENERATION_ERROR, e);
@@ -130,7 +129,7 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
 
     private void displayStatusReport(final Map<Element, String> statusReport, final String annotationName) {
         if (!statusReport.values().stream().collect(joining()).isBlank()) {
-            var output = new StringBuilder(format("%n%s - @%s(s)%n", STATUS_REPORT_TITLE, annotationName));
+            var output = new StringBuilder(format("%n%s - @%s%n", STATUS_REPORT_TITLE, annotationName));
             statusReport.entrySet().forEach(mapEntry -> {
                 if (!mapEntry.getValue().isBlank()) {
                     output.append(format("\t> %s: %s%n", mapEntry.getKey().getSimpleName().toString(), mapEntry.getValue()));

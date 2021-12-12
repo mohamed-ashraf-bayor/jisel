@@ -21,5 +21,43 @@
  */
 package org.jisel.generator;
 
-public class ReportGenerator {
+import javax.lang.model.element.Element;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
+
+public class ReportGenerator implements StringGenerator {
+
+    public String generateReportForBloatedInterface(final Element largeInterfaceElement,
+                                                    final Map<String, Set<Element>> sealedInterfacesToGenerateMap,
+                                                    final Map<String, List<String>> sealedInterfacesPermitsMap) {
+        var reportContent = new StringBuilder();
+        var packageNameOpt = generatePackageName(largeInterfaceElement);
+        var qualifiedName = packageNameOpt.isPresent()
+                ? packageNameOpt.get() + DOT + largeInterfaceElement.getSimpleName().toString()
+                : largeInterfaceElement.getSimpleName().toString();
+        reportContent.append(format("%s%n", qualifiedName));
+        reportContent.append(format("%s%n", JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER));
+        sealedInterfacesToGenerateMap.entrySet().forEach(entrySet -> {
+            var sealedInterfaceName = sealedInterfaceNameConvention(entrySet.getKey(), largeInterfaceElement);
+            reportContent.append(format("\t%s%n", sealedInterfaceName));
+            var sealedInterfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(entrySet.getKey()));
+            if (sealedInterfaceChildrenOpt.isPresent() && !sealedInterfaceChildrenOpt.get().isEmpty()) {
+                reportContent.append(format("\t - %s%n", JISEL_REPORT_CHILDREN_HEADER));
+                if (!sealedInterfaceChildrenOpt.get().isEmpty()) {
+                    reportContent.append(format(
+                            "\t\t%s%n",
+                            sealedInterfaceChildrenOpt.get().stream()
+                                    .map(childName -> sealedInterfaceNameConvention(childName, largeInterfaceElement))
+                                    .collect(joining(format("%n\t\t")))
+                    ));
+                }
+            }
+        });
+        return reportContent.toString();
+    }
 }

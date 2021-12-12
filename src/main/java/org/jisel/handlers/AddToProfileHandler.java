@@ -25,8 +25,10 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -38,8 +40,8 @@ public final class AddToProfileHandler implements JiselAnnotationHandler {
     @Override
     public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
                                                         Set<Element> allAnnotatedElements,
-                                                        Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
-                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
+                                                        Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var annotatedClassesAndInterfaces = allAnnotatedElements.stream()
                 .filter(element -> !element.getClass().isEnum())
                 .filter(element -> ElementKind.CLASS.equals(element.getKind())
@@ -49,76 +51,73 @@ public final class AddToProfileHandler implements JiselAnnotationHandler {
         var statusReport = new HashMap<Element, String>();
         annotatedClassesAndInterfaces.forEach(annotatedClassOrInterface -> statusReport.put(
                 annotatedClassOrInterface,
-                processAnnotatedElement(processingEnv, annotatedClassOrInterface, sealedInterfacesToGenerateByBloatedInterface, sealedInterfacesPermitsByBloatedInterface)
+                processAnnotatedElement(processingEnv, annotatedClassOrInterface, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface)
         ));
         return statusReport;
     }
 
     private String processAnnotatedElement(final ProcessingEnvironment processingEnv,
                                            final Element annotatedClassOrInterface,
-                                           final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByBloatedInterface,
-                                           final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
+                                           final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                           final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new StringBuilder();
-        var addToProfileProvidedProfilesSet = buildProvidedProfilesSet(processingEnv, annotatedClassOrInterface);
-        if (addToProfileProvidedProfilesSet.isEmpty()) {
+        var addToProfileProvidedProfilesMap = buildAddToProfileProvidedProfilesMap(processingEnv, annotatedClassOrInterface);
+        if (addToProfileProvidedProfilesMap.isEmpty()) {
             // do not process if no profiles are provided
             return statusReport.toString();
         }
-        var providedSuperInterfacesSet = buildProvidedInterfacesSet(processingEnv, annotatedClassOrInterface);
-        // browse sealedInterfacesToGenerate 1st and then add more info to sealedInterfacesPermits
-        var found = false;
-        for (var mapEntry : sealedInterfacesToGenerateByBloatedInterface.entrySet()) {
-            var bloatedInterfaceElement = mapEntry.getKey();
-            var annotatedMethodsByProfile = mapEntry.getValue();
-            for (var profile : annotatedMethodsByProfile.keySet()) {
-                for (var superInterfaceQualifiedName : providedSuperInterfacesSet) {
-                    var sealedInterfaceName = sealedInterfaceNameConvention(profile, bloatedInterfaceElement);
-                    if (superInterfaceQualifiedName.contains(sealedInterfaceName)) {
-                        // add permits for each profile only if the profiles exist for the superinterface
-                        var bloatedInterfaceProvidedProfilesList = annotatedMethodsByProfile.keySet().stream()
-                                .filter(bloatedInterfaceProvidedProfile -> sealedInterfaceNameConvention(bloatedInterfaceProvidedProfile, bloatedInterfaceElement).equals(sealedInterfaceName))
-                                .toList();
-                        found = updateSealedInterfacesPermitsMapWithProvidedProfiles(
-                                bloatedInterfaceProvidedProfilesList, addToProfileProvidedProfilesSet, annotatedClassOrInterface,
-                                bloatedInterfaceElement, sealedInterfacesPermitsByBloatedInterface
-                        );
-                    }
-                }
+        var profileFound = false;
+        var providedLargeInterfaceTypeNotFound = false;
+        for (var mapEntrySet : addToProfileProvidedProfilesMap.entrySet()) {
+            var providedLargeInterfaceQualifiedName = mapEntrySet.getKey();
+            var providedProfilesForProvidedLargeInterface = mapEntrySet.getValue();
+            // 1st check if the provided superinterf type exists
+            var providedLargeInterfaceTypeOpt = Optional.ofNullable(processingEnv.getElementUtils().getTypeElement(providedLargeInterfaceQualifiedName));
+            if (providedLargeInterfaceTypeOpt.isPresent()) {
+                var providedLargeInterfaceElement = processingEnv.getTypeUtils().asElement(processingEnv.getElementUtils().getTypeElement(providedLargeInterfaceQualifiedName).asType());
+                var annotatedMethodsByProfile = sealedInterfacesToGenerateByLargeInterface.get(providedLargeInterfaceElement);
+                profileFound = updateSealedInterfacesPermitsMapWithProvidedProfiles(
+                        annotatedMethodsByProfile.keySet(),
+                        providedLargeInterfaceElement,
+                        annotatedClassOrInterface,
+                        providedProfilesForProvidedLargeInterface,
+                        sealedInterfacesPermitsByLargeInterface
+                );
+            } else {
+                providedLargeInterfaceTypeNotFound = true;
             }
         }
-        if (!found) {
+        if (!profileFound || providedLargeInterfaceTypeNotFound) {
             statusReport.append(ADD_TO_PROFILE_REPORT_MSG);
         }
         return statusReport.toString();
     }
 
-    private Set<String> buildProvidedInterfacesSet(final ProcessingEnvironment processingEnv, final Element annotatedClassOrInterface) {
-        return processingEnv.getTypeUtils().directSupertypes(annotatedClassOrInterface.asType()).stream()
-                .map(Object::toString)
-                .filter(typeString -> !typeString.contains(JAVA_LANG_OBJECT))
-                .collect(toSet());
-    }
-
-    private boolean updateSealedInterfacesPermitsMapWithProvidedProfiles(final List<String> bloatedInterfaceProvidedProfilesList,
-                                                                         final Set<String> addToProfileProvidedProfilesSet,
+    private boolean updateSealedInterfacesPermitsMapWithProvidedProfiles(final Set<String> largeInterfaceProfilesSet,
+                                                                         final Element providedLargeInterfaceElement,
                                                                          final Element annotatedClassOrInterface,
-                                                                         final Element bloatedInterfaceElement,
-                                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByBloatedInterface) {
-        var found = false;
-        for (var bloatedInterfaceProvidedProfile : bloatedInterfaceProvidedProfilesList) { // might contain SEPARATOR
-            for (var addToProfileProvidedProfile : addToProfileProvidedProfilesSet) {
-                if (asList(bloatedInterfaceProvidedProfile.split(COMMA_SEPARATOR)).contains(addToProfileProvidedProfile)) {
-                    sealedInterfacesPermitsByBloatedInterface.get(bloatedInterfaceElement).merge(
-                            bloatedInterfaceProvidedProfile,
+                                                                         final Set<String> providedProfilesForProvidedLargeInterface,
+                                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+        var notFoundProfiles = new HashSet<String>();
+        for (var providedProfile : providedProfilesForProvidedLargeInterface) {
+            var foundProvidedProfile = false;
+            for (var profile : largeInterfaceProfilesSet) {
+                if (profile.equals(providedLargeInterfaceElement.getSimpleName().toString())) {
+                    continue;
+                }
+                if (sealedInterfaceNameConvention(providedProfile, providedLargeInterfaceElement).equals(sealedInterfaceNameConvention(profile, providedLargeInterfaceElement))) {
+                    sealedInterfacesPermitsByLargeInterface.get(providedLargeInterfaceElement).merge(
+                            profile,
                             asList(annotatedClassOrInterface.toString()),
                             (currentList, newList) -> concat(currentList.stream(), newList.stream()).toList()
                     );
-                    found = true;
-                } else {
-                    found = false;
+                    foundProvidedProfile = true;
                 }
             }
+            if (!foundProvidedProfile) {
+                notFoundProfiles.add(providedProfile);
+            }
         }
-        return found;
+        return notFoundProfiles.isEmpty();
     }
 }

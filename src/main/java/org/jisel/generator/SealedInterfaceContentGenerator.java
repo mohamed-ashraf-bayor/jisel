@@ -46,11 +46,11 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
 
     public String generateSealedInterfaceContent(final ProcessingEnvironment processingEnvironment,
                                                  final Map.Entry<String, Set<Element>> sealedInterfacesToGenerateMapEntrySet,
-                                                 final Element bloatedInterfaceElement,
+                                                 final Element largeInterfaceElement,
                                                  final Map<String, List<String>> sealedInterfacesPermitsMap) {
         var sealedInterfaceContent = new StringBuilder();
         // package name
-        generatePackageName(bloatedInterfaceElement).ifPresent(name -> sealedInterfaceContent.append(format("%s %s;%n%n", PACKAGE, name)));
+        generatePackageName(largeInterfaceElement).ifPresent(name -> sealedInterfaceContent.append(format("%s %s;%n%n", PACKAGE, name)));
         // javaxgenerated
         javaxGeneratedGenerator.generateCode(sealedInterfaceContent, null);
         // public sealed interface
@@ -58,12 +58,12 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
         sealedInterfaceContent.append(format(
                 "%s %s ",
                 PUBLIC_SEALED_INTERFACE,
-                sealedInterfaceNameConvention(profile, bloatedInterfaceElement)
+                sealedInterfaceNameConvention(profile, largeInterfaceElement)
         ));
         // list of extends
-        extendsGenerator.generateExtendsClauseFromPermitsMapAndProcessedProfile(processingEnvironment, sealedInterfaceContent, sealedInterfacesPermitsMap, profile, bloatedInterfaceElement);
+        extendsGenerator.generateExtendsClauseFromPermitsMapAndProcessedProfile(processingEnvironment, sealedInterfaceContent, sealedInterfacesPermitsMap, profile, largeInterfaceElement);
         // list of permits
-        permitsGenerator.generatePermitsClauseFromPermitsMapAndProcessedProfile(sealedInterfaceContent, sealedInterfacesPermitsMap, profile, bloatedInterfaceElement);
+        permitsGenerator.generatePermitsClauseFromPermitsMapAndProcessedProfile(sealedInterfaceContent, sealedInterfacesPermitsMap, profile, largeInterfaceElement);
         // opening bracket after permits list
         sealedInterfaceContent.append(format(" %s%n ", OPENING_BRACKET));
         // list of methods
@@ -81,20 +81,20 @@ final class JiselExtendsGenerator implements ExtendsGenerator {
                                                                        final StringBuilder sealedInterfaceContent,
                                                                        final Map<String, List<String>> permitsMap,
                                                                        final String processedProfile,
-                                                                       final Element bloatedInterfaceElement) {
+                                                                       final Element largeInterfaceElement) {
         Optional.ofNullable(permitsMap).ifPresent(nonNullPermitsMap -> {
             var parentList = nonNullPermitsMap.entrySet().stream()
                     .filter(permitsMapEntry -> permitsMapEntry.getValue().contains(processedProfile))
-                    .map(permitsMapEntry -> sealedInterfaceNameConvention(permitsMapEntry.getKey(), bloatedInterfaceElement))
+                    .map(permitsMapEntry -> sealedInterfaceNameConvention(permitsMapEntry.getKey(), largeInterfaceElement))
                     .toList();
             if (!parentList.isEmpty()) {
                 generateCode(sealedInterfaceContent, parentList);
             } else {
-                // only for bloatedInterface sealed interface generation, add interfaces it extends if any
-                if (bloatedInterfaceElement.getSimpleName().toString().equals(processedProfile)) {
+                // only for largeInterface sealed interface generation, add interfaces it extends if any
+                if (largeInterfaceElement.getSimpleName().toString().equals(processedProfile)) {
                     generateCode(
                             sealedInterfaceContent,
-                            processingEnvironment.getTypeUtils().directSupertypes(bloatedInterfaceElement.asType()).stream()
+                            processingEnvironment.getTypeUtils().directSupertypes(largeInterfaceElement.asType()).stream()
                                     .map(Object::toString)
                                     .filter(superType -> !superType.contains(JAVA_LANG_OBJECT))
                                     .toList()
@@ -110,12 +110,12 @@ final class JiselPermitsGenerator implements PermitsGenerator {
     public void generatePermitsClauseFromPermitsMapAndProcessedProfile(final StringBuilder sealedInterfaceContent,
                                                                        final Map<String, List<String>> permitsMap,
                                                                        final String processedProfile,
-                                                                       final Element bloatedInterfaceElement) {
-        addFinalClassToPermitsMap(permitsMap, bloatedInterfaceElement);
+                                                                       final Element largeInterfaceElement) {
+        addFinalClassToPermitsMap(permitsMap, largeInterfaceElement);
         var permitsMapOpt = Optional.ofNullable(permitsMap);
         if (permitsMapOpt.isPresent() && !permitsMapOpt.get().isEmpty()) {
             Optional.ofNullable(permitsMapOpt.get().get(processedProfile)).ifPresent(
-                    childrenList -> generateCode(sealedInterfaceContent, sealedInterfaceNameConventionForList(childrenList, bloatedInterfaceElement))
+                    childrenList -> generateCode(sealedInterfaceContent, sealedInterfaceNameConventionForList(childrenList, largeInterfaceElement))
             );
         }
     }
