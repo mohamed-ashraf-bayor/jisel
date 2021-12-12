@@ -91,13 +91,14 @@ final class JiselExtendsGenerator implements ExtendsGenerator {
                 generateCode(sealedInterfaceContent, parentList);
             } else {
                 // only for largeInterface sealed interface generation, add interfaces it extends if any
-                if (largeInterfaceElement.getSimpleName().toString().equals(processedProfile)) {
+                var superInterfacesList = processingEnvironment.getTypeUtils().directSupertypes(largeInterfaceElement.asType()).stream()
+                        .map(Object::toString)
+                        .filter(superType -> !superType.contains(JAVA_LANG_OBJECT))
+                        .toList();
+                if (largeInterfaceElement.getSimpleName().toString().equals(processedProfile) && !superInterfacesList.isEmpty()) {
                     generateCode(
                             sealedInterfaceContent,
-                            processingEnvironment.getTypeUtils().directSupertypes(largeInterfaceElement.asType()).stream()
-                                    .map(Object::toString)
-                                    .filter(superType -> !superType.contains(JAVA_LANG_OBJECT))
-                                    .toList()
+                            superInterfacesList
                     );
                 }
             }
