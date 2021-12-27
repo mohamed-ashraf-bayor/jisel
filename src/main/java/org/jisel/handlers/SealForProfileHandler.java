@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021-2022 Mohamed Ashraf Bayor.
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ public final class SealForProfileHandler implements JiselAnnotationHandler {
                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         annotationInfoCollectionHandler.populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByLargeInterface);
         var statusReport = uniqueParentInterfaceHandler.checkAndHandleUniqueParentInterface(sealedInterfacesToGenerateByLargeInterface);
-        parentChildInheritanceHandler.buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+        parentChildInheritanceHandler.buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface, statusReport);
         return statusReport;
     }
 }
@@ -65,7 +65,7 @@ final class SealForProfileInfoCollectionHandler implements AnnotationInfoCollect
     @Override
     public void populateSealedInterfacesMap(final ProcessingEnvironment processingEnv,
                                             final Set<Element> allAnnotatedElements,
-                                            final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate) {
+                                            final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         var annotatedMethodsByInterface = allAnnotatedElements.stream()
                 .filter(element -> ElementKind.METHOD.equals(element.getKind()))
                 .filter(element -> ElementKind.INTERFACE.equals(element.getEnclosingElement().getKind()))
@@ -85,7 +85,7 @@ final class SealForProfileInfoCollectionHandler implements AnnotationInfoCollect
                         )
                 )
         );
-        createParentInterfacesBasedOnCommonMethods(annotatedMethodsByProfileByInterface, sealedInterfacesToGenerate);
+        createParentInterfacesBasedOnCommonMethods(annotatedMethodsByProfileByInterface, sealedInterfacesToGenerateByLargeInterface);
     }
 
     private void extractProfilesAndPopulateMaps(final Element interfaceElement,
@@ -110,7 +110,8 @@ final class SealForProfileParentChildInheritanceHandler implements ParentChildIn
 
     @Override
     public void buildInheritanceRelations(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                          final Map<Element, String> uniqueParentInterfaceStatusReport) {
         sealedInterfacesToGenerateByLargeInterface.keySet().forEach(interfaceElement -> {
             sealedInterfacesPermitsByLargeInterface.put(interfaceElement, new HashMap<>()); // start with initializing sealedInterfacesPermitsByLargeInterface with empty mutable maps
             // promote profiles with empty methods to parent level
@@ -131,7 +132,7 @@ final class SealForProfileParentChildInheritanceHandler implements ParentChildIn
             });
             allProfilesToRemove.forEach(sealedInterfacesToGenerateByLargeInterface.get(interfaceElement)::remove);
             // and completing building sealedInterfacesPermitsByLargeInterface map
-            buildSealedInterfacesPermitsMap(interfaceElement, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+            buildSealedInterfacesPermitsMap(interfaceElement, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface, uniqueParentInterfaceStatusReport);
         });
     }
 }

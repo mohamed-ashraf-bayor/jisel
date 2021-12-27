@@ -36,39 +36,39 @@ import static org.jisel.generator.StringGenerator.EMPTY_STRING;
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE})
-@Repeatable(AddToProfile.AddToProfilez.class)
-public @interface AddToProfile {
+@Repeatable(AddToProfiles.AddToProfilezz.class)
+public @interface AddToProfiles {
 
     /**
-     * <i>Not Required</i> - specifies the name of one of the profiles used with the &#64;SealForProfile annotations in the large interface definition.
-     * Also corresponds to the <b>&#60;ProfileName&#62;</b> from the sealed interfaces naming convention.<br>
+     * <i>Not Required</i> - specifies an array containing the names of any of the profiles used with the &#64;SealForProfile annotations in the large interface definition.
+     * Each one of the profiles names corresponds to the <b>&#60;ProfileName&#62;</b> from the sealed interfaces naming convention.<br>
      * If not provided or empty, the annotated class, interface or record will be added to the permits list of the generated parent sealed interface.<br>
-     * Also, the provided profile attribute value MUST be one of the profiles defined in the large interface definition using &#64;SealForProfile. If not,
+     * Also, each one of the provided profiles names MUST be one of the profiles defined in the large interface definition using &#64;SealForProfile. If not,
      * the specified profile will be ignored and an informational message regarding provided incorrect profiles will be printed during the compilation.<br>
      *
-     * @return the profile name
+     * @return an array of the profiles names
      */
-    String profile() default EMPTY_STRING;
+    String[] profiles() default EMPTY_STRING;
 
     /**
-     * <i>Required</i> - MUST be the Fully Qualified Name of the large interface. That would be the <b>&#60;LargeInterfaceSimpleName&#62;</b> as seen in
-     * the sealed interface name convention, preceded by the package name.<br>
+     * <i>Required</i> - MUST be the Fully Qualified Name of the large interface. That would be the <b>&#60;LargeInterfaceSimpleName&#62;</b> as seen
+     * in the sealed interface name convention, preceded by the package name.<br>
      *
      * @return the large interface fully qualified name
      */
     String largeInterface();
 
     /**
-     * Internal annotation allowing &#64;AddToProfile to be repeatable
+     * Internal annotation allowing &#64;AddToProfiles to be repeatable
      */
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.TYPE)
-    @interface AddToProfilez {
+    @interface AddToProfilezz {
         /**
-         * array attribute allowing &#64;AddToProfile to be repeatable
+         * array attribute allowing &#64;AddToProfiles to be repeatable
          *
-         * @return array of &#64;AddToProfile instances
+         * @return array of &#64;AddToProfiles instances
          */
-        AddToProfile[] value();
+        AddToProfiles[] value();
     }
 }

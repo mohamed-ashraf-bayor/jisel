@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021-2022 Mohamed Ashraf Bayor.
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,8 @@ public class FinalClassGenerator implements StringGenerator {
 
     public FinalClassGenerator() {
         this.javaxGeneratedGenerator = new JavaxGeneratedGenerator();
-        this.extendsGenerator = new JiselExtendsGenerator();
-        this.methodsGenerator = new JiselMethodsGenerator();
+        this.extendsGenerator = new SealedInterfaceExtendsGenerator();
+        this.methodsGenerator = new SealedInterfaceMethodsGenerator();
     }
 
     public String generateFinalClassContent(final ProcessingEnvironment processingEnvironment, final Element largeInterfaceElement, final Map<String, List<String>> sealedInterfacesPermitsMap) {

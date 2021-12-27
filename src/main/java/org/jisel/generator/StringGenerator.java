@@ -1,3 +1,24 @@
+/**
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package org.jisel.generator;
 
 import javax.lang.model.element.Element;
@@ -38,9 +59,13 @@ public interface StringGenerator {
 
     String SEAL_FOR_PROFILE = "SealForProfile";
     String ADD_TO_PROFILE = "AddToProfile";
-    String PROFILE_NAME_ATTRIBUTE = "profileName()";
-    String INTERFACE_NAME_ATTRIBUTE = "interfaceName()";
+    String PROFILE_ATTRIBUTE_REGEX = "profile=\"([^\"]*)\"";
+    // String PROFILES_ATTRIBUTE_REGEX = "profiles=\"([^\"]*)\""; // not working when { } present ?
+    String LARGE_INTERFACE_ATTRIBUTE_REGEX = "largeInterface=\"([^\"]*)\"";
     String ANNOTATION_VALUES_REGEX = "\"([^\"]*)\"";
+    String ADD_TO_PROFILE_REGEX = "AddToProfile\\((.*?)\\)"; // @org.jisel.AddToProfile(profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
+    String ADD_TO_PROFILES_REGEX = "AddToProfiles\\((.*?)\\)"; // @org.jisel.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable"),
+
 
     String STATUS_REPORT_TITLE = "JISEL GENERATION REPORT";
 
@@ -50,8 +75,11 @@ public interface StringGenerator {
     String ORG_JISEL_SEAL_FOR_PROFILE = "org.jisel.SealForProfile";
     String ORG_JISEL_SEAL_FOR_PROFILES = "org.jisel.SealForProfiles";
     String ORG_JISEL_SEAL_FOR_PROFILEZ = "org.jisel.SealForProfile.SealForProfilez";
+    String ORG_JISEL_SEAL_FOR_PROFILEZZ = "org.jisel.SealForProfiles.SealForProfilezz";
     String ORG_JISEL_ADD_TO_PROFILE = "org.jisel.AddToProfile";
+    String ORG_JISEL_ADD_TO_PROFILES = "org.jisel.AddToProfiles";
     String ORG_JISEL_ADD_TO_PROFILEZ = "org.jisel.AddToProfile.AddToProfilez";
+    String ORG_JISEL_ADD_TO_PROFILEZZ = "org.jisel.AddToProfiles.AddToProfilezz";
 
     String DEFAULT_BOOLEAN_VALUE = "false";
     String DEFAULT_NUMBER_VALUE = "0";
@@ -102,5 +130,9 @@ public interface StringGenerator {
 
     default String removeDoubleSpaceOccurrences(final String text) {
         return text.replace(WHITESPACE + WHITESPACE, WHITESPACE);
+    }
+
+    default String removeCurlyBraces(final String text) {
+        return text.replace(OPENING_BRACKET, EMPTY_STRING).replace(CLOSING_BRACKET, EMPTY_STRING);
     }
 }

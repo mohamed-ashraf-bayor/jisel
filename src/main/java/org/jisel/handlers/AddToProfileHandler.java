@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021-2022 Mohamed Ashraf Bayor.
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,6 +100,15 @@ public final class AddToProfileHandler implements JiselAnnotationHandler {
                                                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var notFoundProfiles = new HashSet<String>();
         for (var providedProfile : providedProfilesForProvidedLargeInterface) {
+            if (providedProfile.isBlank()) {
+                // only for provided empty profiles, add to the largeInterface sealed profile permits list
+                sealedInterfacesPermitsByLargeInterface.get(providedLargeInterfaceElement).merge(
+                        providedLargeInterfaceElement.getSimpleName().toString(),
+                        asList(annotatedClassOrInterface.toString()),
+                        (currentList, newList) -> concat(currentList.stream(), newList.stream()).toList()
+                );
+                continue;
+            }
             var foundProvidedProfile = false;
             for (var profile : largeInterfaceProfilesSet) {
                 if (profile.equals(providedLargeInterfaceElement.getSimpleName().toString())) {
@@ -107,7 +116,7 @@ public final class AddToProfileHandler implements JiselAnnotationHandler {
                 }
                 if (sealedInterfaceNameConvention(providedProfile, providedLargeInterfaceElement).equals(sealedInterfaceNameConvention(profile, providedLargeInterfaceElement))) {
                     sealedInterfacesPermitsByLargeInterface.get(providedLargeInterfaceElement).merge(
-                            profile,
+                            providedProfile,
                             asList(annotatedClassOrInterface.toString()),
                             (currentList, newList) -> concat(currentList.stream(), newList.stream()).toList()
                     );

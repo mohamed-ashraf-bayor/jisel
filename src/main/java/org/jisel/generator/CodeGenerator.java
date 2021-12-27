@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021-2022 Mohamed Ashraf Bayor.
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ public sealed interface CodeGenerator permits JavaxGeneratedGenerator, ExtendsGe
     void generateCode(StringBuilder classOrInterfaceContent, List<String> params);
 }
 
-sealed interface ExtendsGenerator extends CodeGenerator, StringGenerator permits JiselExtendsGenerator {
+sealed interface ExtendsGenerator extends CodeGenerator, StringGenerator permits SealedInterfaceExtendsGenerator {
 
     void generateExtendsClauseFromPermitsMapAndProcessedProfile(ProcessingEnvironment processingEnvironment, StringBuilder sealedInterfaceContent, Map<String, List<String>> permitsMap, String processedProfile, Element largeInterfaceElement);
 
@@ -65,7 +65,7 @@ sealed interface ExtendsGenerator extends CodeGenerator, StringGenerator permits
     }
 }
 
-sealed interface PermitsGenerator extends CodeGenerator, StringGenerator permits JiselPermitsGenerator {
+sealed interface PermitsGenerator extends CodeGenerator, StringGenerator permits SealedInterfacePermitsGenerator {
 
     void generatePermitsClauseFromPermitsMapAndProcessedProfile(StringBuilder sealedInterfaceContent, Map<String, List<String>> permitsMap, String processedProfile, Element largeInterfaceElement);
 
@@ -91,7 +91,7 @@ sealed interface PermitsGenerator extends CodeGenerator, StringGenerator permits
     }
 }
 
-sealed interface MethodsGenerator extends CodeGenerator, StringGenerator permits JiselMethodsGenerator {
+sealed interface MethodsGenerator extends CodeGenerator, StringGenerator permits SealedInterfaceMethodsGenerator {
 
     void generateAbstractMethodsFromElementsSet(StringBuilder sealedInterfaceContent, Set<Element> methodsSet);
 

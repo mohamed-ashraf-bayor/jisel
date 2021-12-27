@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021-2022 Mohamed Ashraf Bayor.
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,13 +50,19 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILE;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILES;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILEZ;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILEZZ;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILE;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILES;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZ;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZZ;
 
-@SupportedAnnotationTypes({ORG_JISEL_SEAL_FOR_PROFILE, ORG_JISEL_SEAL_FOR_PROFILES, ORG_JISEL_SEAL_FOR_PROFILEZ,
-        ORG_JISEL_ADD_TO_PROFILE, ORG_JISEL_ADD_TO_PROFILEZ})
+/**
+ * Jisel annotation processor class. Picks up and processes all elements annotated with @SealForProfile, @SealForProfiles, @AddToProfile and @AddToProfiles<br>
+ */
+@SupportedAnnotationTypes({ORG_JISEL_SEAL_FOR_PROFILE, ORG_JISEL_SEAL_FOR_PROFILES, ORG_JISEL_SEAL_FOR_PROFILEZ, ORG_JISEL_SEAL_FOR_PROFILEZZ,
+        ORG_JISEL_ADD_TO_PROFILE, ORG_JISEL_ADD_TO_PROFILES, ORG_JISEL_ADD_TO_PROFILEZ, ORG_JISEL_ADD_TO_PROFILEZZ})
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
 public class JiselAnnotationProcessor extends AbstractProcessor implements StringGenerator {
@@ -69,6 +75,10 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
 
     private final SealedInterfaceSourceFileGenerator sealedInterfaceSourceFileGenerator;
 
+    /**
+     * Constructor of JiselAnnotationProcessor.
+     * Initializes unique instances of SealForProfileHandler, AddToProfileHandler and SealedInterfaceSourceFileGenerator to be used within the class
+     */
     public JiselAnnotationProcessor() {
         this.sealForProfileHandler = new SealForProfileHandler();
         this.addToProfileHandler = new AddToProfileHandler();
@@ -104,7 +114,11 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
         displayStatusReport(statusReport, ADD_TO_PROFILE);
 
         try {
-            var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(processingEnv, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+            var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(
+                    processingEnv,
+                    sealedInterfacesToGenerateByLargeInterface,
+                    sealedInterfacesPermitsByLargeInterface
+            );
             if (!generatedFiles.isEmpty()) {
                 log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining(format("%n")))));
             }
@@ -115,8 +129,10 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
         return true;
     }
 
-    private void populateAllAnnotatedElementsSets(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv,
-                                                  final Set<Element> allAnnotatedSealForProfileElements, final Set<Element> allAnnotatedAddToProfileElements) {
+    private void populateAllAnnotatedElementsSets(final Set<? extends TypeElement> annotations,
+                                                  final RoundEnvironment roundEnv,
+                                                  final Set<Element> allAnnotatedSealForProfileElements,
+                                                  final Set<Element> allAnnotatedAddToProfileElements) {
         for (var annotation : annotations) {
             if (annotation.getSimpleName().toString().contains(SEAL_FOR_PROFILE)) {
                 allAnnotatedSealForProfileElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
@@ -132,7 +148,7 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
             var output = new StringBuilder(format("%n%s - @%s%n", STATUS_REPORT_TITLE, annotationName));
             statusReport.entrySet().forEach(mapEntry -> {
                 if (!mapEntry.getValue().isBlank()) {
-                    output.append(format("\t> %s: %s%n", mapEntry.getKey().getSimpleName().toString(), mapEntry.getValue()));
+                    output.append(format("\t> %s: %s%n", mapEntry.getKey().toString(), mapEntry.getValue()));
                 }
             });
             log.warning(output::toString);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021-2022 Mohamed Ashraf Bayor.
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,52 +43,108 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static org.jisel.generator.StringGenerator.removeSeparator;
 
-public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForProfileHandler, AddToProfileHandler, AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
+/**
+ * Interface exposing contract to fulfill by any class handling the elements annotated with &#64;SealForProfile and &#64;AddToProfile annotations
+ */
+public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForProfileHandler, AddToProfileHandler,
+        AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
 
+    /**
+     * Reads values of all attributes provided through the use of &#64;SealForProfile and &#64;AddToProfile annotations and
+     * populates the provided Map arguments
+     *
+     * @param processingEnv                              needed to access low-level information regarding the used annotations
+     * @param allAnnotatedElements                       Set of Element instances representing all classes annotated with &#64;AddToProfile and
+     *                                                   all abstract methods annotated with &#64;SealForProfile
+     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   each one of the large interfaces to be segregated, while the associated value is
+     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
+     *                                                   The Element instances represent each one of the abstract methods to be
+     *                                                   added to the generated sealed interface corresponding to a profile.
+     * @param sealedInterfacesPermitsByLargeInterface    Map containing information about the subtypes permitted by each one of the sealed interfaces to begenerated.
+     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   each one of the large interfaces to be segregated, while the associated value is
+     *                                                   a Map of profile name as the key and a List of profiles names as the value.
+     * @return a status report as a string value for each one of the large interfaces to be segregated
+     */
     Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
                                                  Set<Element> allAnnotatedElements,
                                                  Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                  Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
 
+    /**
+     * For a specified class or interface annotated with &#64;AddToProfile, constructs a Map storing a Set of all the provided
+     * profiles names (as the Map value) for each one of the large interfaces names (as the Map key) provided through &#64;AddToProfile.
+     *
+     * @param processingEnv             needed to access low-level information regarding the used annotations
+     * @param annotatedClassOrInterface Element instance representing the annotated class or interface
+     * @return a Map storing a Set of all the provided profiles names (as the Map value) for each one of the large interfaces names (as the Map key)
+     */
     default Map<String, Set<String>> buildAddToProfileProvidedProfilesMap(final ProcessingEnvironment processingEnv, final Element annotatedClassOrInterface) {
         var providedProfilesMap = new HashMap<String, Set<String>>();
         var annotationRawValueAsString = processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedClassOrInterface).stream()
                 .map(Object::toString)
                 .collect(joining(COMMA_SEPARATOR));
-        var matcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(annotationRawValueAsString);
-        var interfaceName = EMPTY_STRING;
-        var profileName = EMPTY_STRING;
-        while (matcher.find()) {
-            var profileOrInterface = matcher.group(1).trim();
-            if (profileOrInterface.contains(DOT)) {
-                interfaceName = profileOrInterface;
-            } else {
-                profileName = profileOrInterface;
+        // sample values for annotationRawValueAsString:
+        // @org.jisel.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable"),@org.jisel.AddToProfile(largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
+        // process addToProfile
+        var addToProfileMatcher = Pattern.compile(ADD_TO_PROFILE_REGEX).matcher(annotationRawValueAsString);
+        while (addToProfileMatcher.find()) {
+            var attributesWithValues = addToProfileMatcher.group(1).strip(); // profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable"
+            var profilesSet = new HashSet<String>();
+            var profileAttributeMatcher = Pattern.compile(PROFILE_ATTRIBUTE_REGEX).matcher(attributesWithValues);
+            if (profileAttributeMatcher.find()) { // get only the first occurence
+                profilesSet.add(profileAttributeMatcher.group(1).strip());
             }
-            if (!interfaceName.isBlank() && !profileName.isBlank()) {
-                providedProfilesMap.merge(interfaceName, new HashSet<>(Set.of(profileName)), (currentSet, newSet) -> concat(currentSet.stream(), newSet.stream()).collect(toSet()));
-                profileName = interfaceName = EMPTY_STRING;
+            updateProvidedProfilesMapBasedOnProfilesSet(providedProfilesMap, profilesSet, attributesWithValues);
+        }
+        // process addToProfiles
+        var addToProfilesMatcher = Pattern.compile(ADD_TO_PROFILES_REGEX).matcher(annotationRawValueAsString);
+        while (addToProfilesMatcher.find()) {
+            var attributesWithValues = addToProfilesMatcher.group(1).strip();
+            // sample values for annotationRawValueAsString:
+            // profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
+            var commaSeparatedProfiles = attributesWithValues.substring(attributesWithValues.indexOf(OPENING_BRACKET) + 1, attributesWithValues.indexOf(CLOSING_BRACKET));
+            var profilesSet = new HashSet<String>();
+            var profilesNamesMatcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(commaSeparatedProfiles);
+            while (profilesNamesMatcher.find()) {
+                profilesSet.add(profilesNamesMatcher.group(1).strip());
             }
+            updateProvidedProfilesMapBasedOnProfilesSet(providedProfilesMap, profilesSet, attributesWithValues);
         }
         return providedProfilesMap;
     }
 
+    private void updateProvidedProfilesMapBasedOnProfilesSet(final Map<String, Set<String>> providedProfilesMap, final Set<String> profilesSet, final String attributesWithValues) {
+        var largeInterface = EMPTY_STRING;
+        var largeInterfaceAttributeMatcher = Pattern.compile(LARGE_INTERFACE_ATTRIBUTE_REGEX).matcher(attributesWithValues);
+        if (largeInterfaceAttributeMatcher.find()) { // get only the first occurence
+            largeInterface = largeInterfaceAttributeMatcher.group(1).strip();
+        }
+        providedProfilesMap.merge(largeInterface, profilesSet.isEmpty() ? new HashSet<>(Set.of(EMPTY_STRING)) : profilesSet, (currentSet, newSet) -> concat(currentSet.stream(), newSet.stream()).collect(toSet()));
+    }
+
     /**
-     * @param processingEnv
-     * @param annotatedClassOrInterface
-     * @return
+     * For a specified large interface abstract method annotated with &#64;SealForProfile, constructs a Set storing all the provided profiles names
+     *
+     * @param processingEnv   needed to access low-level information regarding the used annotations
+     * @param annotatedMethod Element instance representing the annotated method of the large interface
+     * @return a Set storing all the provided profiles names
      */
-    default Set<String> buildSealForProfileProvidedProfilesSet(final ProcessingEnvironment processingEnv, final Element annotatedClassOrInterface) {
-        // annotationRawValueAsString: sample values: singl value "profile1name", array: {@org.jisel.SealForProfile("profile2name"), @org.jisel.SealForProfile("profile3name"),...}
+    default Set<String> buildSealForProfileProvidedProfilesSet(final ProcessingEnvironment processingEnv, final Element annotatedMethod) {
         var providedProfilesSet = new HashSet<String>();
-        processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedClassOrInterface).stream()
+        processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedMethod).stream()
                 .flatMap(annotationMirror -> annotationMirror.getElementValues().entrySet().stream())
                 .map(entry -> entry.getValue().toString())
                 .forEach(annotationRawValueAsString -> {
+                    // sample values for annotationRawValueAsString:
+                    // single value: "profile1name"
+                    // multiple: {@org.jisel.SealForProfile("profile2name"), @org.jisel.SealForProfile("profile3name"),...}
                     var matcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(annotationRawValueAsString);
                     while (matcher.find()) {
-                        var profile = matcher.group(1).trim();
-                        if (profile.isBlank()) {
+                        var profile = matcher.group(1).strip();
+                        if (profile.isBlank()) { // blank profiles ignored
                             continue;
                         }
                         providedProfilesSet.add(profile);
@@ -98,15 +154,32 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
     }
 }
 
+/**
+ * Interface exposing contract to fulfill by any class dedicated to collecting necessary information from the annotated elements,
+ * in order to populate the Map containing the sealed interfaces information to be generated
+ */
 sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler permits SealForProfileInfoCollectionHandler {
 
+    /**
+     * Populates the Map containing the sealed interfaces information to be generated
+     *
+     * @param processingEnv                              needed to access low-level information regarding the used annotations
+     * @param allAnnotatedElements                       Set of Element instances representing all classes annotated with &#64;AddToProfile and
+     *                                                   all abstract methods annotated with &#64;SealForProfile
+     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   each one of the large interfaces to be segregated, while the associated value is
+     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
+     *                                                   The Element instances represent each one of the abstract methods to be
+     *                                                   added to the generated sealed interface corresponding to a profile.
+     */
     void populateSealedInterfacesMap(ProcessingEnvironment processingEnv,
                                      Set<Element> allAnnotatedElements,
-                                     Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate);
+                                     Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface);
 
-    default void createParentInterfacesBasedOnCommonMethods(final Map<Element, Map<String, Set<Element>>> annotatedMethodsByProfileByInterface,
-                                                            final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate) {
-        annotatedMethodsByProfileByInterface.forEach((interfaceElement, annotatedMethodsByProfile) -> {
+    default void createParentInterfacesBasedOnCommonMethods(final Map<Element, Map<String, Set<Element>>> annotatedMethodsByProfileByLargeInterface,
+                                                            final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
+        annotatedMethodsByProfileByLargeInterface.forEach((interfaceElement, annotatedMethodsByProfile) -> {
             var profilesList = new ArrayList<String>();
             var methodsSetsList = new ArrayList<Set<Element>>();
             annotatedMethodsByProfile.forEach((profileName, methodsSet) -> {
@@ -119,14 +192,14 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
                 // remove all commonMethodElmnts 1 by 1 and in each profile
                 allProcessedCommonMethodsByConcatenatedProfiles.values().stream().flatMap(Collection::stream).collect(toSet()).forEach(method -> {
                     methodsSetsList.forEach(methodsSets -> methodsSets.remove(method));
-                    annotatedMethodsByProfileByInterface.get(interfaceElement).forEach((profileName, methodsSets) -> methodsSets.remove(method));
+                    annotatedMethodsByProfileByLargeInterface.get(interfaceElement).forEach((profileName, methodsSets) -> methodsSets.remove(method));
                 });
                 //
-                if (!sealedInterfacesToGenerate.containsKey(interfaceElement)) {
-                    sealedInterfacesToGenerate.put(interfaceElement, new HashMap<>());
+                if (!sealedInterfacesToGenerateByLargeInterface.containsKey(interfaceElement)) {
+                    sealedInterfacesToGenerateByLargeInterface.put(interfaceElement, new HashMap<>());
                 }
-                sealedInterfacesToGenerate.get(interfaceElement).putAll(allProcessedCommonMethodsByConcatenatedProfiles);
-                sealedInterfacesToGenerate.get(interfaceElement).putAll(annotatedMethodsByProfileByInterface.get(interfaceElement));
+                sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).putAll(allProcessedCommonMethodsByConcatenatedProfiles);
+                sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).putAll(annotatedMethodsByProfileByLargeInterface.get(interfaceElement));
             }
         });
     }
@@ -161,31 +234,35 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
                                                          final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByLargeInterface);
-        return Map.of(); // return empty map instead of null
+        return Map.of(); // returning empty map instead of null
     }
 }
 
 sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler permits SealForProfileParentChildInheritanceHandler {
 
     void buildInheritanceRelations(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
+                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                   Map<Element, String> uniqueParentInterfaceStatusReport);
 
     default void buildSealedInterfacesPermitsMap(final Element interfaceElement,
                                                  final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate,
-                                                 final Map<Element, Map<String, List<String>>> sealedInterfacesPermits) {
+                                                 final Map<Element, Map<String, List<String>>> sealedInterfacesPermits,
+                                                 final Map<Element, String> uniqueParentInterfaceStatusReport) {
         sealedInterfacesPermits.get(interfaceElement).putAll(sealedInterfacesToGenerate.get(interfaceElement).keySet().stream()
                 .filter(profiles -> profiles.contains(COMMA_SEPARATOR))
                 .collect(toMap(profiles -> profiles, profiles -> asList(profiles.split(COMMA_SEPARATOR)))));
-        // parent interf permits all, if there are other permits already existing then the profiles in those permits lists should be removed from parent interf permits list
-        var parentInterfaceSimpleName = interfaceElement.getSimpleName().toString();
-        var allPermittedProfiles = sealedInterfacesPermits.get(interfaceElement).values().stream().flatMap(Collection::stream).collect(toSet());
-        sealedInterfacesPermits.get(interfaceElement).put(
-                parentInterfaceSimpleName,
-                sealedInterfacesToGenerate.get(interfaceElement).keySet().stream()
-                        .filter(profile -> !parentInterfaceSimpleName.equals(profile))
-                        .filter(profile -> !allPermittedProfiles.contains(profile))
-                        .toList()
-        );
+        // if uniq parnt intrf prsnt, parent interf permits all, if there are other permits already existing then the profiles in those permits lists should be removed from parent interf permits list
+        if (Optional.ofNullable(uniqueParentInterfaceStatusReport).isPresent() && !uniqueParentInterfaceStatusReport.containsKey(interfaceElement)) {
+            var parentInterfaceSimpleName = interfaceElement.getSimpleName().toString();
+            var allPermittedProfiles = sealedInterfacesPermits.get(interfaceElement).values().stream().flatMap(Collection::stream).collect(toSet());
+            sealedInterfacesPermits.get(interfaceElement).put(
+                    parentInterfaceSimpleName,
+                    sealedInterfacesToGenerate.get(interfaceElement).keySet().stream()
+                            .filter(profile -> !parentInterfaceSimpleName.equals(profile))
+                            .filter(profile -> !allPermittedProfiles.contains(profile))
+                            .toList()
+            );
+        }
     }
 
     @Override
@@ -193,7 +270,7 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
                                                          final Set<Element> allAnnotatedElements,
                                                          final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
-        buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+        buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface, null);
         return Map.of();
     }
 }

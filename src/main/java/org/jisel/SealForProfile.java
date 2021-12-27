@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021-2022 Mohamed Ashraf Bayor.
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +27,37 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation to be applied only on top of abstract methods of an interface you intend to segregate.<br><br>
+ * For the specified profile name, a sealed interface will be generated following the naming convention:
+ * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b>.<br><br>
+ * <b>&#60;LargeInterfaceSimpleName&#62;</b> corresponds to the simplename of the interface being segregated.<br><br>
+ * See &#64;SealForProfile attributes documentation.<br><br>
+ */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD})
 @Repeatable(SealForProfile.SealForProfilez.class)
 public @interface SealForProfile {
 
+    /**
+     * Profile name to use while segregation the large interface. A sealed interface file will be generated following the naming convention:
+     * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b>
+     *
+     * @return a string containing the profile name
+     */
     String value();
 
+    /**
+     * Internal annotation allowing &#64;SealForProfile to be repeatable
+     */
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.METHOD)
     @interface SealForProfilez {
+        /**
+         * array attribute allowing &#64;SealForProfile to be repeatable
+         *
+         * @return array of &#64;SealForProfile instances
+         */
         SealForProfile[] value();
     }
 }

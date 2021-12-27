@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021-2022 Mohamed Ashraf Bayor.
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,9 +39,9 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
 
     public SealedInterfaceContentGenerator() {
         this.javaxGeneratedGenerator = new JavaxGeneratedGenerator();
-        this.extendsGenerator = new JiselExtendsGenerator();
-        this.permitsGenerator = new JiselPermitsGenerator();
-        this.methodsGenerator = new JiselMethodsGenerator();
+        this.extendsGenerator = new SealedInterfaceExtendsGenerator();
+        this.permitsGenerator = new SealedInterfacePermitsGenerator();
+        this.methodsGenerator = new SealedInterfaceMethodsGenerator();
     }
 
     public String generateSealedInterfaceContent(final ProcessingEnvironment processingEnvironment,
@@ -75,7 +75,7 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
     }
 }
 
-final class JiselExtendsGenerator implements ExtendsGenerator {
+final class SealedInterfaceExtendsGenerator implements ExtendsGenerator {
     @Override
     public void generateExtendsClauseFromPermitsMapAndProcessedProfile(final ProcessingEnvironment processingEnvironment,
                                                                        final StringBuilder sealedInterfaceContent,
@@ -106,7 +106,7 @@ final class JiselExtendsGenerator implements ExtendsGenerator {
     }
 }
 
-final class JiselPermitsGenerator implements PermitsGenerator {
+final class SealedInterfacePermitsGenerator implements PermitsGenerator {
     @Override
     public void generatePermitsClauseFromPermitsMapAndProcessedProfile(final StringBuilder sealedInterfaceContent,
                                                                        final Map<String, List<String>> permitsMap,
@@ -122,7 +122,7 @@ final class JiselPermitsGenerator implements PermitsGenerator {
     }
 }
 
-final class JiselMethodsGenerator implements MethodsGenerator {
+final class SealedInterfaceMethodsGenerator implements MethodsGenerator {
 
     @Override
     public void generateAbstractMethodsFromElementsSet(final StringBuilder sealedInterfaceContent, final Set<Element> methodsSet) {
