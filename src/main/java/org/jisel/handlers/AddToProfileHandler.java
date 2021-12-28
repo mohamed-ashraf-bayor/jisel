@@ -35,6 +35,9 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 
+/**
+ * Implementation class of {@link JiselAnnotationHandler}. Handles &#64;AddToProfile annotated elements
+ */
 public final class AddToProfileHandler implements JiselAnnotationHandler {
 
     @Override

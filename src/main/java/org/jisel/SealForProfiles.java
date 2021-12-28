@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation to be applied only on top of abstract methods of an interface you intend to segregate.<br><br>
- * For each one of the specified profiles names, a sealed interface will be generated following the naming convention: <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b>.<br><br>
+ * For each one of the specified profiles names, a sealed interface will be generated following the naming convention: <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
  * <b>&#60;LargeInterfaceSimpleName&#62;</b> corresponds to the simplename of the interface being segregated.<br><br>
  * See &#64;SealForProfiles attributes documentation.<br><br>
  */

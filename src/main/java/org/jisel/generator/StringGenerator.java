@@ -30,109 +30,296 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
+/**
+ * A bunch of String literals and commonly used string handling functions
+ */
 public interface StringGenerator {
 
+    /**
+     * "," comma separator
+     */
     String COMMA_SEPARATOR = ",";
+    /**
+     * ";" semi-colon
+     */
     String SEMICOLON = ";";
+    /**
+     * " " whitespace
+     */
     String WHITESPACE = " ";
+    /**
+     * "Sealed"
+     */
     String SEALED_PREFIX = "Sealed";
+    /**
+     * "package"
+     */
     String PACKAGE = "package";
+    /**
+     * "interface"
+     */
     String INTERFACE = "interface";
+    /**
+     * "class"
+     */
     String CLASS = "class";
+    /**
+     * "public sealed interface"
+     */
     String PUBLIC_SEALED_INTERFACE = "public sealed interface";
+    /**
+     * "public final class"
+     */
     String PUBLIC_FINAL_CLASS = "public final class";
+    /**
+     * "extends"
+     */
     String EXTENDS = "extends";
+    /**
+     * "implements"
+     */
     String IMPLEMENTS = "implements";
+    /**
+     * "permits"
+     */
     String PERMITS = "permits";
+    /**
+     * "{"
+     */
     String OPENING_BRACKET = "{";
+    /**
+     * "}"
+     */
     String CLOSING_BRACKET = "}";
+    /**
+     * "("
+     */
     String OPENING_PARENTHESIS = "(";
+    /**
+     * ")"
+     */
     String CLOSING_PARENTHESIS = ")";
+    /**
+     * ""
+     */
     String EMPTY_STRING = "";
+    /**
+     * "."
+     */
     String DOT = ".";
+    /**
+     * "param"
+     */
     String PARAMETER_PREFIX = "param";
+    /**
+     * "@"
+     */
     String TEMP_PLACEHOLDER = "@";
+    /**
+     * "_"
+     */
     String UNDERSCORE = "_";
+    /**
+     * "FinalClass"
+     */
     String FINAL_CLASS_SUFFIX = "FinalCass";
+    /**
+     * "return"
+     */
     String RETURN = "return";
+    /**
+     * "java.lang.Object"
+     */
     String JAVA_LANG_OBJECT = "java.lang.Object";
 
+    /**
+     * "SealForProfile"
+     */
     String SEAL_FOR_PROFILE = "SealForProfile";
+    /**
+     * "AddToProfile"
+     */
     String ADD_TO_PROFILE = "AddToProfile";
+    /**
+     * Regex expression to read the string value of the "profile" attribute
+     */
     String PROFILE_ATTRIBUTE_REGEX = "profile=\"([^\"]*)\"";
-    // String PROFILES_ATTRIBUTE_REGEX = "profiles=\"([^\"]*)\""; // not working when { } present ?
+    /**
+     * Regex expression to read the string value of the "largeInterface" attribute
+     */
     String LARGE_INTERFACE_ATTRIBUTE_REGEX = "largeInterface=\"([^\"]*)\"";
+    /**
+     * Regex expression to read any attribute value provided within ""
+     */
     String ANNOTATION_VALUES_REGEX = "\"([^\"]*)\"";
-    String ADD_TO_PROFILE_REGEX = "AddToProfile\\((.*?)\\)"; // @org.jisel.AddToProfile(profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
-    String ADD_TO_PROFILES_REGEX = "AddToProfiles\\((.*?)\\)"; // @org.jisel.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable"),
+    /**
+     * Regex expression to read attributes information provided using the AddToProfile annotation.<br>
+     * Sample value to be parsed by the regex: @org.jisel.AddToProfile(profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
+     */
+    String ADD_TO_PROFILE_REGEX = "AddToProfile\\((.*?)\\)";
+    /**
+     * Regex expression to read attributes information provided using the AddToProfiles annotation.<br>
+     * Sample value to be parsed by the regex: @org.jisel.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
+     */
+    String ADD_TO_PROFILES_REGEX = "AddToProfiles\\((.*?)\\)";
 
-
+    /**
+     * Title of the text report displayed in the logs during compilation.<br>
+     * The report is displayed only when an unexpected scenario was encountered (ex: More than 1 top-level parent interfaces found, profile not existing,...)
+     */
     String STATUS_REPORT_TITLE = "JISEL GENERATION REPORT";
 
+    /**
+     * Displayed only when a "severe" error occured while a sealed interface file was being generated
+     */
     String FILE_GENERATION_ERROR = "Error generating sealed interfaces";
+    /**
+     * Displayed as a header while listing the successfully generated files
+     */
     String FILE_GENERATION_SUCCESS = "Successfully generated";
 
+    /**
+     * Fully qualified name of the SealForProfile annotation
+     */
     String ORG_JISEL_SEAL_FOR_PROFILE = "org.jisel.SealForProfile";
+    /**
+     * Fully qualified name of the SealForProfiles annotation
+     */
     String ORG_JISEL_SEAL_FOR_PROFILES = "org.jisel.SealForProfiles";
+    /**
+     * Fully qualified name of the SealForProfilez annotation
+     */
     String ORG_JISEL_SEAL_FOR_PROFILEZ = "org.jisel.SealForProfile.SealForProfilez";
+    /**
+     * Fully qualified name of the SealForProfilezz annotation
+     */
     String ORG_JISEL_SEAL_FOR_PROFILEZZ = "org.jisel.SealForProfiles.SealForProfilezz";
+    /**
+     * Fully qualified name of the AddToProfile annotation
+     */
     String ORG_JISEL_ADD_TO_PROFILE = "org.jisel.AddToProfile";
+    /**
+     * Fully qualified name of the AddToProfiles annotation
+     */
     String ORG_JISEL_ADD_TO_PROFILES = "org.jisel.AddToProfiles";
+    /**
+     * Fully qualified name of the AddToProfilez annotation
+     */
     String ORG_JISEL_ADD_TO_PROFILEZ = "org.jisel.AddToProfile.AddToProfilez";
+    /**
+     * Fully qualified name of the AddToProfilezz annotation
+     */
     String ORG_JISEL_ADD_TO_PROFILEZZ = "org.jisel.AddToProfiles.AddToProfilezz";
 
+    /**
+     * Default value to use for boolean returned values
+     */
     String DEFAULT_BOOLEAN_VALUE = "false";
+    /**
+     * Default value to use for numeric returned values (int, long, float, double,...)
+     */
     String DEFAULT_NUMBER_VALUE = "0";
+    /**
+     * Default value to use for Object returned values
+     */
     String DEFAULT_NULL_VALUE = "null";
 
+    /**
+     * Array of methods to exclude while pulling the list of all inherited methods of a class or interface
+     */
     String[] METHODS_TO_EXCLUDE = {"getClass", "wait", "notifyAll", "hashCode", "equals", "notify", "toString"};
 
+    /**
+     * Message displayed during compilation when 1 or many provided profiles are not found in the provided parent interfaces.
+     */
     String ADD_TO_PROFILE_REPORT_MSG = "1 or many provided profiles are not found in the provided parent interfaces. Check your profiles and/or parent interfaces names.";
+    /**
+     * Message displayed during compilation when more than 1 top-level parent sealed interfaces was encountered based on provided profiles
+     */
     String SEAL_FOR_PROFILE_REPORT_MSG = "More than 1 Top-Level Parent Sealed Interfaces will be generated. Check your profiles mapping.";
 
+    /**
+     * "Report.txt"
+     */
     String JISEL_REPORT_SUFFIX = "Report.txt";
 
+    /**
+     * Header displayed above the list of the generated sealed interfaces, in the Jisel Report file
+     */
     String JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER = "Created sealed interfaces:";
 
+    /**
+     * Header displayed above the list of the sub-types of the generated sealed interfaces, in the Jisel Report file
+     */
     String JISEL_REPORT_CHILDREN_HEADER = "Children:";
 
-    static String removeSeparator(final String text) {
+    /**
+     * Removes all commas from the provided string
+     *
+     * @param text contains commas as a string separator
+     * @return provided text with all commas removed
+     */
+    static String removeCommaSeparator(final String text) {
         return asList(text.split(COMMA_SEPARATOR)).stream().collect(joining());
     }
 
+    /**
+     * Constructs a string based on the provided profile and a large interface Element instance, according to the naming convention:<br>
+     * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
+     *
+     * @param profile          name of the profile
+     * @param interfaceElement Element instance of the large interface to be segregated
+     * @return a string following Jisel sealed interface naming convention
+     */
     default String sealedInterfaceNameConvention(final String profile, final Element interfaceElement) {
-        var nameSuffix = removeSeparator(profile).equals(interfaceElement.getSimpleName().toString()) ? EMPTY_STRING : interfaceElement.getSimpleName().toString();
+        var nameSuffix = removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString()) ? EMPTY_STRING : interfaceElement.getSimpleName().toString();
         // any profile name starting w _ (final classes names) or containing a dot (classes annotated with addtoprofile) is returned as is
-        return removeSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeSeparator(profile) : format(
+        return removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeCommaSeparator(profile) : format(
                 "%s%s%s",
                 SEALED_PREFIX,
-                removeSeparator(profile),
+                removeCommaSeparator(profile),
                 nameSuffix
         );
     }
 
+    /**
+     * Constructs a string based on the provided profiles and a large interface Element instance, according to the naming convention:<br>
+     * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
+     *
+     * @param profiles         List of profiles names
+     * @param interfaceElement Element instance of the large interface to be segregated
+     * @return a List of string literals following Jisel sealed interface naming convention
+     */
     default List<String> sealedInterfaceNameConventionForList(final List<String> profiles, final Element interfaceElement) {
-        final UnaryOperator<String> nameSuffix = profile -> removeSeparator(profile).equals(interfaceElement.getSimpleName().toString()) ? EMPTY_STRING : interfaceElement.getSimpleName().toString();
+        final UnaryOperator<String> nameSuffix = profile -> removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString()) ? EMPTY_STRING : interfaceElement.getSimpleName().toString();
         return profiles.stream()
-                .map(profile -> removeSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeSeparator(profile) : format(
+                .map(profile -> removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeCommaSeparator(profile) : format(
                         "%s%s%s",
                         SEALED_PREFIX,
-                        removeSeparator(profile),
+                        removeCommaSeparator(profile),
                         nameSuffix.apply(profile)
                 )).toList();
     }
 
-    default Optional<String> generatePackageName(final Element largeInterfaceName) {
-        var qualifiedClassName = largeInterfaceName.toString();
+    /**
+     * Constructs the java package name based on an Element instance of the large interface to be segregated.
+     *
+     * @param largeInterfaceElement Element instance of the large interface to be segregated
+     * @return the package name if any
+     */
+    default Optional<String> generatePackageName(final Element largeInterfaceElement) {
+        var qualifiedClassName = largeInterfaceElement.toString();
         int lastDot = qualifiedClassName.lastIndexOf('.');
         return lastDot > 0 ? Optional.of(qualifiedClassName.substring(0, lastDot)) : Optional.empty();
     }
 
+    /**
+     * Replace all double occurences of whitespace ("  ") into a single whitespace (" ")
+     *
+     * @param text contains double occurences of whitespace
+     * @return the provided text with all double occurences of whitespace replaced with a single occurence
+     */
     default String removeDoubleSpaceOccurrences(final String text) {
         return text.replace(WHITESPACE + WHITESPACE, WHITESPACE);
-    }
-
-    default String removeCurlyBraces(final String text) {
-        return text.replace(OPENING_BRACKET, EMPTY_STRING).replace(CLOSING_BRACKET, EMPTY_STRING);
     }
 }

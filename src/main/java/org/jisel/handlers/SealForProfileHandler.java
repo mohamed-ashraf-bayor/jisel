@@ -36,12 +36,19 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 
+/**
+ * Implementation class of {@link JiselAnnotationHandler}. Handles &#64;SealForProfile annotated elements
+ */
 public final class SealForProfileHandler implements JiselAnnotationHandler {
 
     private final AnnotationInfoCollectionHandler annotationInfoCollectionHandler;
     private final UniqueParentInterfaceHandler uniqueParentInterfaceHandler;
     private final ParentChildInheritanceHandler parentChildInheritanceHandler;
 
+    /**
+     * SealForProfileHandler constructor. Instantiates needed instances of {@link SealForProfileInfoCollectionHandler},
+     * {@link SealForProfileUniqueParentInterfaceHandler} and {@link SealForProfileParentChildInheritanceHandler}
+     */
     public SealForProfileHandler() {
         this.annotationInfoCollectionHandler = new SealForProfileInfoCollectionHandler();
         this.uniqueParentInterfaceHandler = new SealForProfileUniqueParentInterfaceHandler();
@@ -140,14 +147,14 @@ final class SealForProfileParentChildInheritanceHandler implements ParentChildIn
 final class SealForProfileUniqueParentInterfaceHandler implements UniqueParentInterfaceHandler {
 
     @Override
-    public Map<Element, String> checkAndHandleUniqueParentInterface(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerate) {
+    public Map<Element, String> checkAndHandleUniqueParentInterface(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
-        Map<Element, Optional<String>> longestConcatenedProfilesStringOptByInterface = checkUniqueParentInterfacePresence(sealedInterfacesToGenerate);
-        sealedInterfacesToGenerate.keySet().forEach(interfaceElement -> {
+        Map<Element, Optional<String>> longestConcatenedProfilesStringOptByInterface = checkUniqueParentInterfacePresence(sealedInterfacesToGenerateByLargeInterface);
+        sealedInterfacesToGenerateByLargeInterface.keySet().forEach(interfaceElement -> {
             var longestConcatenedProfilesStringOpt = longestConcatenedProfilesStringOptByInterface.get(interfaceElement);
             if (longestConcatenedProfilesStringOptByInterface.containsKey(interfaceElement) && longestConcatenedProfilesStringOpt.isPresent()) {
-                sealedInterfacesToGenerate.get(interfaceElement).put(interfaceElement.getSimpleName().toString(), sealedInterfacesToGenerate.get(interfaceElement).get(longestConcatenedProfilesStringOpt.get()));
-                sealedInterfacesToGenerate.get(interfaceElement).remove(longestConcatenedProfilesStringOpt.get());
+                sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).put(interfaceElement.getSimpleName().toString(), sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).get(longestConcatenedProfilesStringOpt.get()));
+                sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).remove(longestConcatenedProfilesStringOpt.get());
             } else {
                 statusReport.put(interfaceElement, SEAL_FOR_PROFILE_REPORT_MSG);
             }
