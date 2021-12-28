@@ -153,12 +153,12 @@ public interface StringGenerator {
      */
     String ANNOTATION_VALUES_REGEX = "\"([^\"]*)\"";
     /**
-     * Regex expression to read attributes information provided using the AddToProfile annotation.<br>
+     * Regex expression to read attributes information provided using the {@link org.jisel.AddToProfile} annotation.<br>
      * Sample value to be parsed by the regex: @org.jisel.AddToProfile(profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
      */
     String ADD_TO_PROFILE_REGEX = "AddToProfile\\((.*?)\\)";
     /**
-     * Regex expression to read attributes information provided using the AddToProfiles annotation.<br>
+     * Regex expression to read attributes information provided using the {@link org.jisel.AddToProfiles} annotation.<br>
      * Sample value to be parsed by the regex: @org.jisel.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
      */
     String ADD_TO_PROFILES_REGEX = "AddToProfiles\\((.*?)\\)";
@@ -170,7 +170,7 @@ public interface StringGenerator {
     String STATUS_REPORT_TITLE = "JISEL GENERATION REPORT";
 
     /**
-     * Displayed only when a "severe" error occured while a sealed interface file was being generated
+     * Displayed only when a "severe" error occurred while a sealed interface file was being generated
      */
     String FILE_GENERATION_ERROR = "Error generating sealed interfaces";
     /**
@@ -179,35 +179,35 @@ public interface StringGenerator {
     String FILE_GENERATION_SUCCESS = "Successfully generated";
 
     /**
-     * Fully qualified name of the SealForProfile annotation
+     * Fully qualified name of the {@link org.jisel.SealForProfile} annotation
      */
     String ORG_JISEL_SEAL_FOR_PROFILE = "org.jisel.SealForProfile";
     /**
-     * Fully qualified name of the SealForProfiles annotation
+     * Fully qualified name of the {@link org.jisel.SealForProfiles} annotation
      */
     String ORG_JISEL_SEAL_FOR_PROFILES = "org.jisel.SealForProfiles";
     /**
-     * Fully qualified name of the SealForProfilez annotation
+     * Fully qualified name of the {@link org.jisel.SealForProfile.SealForProfilez} annotation
      */
     String ORG_JISEL_SEAL_FOR_PROFILEZ = "org.jisel.SealForProfile.SealForProfilez";
     /**
-     * Fully qualified name of the SealForProfilezz annotation
+     * Fully qualified name of the {@link org.jisel.SealForProfiles.SealForProfilezz} annotation
      */
     String ORG_JISEL_SEAL_FOR_PROFILEZZ = "org.jisel.SealForProfiles.SealForProfilezz";
     /**
-     * Fully qualified name of the AddToProfile annotation
+     * Fully qualified name of the {@link org.jisel.AddToProfile} annotation
      */
     String ORG_JISEL_ADD_TO_PROFILE = "org.jisel.AddToProfile";
     /**
-     * Fully qualified name of the AddToProfiles annotation
+     * Fully qualified name of the {@link org.jisel.AddToProfiles} annotation
      */
     String ORG_JISEL_ADD_TO_PROFILES = "org.jisel.AddToProfiles";
     /**
-     * Fully qualified name of the AddToProfilez annotation
+     * Fully qualified name of the {@link org.jisel.AddToProfile.AddToProfilez} annotation
      */
     String ORG_JISEL_ADD_TO_PROFILEZ = "org.jisel.AddToProfile.AddToProfilez";
     /**
-     * Fully qualified name of the AddToProfilezz annotation
+     * Fully qualified name of the {@link org.jisel.AddToProfiles.AddToProfilezz} annotation
      */
     String ORG_JISEL_ADD_TO_PROFILEZZ = "org.jisel.AddToProfiles.AddToProfilezz";
 
@@ -264,11 +264,11 @@ public interface StringGenerator {
     }
 
     /**
-     * Constructs a string based on the provided profile and a large interface Element instance, according to the naming convention:<br>
+     * Constructs a string based on the provided profile and a large interface {@link Element} instance, according to the naming convention:<br>
      * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
      *
      * @param profile          name of the profile
-     * @param interfaceElement Element instance of the large interface to be segregated
+     * @param interfaceElement {@link Element} instance of the large interface to be segregated
      * @return a string following Jisel sealed interface naming convention
      */
     default String sealedInterfaceNameConvention(final String profile, final Element interfaceElement) {
@@ -283,11 +283,11 @@ public interface StringGenerator {
     }
 
     /**
-     * Constructs a string based on the provided profiles and a large interface Element instance, according to the naming convention:<br>
+     * Constructs a string based on the provided profiles and a large interface {@link Element} instance, according to the naming convention:<br>
      * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
      *
-     * @param profiles         List of profiles names
-     * @param interfaceElement Element instance of the large interface to be segregated
+     * @param profiles         {@link List} of profiles names
+     * @param interfaceElement {@link Element} instance of the large interface to be segregated
      * @return a List of string literals following Jisel sealed interface naming convention
      */
     default List<String> sealedInterfaceNameConventionForList(final List<String> profiles, final Element interfaceElement) {
@@ -302,9 +302,9 @@ public interface StringGenerator {
     }
 
     /**
-     * Constructs the java package name based on an Element instance of the large interface to be segregated.
+     * Constructs the java package name based on an {@link Element} instance of the large interface to be segregated.
      *
-     * @param largeInterfaceElement Element instance of the large interface to be segregated
+     * @param largeInterfaceElement {@link Element} instance of the large interface to be segregated
      * @return the package name if any
      */
     default Optional<String> generatePackageName(final Element largeInterfaceElement) {
@@ -316,8 +316,8 @@ public interface StringGenerator {
     /**
      * Replace all double occurences of whitespace ("  ") into a single whitespace (" ")
      *
-     * @param text contains double occurences of whitespace
-     * @return the provided text with all double occurences of whitespace replaced with a single occurence
+     * @param text contains double occurrences of whitespace
+     * @return the provided text with all double occurrences of whitespace replaced with a single occurence
      */
     default String removeDoubleSpaceOccurrences(final String text) {
         return text.replace(WHITESPACE + WHITESPACE, WHITESPACE);

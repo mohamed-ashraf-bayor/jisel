@@ -44,17 +44,17 @@ import static java.util.stream.Stream.concat;
 import static org.jisel.generator.StringGenerator.removeCommaSeparator;
 
 /**
- * Interface exposing contract to fulfill by any class handling the elements annotated with &#64;SealForProfile and &#64;AddToProfile annotations
+ * Exposes contract to fulfill by any class handling all elements annotated with &#64;{@link org.jisel.SealForProfile}(s) and &#64;{@link org.jisel.AddToProfile}(s) annotations
  */
 public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForProfileHandler, AddToProfileHandler,
         AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
 
     /**
-     * Reads values of all attributes provided through the use of &#64;SealForProfile and &#64;AddToProfile annotations and
+     * Reads values of all attributes provided through the use of &#64;{@link org.jisel.SealForProfile} and &#64;{@link org.jisel.AddToProfile} annotations and
      * populates the provided Map arguments
      *
      * @param processingEnv                              {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param allAnnotatedElements                       Set of Element instances representing all classes annotated with &#64;AddToProfile and
+     * @param allAnnotatedElements                       {@link Set} of {@link Element} instances representing all classes annotated with &#64;AddToProfile and
      *                                                   all abstract methods annotated with &#64;SealForProfile
      * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
      *                                                   To be populated and/or modified if needed. The key represents the Element instance of
@@ -74,11 +74,11 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
                                                  Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
 
     /**
-     * For a specified class or interface annotated with &#64;AddToProfile, constructs a Map storing a Set of all the provided
+     * For a specified class or interface annotated with &#64;{@link org.jisel.AddToProfile}, constructs a Map storing a Set of all the provided
      * profiles names (as the Map value) for each one of the large interfaces names (as the Map key) provided through &#64;AddToProfile.
      *
      * @param processingEnv             {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param annotatedClassOrInterface Element instance representing the annotated class or interface
+     * @param annotatedClassOrInterface {@link Element} instance representing the annotated class or interface
      * @return a Map storing a Set of all the provided profiles names (as the Map value) for each one of the large interfaces names (as the Map key)
      */
     default Map<String, Set<String>> buildAddToProfileProvidedProfilesMap(final ProcessingEnvironment processingEnv, final Element annotatedClassOrInterface) {
@@ -126,10 +126,10 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
     }
 
     /**
-     * For a specified large interface abstract method annotated with &#64;SealForProfile, constructs a Set storing all the provided profiles names
+     * For a specified large interface abstract method annotated with &#64;{@link org.jisel.SealForProfile}, constructs a Set storing all the provided profiles names
      *
      * @param processingEnv   {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param annotatedMethod Element instance representing the annotated method of the large interface
+     * @param annotatedMethod {@link Element} instance representing the annotated method of the large interface
      * @return a Set storing all the provided profiles names
      */
     default Set<String> buildSealForProfileProvidedProfilesSet(final ProcessingEnvironment processingEnv, final Element annotatedMethod) {
@@ -155,7 +155,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
 }
 
 /**
- * Interface exposing contract to fulfill by any class dedicated to collecting necessary information from the annotated elements,
+ * Exposes contract to fulfill by any class dedicated to collecting necessary information from the annotated elements,
  * in order to populate the {@link Map} containing the sealed interfaces information to be generated
  */
 sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler permits SealForProfileInfoCollectionHandler {
@@ -164,7 +164,7 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
      * Populates the Map containing the sealed interfaces information to be generated
      *
      * @param processingEnv                              {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param allAnnotatedElements                       {@link Set} of Element instances representing all classes annotated with &#64;AddToProfile and
+     * @param allAnnotatedElements                       {@link Set} of {@link Element} instances representing all classes annotated with &#64;AddToProfile and
      *                                                   all abstract methods annotated with &#64;SealForProfile
      * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
      *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
@@ -181,9 +181,9 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
      * Creates intermediate parent interfaces based on common methods of provided profiles, then stores the created intermediate
      * parent interfaces in the Map containing the sealed interfaces information to be generated
      *
-     * @param annotatedMethodsByProfileByLargeInterface  Set of all annotated abstract methods for a specified profile
-     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     * @param annotatedMethodsByProfileByLargeInterface  {@link Set} of all annotated abstract methods for a specified profile
+     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a Map of profile name as the key and a Set of Element instances as the value.
      *                                                   The Element instances represent each one of the abstract methods to be
@@ -251,7 +251,7 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
 }
 
 /**
- * Interface exposing contract to fulfill by any class dedicated to building parent-children relations based on information provided in
+ * Exposes contract to fulfill by any class dedicated to building parent-children relations based on information provided in
  * the Map containing the sealed interfaces information to be generated
  */
 sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler permits SealForProfileParentChildInheritanceHandler {
@@ -259,8 +259,8 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
     /**
      * Reads information stored in the Map containing the sealed interfaces information to be generated, and populates another Map storing subtypes of the provided profiles
      *
-     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a Map of profile name as the key and a Set of Element instances as the value.
      *                                                   The Element instances represent each one of the abstract methods to be
@@ -279,9 +279,9 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
     /**
      * Populates a Map storing subtypes of the provided profiles
      *
-     * @param interfaceElement                           large interface Element instance
-     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     * @param interfaceElement                           large interface {@link Element} instance
+     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a Map of profile name as the key and a Set of Element instances as the value.
      *                                                   The Element instances represent each one of the abstract methods to be
@@ -328,8 +328,8 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
 }
 
 /**
- * Interface exposing contract to fulfill by any class dedicated to checking for the presence of an unique parent interface
- * based on information provided in the Map containing the sealed interfaces information to be generated
+ * Exposes contract to fulfill by any class dedicated to checking for the presence of an unique parent interface based on
+ * information provided in the Map containing the sealed interfaces information to be generated
  */
 sealed interface UniqueParentInterfaceHandler extends JiselAnnotationHandler permits SealForProfileUniqueParentInterfaceHandler {
 
@@ -345,7 +345,7 @@ sealed interface UniqueParentInterfaceHandler extends JiselAnnotationHandler per
      *                                                   added to the generated sealed interface corresponding to a profile.
      * @return Map providing information about the presence of an unique parent sealed interface detected based on common methods of profiles.<br>
      * The informational message provided is a String literal describing the absence of an unique parent sealed interface,
-     * for each one of the provided large interfces to be segregated
+     * for each one of the provided large interfaces to be segregated
      */
     Map<Element, String> checkAndHandleUniqueParentInterface(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface);
 
@@ -353,7 +353,7 @@ sealed interface UniqueParentInterfaceHandler extends JiselAnnotationHandler per
      * Checks for the presence of an unique parent interface based on information provided in the Map containing the sealed interfaces information to be generated
      *
      * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a Map of profile name as the key and a Set of Element instances as the value.
      *                                                   The Element instances represent each one of the abstract methods to be

@@ -56,8 +56,8 @@ public class ReportGenerator implements StringGenerator {
      * Generates a Report file listing all generated sealed interfaces for the provided large interfaces.
      *
      * @param largeInterfaceElement         {@link Element} instance of the large interface being segregated
-     * @param sealedInterfacesToGenerateMap Map containing information about the sealed interfaces to be generated
-     * @param sealedInterfacesPermitsMap    Map containing information about the subtypes permitted by each one of the sealed interfaces to be generated
+     * @param sealedInterfacesToGenerateMap {@link Map} containing information about the sealed interfaces to be generated
+     * @param sealedInterfacesPermitsMap    {@link Map} containing information about the subtypes permitted by each one of the sealed interfaces to be generated
      * @return a string containing the text report
      */
     public String generateReportForBloatedInterface(final Element largeInterfaceElement,

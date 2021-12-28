@@ -59,7 +59,7 @@ import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZ;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZZ;
 
 /**
- * Jisel annotation processor class. Picks up and processes all elements annotated with @SealForProfile, @SealForProfiles, @AddToProfile and @AddToProfiles<br>
+ * Jisel annotation processor class. Picks up and processes all elements annotated with @{@link SealForProfile}, @{@link SealForProfiles}, @{@link AddToProfile} and @{@link AddToProfiles}<br>
  */
 @SupportedAnnotationTypes({ORG_JISEL_SEAL_FOR_PROFILE, ORG_JISEL_SEAL_FOR_PROFILES, ORG_JISEL_SEAL_FOR_PROFILEZ, ORG_JISEL_SEAL_FOR_PROFILEZZ,
         ORG_JISEL_ADD_TO_PROFILE, ORG_JISEL_ADD_TO_PROFILES, ORG_JISEL_ADD_TO_PROFILEZ, ORG_JISEL_ADD_TO_PROFILEZZ})
@@ -76,8 +76,7 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
     private final SealedInterfaceSourceFileGenerator sealedInterfaceSourceFileGenerator;
 
     /**
-     * Constructor of JiselAnnotationProcessor.
-     * Initializes unique instances of SealForProfileHandler, AddToProfileHandler and SealedInterfaceSourceFileGenerator to be used within the class
+     * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForProfileHandler}, {@link AddToProfileHandler} and {@link SealedInterfaceSourceFileGenerator}
      */
     public JiselAnnotationProcessor() {
         this.sealForProfileHandler = new SealForProfileHandler();

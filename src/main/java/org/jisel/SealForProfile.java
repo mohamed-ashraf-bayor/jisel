@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * For the specified profile name, a sealed interface will be generated following the naming convention:
  * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
  * <b>&#60;LargeInterfaceSimpleName&#62;</b> corresponds to the simplename of the interface being segregated.<br><br>
- * See &#64;SealForProfile attributes documentation.<br><br>
+ * See &#64;{@link SealForProfile} attributes documentation.<br><br>
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD})
@@ -48,13 +48,13 @@ public @interface SealForProfile {
     String value();
 
     /**
-     * Internal annotation allowing &#64;SealForProfile to be repeatable
+     * Internal annotation allowing &#64;{@link SealForProfile} to be repeatable
      */
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.METHOD)
     @interface SealForProfilez {
         /**
-         * array attribute allowing &#64;SealForProfile to be repeatable
+         * array attribute allowing &#64;{@link SealForProfile} to be repeatable
          *
          * @return array of &#64;SealForProfile instances
          */

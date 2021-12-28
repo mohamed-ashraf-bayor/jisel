@@ -32,7 +32,7 @@ import java.util.Properties;
 import static java.lang.String.format;
 
 /**
- * Generates the @javax.annotation.processing.Generated annotation section at the top of the generated interfaces or classes with the attributes: value, date and comments<br>
+ * Generates the {@link javax.annotation.processing.Generated} annotation section at the top of the generated interfaces or classes with the attributes: value, date and comments<br>
  */
 public final class JavaxGeneratedGenerator implements CodeGenerator {
 

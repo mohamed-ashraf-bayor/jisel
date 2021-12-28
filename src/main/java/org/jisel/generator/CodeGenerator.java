@@ -55,16 +55,16 @@ sealed interface ExtendsGenerator extends CodeGenerator, StringGenerator permits
 
     /**
      * Generates the "extends" clause of a sealed interface being generated, along with the list of parent interfaces, based on
-     * a provided Map containing parents/subtypes information (the permits Map) and the name of the profile for which the
+     * a provided {@link Map} containing parents/subtypes information (the permits Map) and the name of the profile for which the
      * sealed interface will be generated
      *
      * @param processingEnvironment  {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param sealedInterfaceContent StringBuilder object containing the sealed interface code being generated
-     * @param permitsMap             Map containing parents/subtypes information. The Map key is the profile name whose generated
+     * @param sealedInterfaceContent {@link StringBuilder} object containing the sealed interface code being generated
+     * @param permitsMap             {@link Map} containing parents/subtypes information. The Map key is the profile name whose generated
      *                               sealed interface will be a parent interface, while the value is the list of profiles names whose
      *                               sealed interfaces will be generated as subtypes
      * @param processedProfile       name of the profile whose sealed interface is being generated
-     * @param largeInterfaceElement  Element instance of the large interface being segregated
+     * @param largeInterfaceElement  {@link Element} instance of the large interface being segregated
      */
     void generateExtendsClauseFromPermitsMapAndProcessedProfile(
             ProcessingEnvironment processingEnvironment,
@@ -96,15 +96,15 @@ sealed interface PermitsGenerator extends CodeGenerator, StringGenerator permits
 
     /**
      * Generates the "permits" clause of a sealed interface being generated, along with the list of parent interfaces, based on
-     * a provided Map containing parents/subtypes information (the permits Map) and the name of the profile for which the
+     * a provided {@link Map} containing parents/subtypes information (the permits Map) and the name of the profile for which the
      * sealed interface will be generated
      *
-     * @param sealedInterfaceContent StringBuilder object containing the sealed interface code being generated
-     * @param permitsMap             Map containing parents/subtypes information. The Map key is the profile name whose generated
+     * @param sealedInterfaceContent {@link StringBuilder} object containing the sealed interface code being generated
+     * @param permitsMap             {@link Map} containing parents/subtypes information. The Map key is the profile name whose generated
      *                               sealed interface will be a parent interface, while the value is the list of profiles names whose
      *                               sealed interfaces will be generated as subtypes
      * @param processedProfile       name of the profile whose sealed interface is being generated
-     * @param largeInterfaceElement  Element instance of the large interface being segregated
+     * @param largeInterfaceElement  {@link Element} instance of the large interface being segregated
      */
     void generatePermitsClauseFromPermitsMapAndProcessedProfile(
             StringBuilder sealedInterfaceContent,
@@ -123,14 +123,14 @@ sealed interface PermitsGenerator extends CodeGenerator, StringGenerator permits
     }
 
     /**
-     * Adds a generated final class to the Map containing parents/subtypes information, only for the sealed interfaces at the
-     * lowest-level of the generated hierarchy (also know as childless interfaces).<br>
+     * Adds a generated final class to the {@link Map} containing parents/subtypes information, only for the sealed interfaces at the
+     * lowest-level of the generated hierarchy (also known as childless interfaces).<br>
      * Practice proper to Jisel only to avoid compilation errors for sealed interfaces not having any existing subtypes
      *
-     * @param permitsMap            Map containing parents/subtypes information. The Map key is the profile name whose generated
+     * @param permitsMap            {@link Map} containing parents/subtypes information. The Map key is the profile name whose generated
      *                              sealed interface will be a parent interface, while the value is the list of profiles names whose
      *                              sealed interfaces will be generated as subtypes
-     * @param largeInterfaceElement Element instance of the large interface being segregated
+     * @param largeInterfaceElement {@link Element} instance of the large interface being segregated
      */
     default void addFinalClassToPermitsMap(final Map<String, List<String>> permitsMap, final Element largeInterfaceElement) {
         var finalClassName = UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
@@ -154,8 +154,8 @@ sealed interface MethodsGenerator extends CodeGenerator, StringGenerator permits
     /**
      * Generates a list of abstracts methods definitions and appends it to the sealed interface code being generated
      *
-     * @param sealedInterfaceContent StringBuilder object containing the sealed interface code being generated
-     * @param methodsSet             Set of {@link Element} instances representing each one of the abstract methods to generate
+     * @param sealedInterfaceContent {@link StringBuilder} object containing the sealed interface code being generated
+     * @param methodsSet             {@link Set} of {@link Element} instances representing each one of the abstract methods to generate
      */
     void generateAbstractMethodsFromElementsSet(StringBuilder sealedInterfaceContent, Set<Element> methodsSet);
 
@@ -163,8 +163,8 @@ sealed interface MethodsGenerator extends CodeGenerator, StringGenerator permits
      * Mainly used for a final class generation.<br>
      * Generates a list of concrete methods definitions (signature and body), and appends it to the final class being generated
      *
-     * @param sealedInterfaceContent StringBuilder object containing the sealed interface code being generated
-     * @param methodsSet             Set of {@link Element} instances representing each one of the abstract methods to generate
+     * @param sealedInterfaceContent {@link StringBuilder} object containing the sealed interface code being generated
+     * @param methodsSet             {@link Set} of {@link Element} instances representing each one of the abstract methods to generate
      */
     void generateEmptyConcreteMethodsFromElementsSet(StringBuilder sealedInterfaceContent, Set<Element> methodsSet);
 
@@ -177,7 +177,7 @@ sealed interface MethodsGenerator extends CodeGenerator, StringGenerator permits
      * Checks whether the provided method {@link Element} instance has any arguments
      *
      * @param methodElement method {@link Element} instance
-     * @return true if the provided method has any arguments
+     * @return true if the provided method has any arguments, false otherwise
      */
     default boolean methodHasArguments(final Element methodElement) {
         return methodElement.toString().indexOf(CLOSING_PARENTHESIS) - methodElement.toString().indexOf(OPENING_PARENTHESIS) > 1;

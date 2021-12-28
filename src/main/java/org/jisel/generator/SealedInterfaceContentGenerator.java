@@ -55,7 +55,7 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
      * Generates the content of a sealed interface
      *
      * @param processingEnvironment                 {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param sealedInterfacesToGenerateMapEntrySet Map.Entry instance containing information about the sealed interfaces to be generated
+     * @param sealedInterfacesToGenerateMapEntrySet {@link java.util.Map.Entry} instance containing information about the sealed interfaces to be generated
      * @param largeInterfaceElement                 {@link Element} instance of the large interface being segregated
      * @param sealedInterfacesPermitsMap            Map containing information about the subtypes permitted by each one of the sealed interfaces to be generated
      * @return the string content of the sealed interface to generate
