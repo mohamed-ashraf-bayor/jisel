@@ -37,7 +37,7 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 
 /**
- * Implementation class of {@link JiselAnnotationHandler}. Handles &#64;SealForProfile annotated elements
+ * Handles all elements annotated with &#64;{@link org.jisel.SealForProfile}
  */
 public final class SealForProfileHandler implements JiselAnnotationHandler {
 
@@ -67,6 +67,10 @@ public final class SealForProfileHandler implements JiselAnnotationHandler {
     }
 }
 
+/**
+ * Collects necessary information from the annotated elements, in order to populate the Map containing the sealed
+ * interfaces information to be generated
+ */
 final class SealForProfileInfoCollectionHandler implements AnnotationInfoCollectionHandler {
 
     @Override
@@ -113,8 +117,10 @@ final class SealForProfileInfoCollectionHandler implements AnnotationInfoCollect
     }
 }
 
+/**
+ * Builds parent-children relations based on information provided in the Map containing the sealed interfaces information to be generated
+ */
 final class SealForProfileParentChildInheritanceHandler implements ParentChildInheritanceHandler {
-
     @Override
     public void buildInheritanceRelations(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                           final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
@@ -144,8 +150,10 @@ final class SealForProfileParentChildInheritanceHandler implements ParentChildIn
     }
 }
 
+/**
+ * Checks for the presence of an unique parent interface based on information provided in the Map containing the sealed interfaces information to be generated
+ */
 final class SealForProfileUniqueParentInterfaceHandler implements UniqueParentInterfaceHandler {
-
     @Override
     public Map<Element, String> checkAndHandleUniqueParentInterface(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         var statusReport = new HashMap<Element, String>();

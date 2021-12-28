@@ -35,12 +35,12 @@ import java.util.Set;
 public class SealedInterfaceSourceFileGenerator implements StringGenerator {
 
     private final SealedInterfaceContentGenerator sealedInterfaceContentGenerator;
-    private final FinalClassGenerator finalClassGenerator;
+    private final FinalClassContentGenerator finalClassContentGenerator;
     private final ReportGenerator reportGenerator;
 
     public SealedInterfaceSourceFileGenerator() {
         this.sealedInterfaceContentGenerator = new SealedInterfaceContentGenerator();
-        this.finalClassGenerator = new FinalClassGenerator();
+        this.finalClassContentGenerator = new FinalClassContentGenerator();
         this.reportGenerator = new ReportGenerator();
     }
 
@@ -91,7 +91,7 @@ public class SealedInterfaceSourceFileGenerator implements StringGenerator {
                     : UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
             var fileObject = processingEnvironment.getFiler().createSourceFile(qualifiedName);
             try (var out = new PrintWriter(fileObject.openWriter())) {
-                out.println(finalClassGenerator.generateFinalClassContent(processingEnvironment, largeInterfaceElement, sealedInterfacesPermitsMap));
+                out.println(finalClassContentGenerator.generateFinalClassContent(processingEnvironment, largeInterfaceElement, sealedInterfacesPermitsMap));
             }
             generatedFiles.add(qualifiedName);
         } catch (FilerException e) {

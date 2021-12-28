@@ -30,8 +30,36 @@ import java.util.Set;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
+/**
+ * Generates a Report file listing all generated sealed interfaces for the provided large interfaces.<br>
+ * Sample report:<br>
+ * com.bayor.jisel.annotation.client.hierarchicalinheritance.Sociable<br>
+ * &#9;Created sealed interfaces:<br>
+ * &#9;&#9;SealedActiveWorkerSociable<br>
+ * &#9;&#9;- Children:<br>
+ * &#9;&#9;&#9;_SociableFinalCass<br>
+ * &#9;&#9;SealedWorkerSociable<br>
+ * &#9;&#9;- Children:<br>
+ * &#9;&#9;&#9;SealedActiveWorkerSociable<br>
+ * &#9;&#9;&#9;com.bayor.jisel.annotation.client.hierarchicalinheritance.subclasses.StudentWorkerHybrid<br>
+ * &#9;&#9;SealedStudentSociable<br>
+ * &#9;&#9;- Children:<br>
+ * &#9;&#9;&#9;com.bayor.jisel.annotation.client.hierarchicalinheritance.subclasses.StudentWorkerHybrid<br>
+ * &#9;&#9;SealedSociable<br>
+ * &#9;&#9;- Children:<br>
+ * &#9;&#9;&#9;SealedWorkerSociable<br>
+ * &#9;&#9;&#9;SealedStudentSociable<br>
+ */
 public class ReportGenerator implements StringGenerator {
 
+    /**
+     * Generates a Report file listing all generated sealed interfaces for the provided large interfaces.
+     *
+     * @param largeInterfaceElement         {@link Element} instance of the large interface being segregated
+     * @param sealedInterfacesToGenerateMap Map containing information about the sealed interfaces to be generated
+     * @param sealedInterfacesPermitsMap    Map containing information about the subtypes permitted by each one of the sealed interfaces to be generated
+     * @return a string containing the text report
+     */
     public String generateReportForBloatedInterface(final Element largeInterfaceElement,
                                                     final Map<String, Set<Element>> sealedInterfacesToGenerateMap,
                                                     final Map<String, List<String>> sealedInterfacesPermitsMap) {

@@ -30,6 +30,9 @@ import java.util.Set;
 
 import static java.lang.String.format;
 
+/**
+ * Generates the content of a sealed interface
+ */
 public final class SealedInterfaceContentGenerator implements StringGenerator {
 
     private final CodeGenerator javaxGeneratedGenerator;
@@ -37,6 +40,10 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
     private final PermitsGenerator permitsGenerator;
     private final MethodsGenerator methodsGenerator;
 
+    /**
+     * SealedInterfaceContentGenerator constructor. Instantiates needed instances of {@link JavaxGeneratedGenerator}, {@link SealedInterfaceExtendsGenerator},
+     * {@link SealedInterfacePermitsGenerator} and {@link SealedInterfaceMethodsGenerator}
+     */
     public SealedInterfaceContentGenerator() {
         this.javaxGeneratedGenerator = new JavaxGeneratedGenerator();
         this.extendsGenerator = new SealedInterfaceExtendsGenerator();
@@ -44,6 +51,15 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
         this.methodsGenerator = new SealedInterfaceMethodsGenerator();
     }
 
+    /**
+     * Generates the content of a sealed interface
+     *
+     * @param processingEnvironment                 {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
+     * @param sealedInterfacesToGenerateMapEntrySet Map.Entry instance containing information about the sealed interfaces to be generated
+     * @param largeInterfaceElement                 {@link Element} instance of the large interface being segregated
+     * @param sealedInterfacesPermitsMap            Map containing information about the subtypes permitted by each one of the sealed interfaces to be generated
+     * @return the string content of the sealed interface to generate
+     */
     public String generateSealedInterfaceContent(final ProcessingEnvironment processingEnvironment,
                                                  final Map.Entry<String, Set<Element>> sealedInterfacesToGenerateMapEntrySet,
                                                  final Element largeInterfaceElement,
@@ -75,6 +91,9 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
     }
 }
 
+/**
+ * Generates the "extends" clause of a sealed interface definition, along with the list of the parent interfaces
+ */
 final class SealedInterfaceExtendsGenerator implements ExtendsGenerator {
     @Override
     public void generateExtendsClauseFromPermitsMapAndProcessedProfile(final ProcessingEnvironment processingEnvironment,
@@ -106,6 +125,10 @@ final class SealedInterfaceExtendsGenerator implements ExtendsGenerator {
     }
 }
 
+/**
+ * Generates the "permits" clause of a sealed interface definition, along with the list of the subtypes classes or
+ * interfaces permitted by the sealed interface being generated
+ */
 final class SealedInterfacePermitsGenerator implements PermitsGenerator {
     @Override
     public void generatePermitsClauseFromPermitsMapAndProcessedProfile(final StringBuilder sealedInterfaceContent,
@@ -122,6 +145,9 @@ final class SealedInterfacePermitsGenerator implements PermitsGenerator {
     }
 }
 
+/**
+ * Generates the list of abstracts methods of a sealed interface being generated
+ */
 final class SealedInterfaceMethodsGenerator implements MethodsGenerator {
 
     @Override

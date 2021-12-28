@@ -53,7 +53,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
      * Reads values of all attributes provided through the use of &#64;SealForProfile and &#64;AddToProfile annotations and
      * populates the provided Map arguments
      *
-     * @param processingEnv                              needed to access low-level information regarding the used annotations
+     * @param processingEnv                              {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param allAnnotatedElements                       Set of Element instances representing all classes annotated with &#64;AddToProfile and
      *                                                   all abstract methods annotated with &#64;SealForProfile
      * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
@@ -77,7 +77,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
      * For a specified class or interface annotated with &#64;AddToProfile, constructs a Map storing a Set of all the provided
      * profiles names (as the Map value) for each one of the large interfaces names (as the Map key) provided through &#64;AddToProfile.
      *
-     * @param processingEnv             needed to access low-level information regarding the used annotations
+     * @param processingEnv             {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param annotatedClassOrInterface Element instance representing the annotated class or interface
      * @return a Map storing a Set of all the provided profiles names (as the Map value) for each one of the large interfaces names (as the Map key)
      */
@@ -128,7 +128,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
     /**
      * For a specified large interface abstract method annotated with &#64;SealForProfile, constructs a Set storing all the provided profiles names
      *
-     * @param processingEnv   needed to access low-level information regarding the used annotations
+     * @param processingEnv   {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param annotatedMethod Element instance representing the annotated method of the large interface
      * @return a Set storing all the provided profiles names
      */
@@ -156,20 +156,20 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
 
 /**
  * Interface exposing contract to fulfill by any class dedicated to collecting necessary information from the annotated elements,
- * in order to populate the Map containing the sealed interfaces information to be generated
+ * in order to populate the {@link Map} containing the sealed interfaces information to be generated
  */
 sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler permits SealForProfileInfoCollectionHandler {
 
     /**
      * Populates the Map containing the sealed interfaces information to be generated
      *
-     * @param processingEnv                              needed to access low-level information regarding the used annotations
-     * @param allAnnotatedElements                       Set of Element instances representing all classes annotated with &#64;AddToProfile and
+     * @param processingEnv                              {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
+     * @param allAnnotatedElements                       {@link Set} of Element instances representing all classes annotated with &#64;AddToProfile and
      *                                                   all abstract methods annotated with &#64;SealForProfile
      * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
+     *                                                   a {@link Map} of profile name as the key and a Set of {@link Element} instances as the value.
      *                                                   The Element instances represent each one of the abstract methods to be
      *                                                   added to the generated sealed interface corresponding to a profile.
      */

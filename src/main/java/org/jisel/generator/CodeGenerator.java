@@ -58,7 +58,7 @@ sealed interface ExtendsGenerator extends CodeGenerator, StringGenerator permits
      * a provided Map containing parents/subtypes information (the permits Map) and the name of the profile for which the
      * sealed interface will be generated
      *
-     * @param processingEnvironment  needed to access low-level information regarding the used annotations
+     * @param processingEnvironment  {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param sealedInterfaceContent StringBuilder object containing the sealed interface code being generated
      * @param permitsMap             Map containing parents/subtypes information. The Map key is the profile name whose generated
      *                               sealed interface will be a parent interface, while the value is the list of profiles names whose
