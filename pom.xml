@@ -9,8 +9,8 @@
     <packaging>jar</packaging>
 
     <name>Jisel</name>
-    <description>Interface Segregation Library for Java 17</description>
-    <url>http://jisel.org</url>
+    <description>Java Interface Segregation Library</description>
+    <url>https://jisel.org/</url>
 
     <licenses>
         <license>
@@ -21,7 +21,7 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git://github.com/mohamed-ashraf-bayor/froporec.git</connection>
+        <connection>scm:git:git://github.com/mohamed-ashraf-bayor/jisel.git</connection>
         <developerConnection>scm:git:git@github.com:mohamed-ashraf-bayor/mohamed-ashraf-bayor.git</developerConnection>
         <url>https://github.com/mohamed-ashraf-bayor/jisel</url>
         <tag>HEAD</tag>
@@ -52,7 +52,7 @@
     <dependencies>
         <dependency>
             <groupId>com.google.auto.service</groupId>
-            <artifactId>auto-service</artifactId>
+            <artifactId>auto-service-annotations</artifactId>
             <version>${auto-service.version}</version>
         </dependency>
     </dependencies>
@@ -66,6 +66,13 @@
                 <configuration>
                     <release>17</release>
                     <compilerArgs>-Xlint:unchecked</compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.auto.service</groupId>
+                            <artifactId>auto-service</artifactId>
+                            <version>${auto-service.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>

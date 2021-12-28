@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021 Mohamed Ashraf Bayor
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,21 +19,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generator.helpers;
+package org.jisel.generator;
 
 import org.jisel.JiselAnnotationProcessor;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
+import java.util.List;
 import java.util.Properties;
 
 import static java.lang.String.format;
 
 /**
- * Generates the @javax.annotation.processing.Generated annotation section at the top of the generated record class with the attributes: value, date and comments<br>
- * The generateRecord() method params map is not required
+ * Generates the {@link javax.annotation.processing.Generated} annotation section at the top of the generated interfaces or classes with the attributes: value, date and comments<br>
  */
 public final class JavaxGeneratedGenerator implements CodeGenerator {
 
@@ -46,10 +45,10 @@ public final class JavaxGeneratedGenerator implements CodeGenerator {
                             date = "%s",
                             comments = "version: %s"
                         )
-                        """
-                , JiselAnnotationProcessor.class.getName()
-                , ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                , getAppVersion()
+                        """,
+                JiselAnnotationProcessor.class.getName(),
+                ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                getAppVersion()
         ));
     }
 
@@ -65,7 +64,7 @@ public final class JavaxGeneratedGenerator implements CodeGenerator {
     }
 
     @Override
-    public void generateCode(final StringBuilder recordClassContent, final Map<String, Object> params) {
-        buildGeneratedAnnotationSection(recordClassContent);
+    public void generateCode(final StringBuilder classOrInterfaceContent, final List<String> params) {
+        buildGeneratedAnnotationSection(classOrInterfaceContent);
     }
 }

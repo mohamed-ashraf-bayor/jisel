@@ -1,6 +1,32 @@
+/**
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package org.jisel;
 
 import com.google.auto.service.AutoService;
+import org.jisel.generator.SealedInterfaceSourceFileGenerator;
+import org.jisel.generator.StringGenerator;
+import org.jisel.handlers.AddToProfileHandler;
+import org.jisel.handlers.JiselAnnotationHandler;
+import org.jisel.handlers.SealForProfileHandler;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
@@ -9,95 +35,122 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-// @Slf4j
-@SupportedAnnotationTypes("com.bayor.jisel.annotation.SealFor")
+import static java.lang.String.format;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.joining;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILE;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILES;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILEZ;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILEZZ;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILE;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILES;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZ;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZZ;
+
+/**
+ * Jisel annotation processor class. Picks up and processes all elements annotated with @{@link SealForProfile}, @{@link SealForProfiles}, @{@link AddToProfile} and @{@link AddToProfiles}<br>
+ */
+@SupportedAnnotationTypes({ORG_JISEL_SEAL_FOR_PROFILE, ORG_JISEL_SEAL_FOR_PROFILES, ORG_JISEL_SEAL_FOR_PROFILEZ, ORG_JISEL_SEAL_FOR_PROFILEZZ,
+        ORG_JISEL_ADD_TO_PROFILE, ORG_JISEL_ADD_TO_PROFILES, ORG_JISEL_ADD_TO_PROFILEZ, ORG_JISEL_ADD_TO_PROFILEZZ})
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
-public class JiselAnnotationProcessor extends AbstractProcessor {
+public class JiselAnnotationProcessor extends AbstractProcessor implements StringGenerator {
+
+    private final Logger log = Logger.getLogger(JiselAnnotationProcessor.class.getName());
+
+    private final JiselAnnotationHandler sealForProfileHandler;
+
+    private final JiselAnnotationHandler addToProfileHandler;
+
+    private final SealedInterfaceSourceFileGenerator sealedInterfaceSourceFileGenerator;
+
+    /**
+     * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForProfileHandler}, {@link AddToProfileHandler} and {@link SealedInterfaceSourceFileGenerator}
+     */
+    public JiselAnnotationProcessor() {
+        this.sealForProfileHandler = new SealForProfileHandler();
+        this.addToProfileHandler = new AddToProfileHandler();
+        this.sealedInterfaceSourceFileGenerator = new SealedInterfaceSourceFileGenerator();
+    }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnvironment) {
+    public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
 
-        for (TypeElement annotation : annotations) {
+        var allAnnotatedSealForProfileElements = new HashSet<Element>();
+        var allAnnotatedAddToProfileElements = new HashSet<Element>();
+        var sealedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Set<Element>>>();
+        var sealedInterfacesPermitsByLargeInterface = new HashMap<Element, Map<String, List<String>>>();
 
-            if (!annotation.getSimpleName().toString().contains("SealFor"))
-                continue;
+        populateAllAnnotatedElementsSets(annotations, roundEnv, allAnnotatedSealForProfileElements, allAnnotatedAddToProfileElements);
 
-            Set<? extends Element> annotatedElements = roundEnvironment.getElementsAnnotatedWith(annotation);
+        // process all interface methods annotated with @SealForProfile
+        var statusReport = sealForProfileHandler.handleAnnotatedElements(
+                processingEnv,
+                unmodifiableSet(allAnnotatedSealForProfileElements),
+                sealedInterfacesToGenerateByLargeInterface,
+                sealedInterfacesPermitsByLargeInterface
+        );
+        displayStatusReport(statusReport, SEAL_FOR_PROFILE);
 
-            System.out.println(">>>>>>>> annotatedElements >>>>>>>>>>>" + annotatedElements);
+        // process all child classes or interfaces annotated with @AddToProfile
+        statusReport = addToProfileHandler.handleAnnotatedElements(
+                processingEnv,
+                unmodifiableSet(allAnnotatedAddToProfileElements),
+                unmodifiableMap(sealedInterfacesToGenerateByLargeInterface),
+                sealedInterfacesPermitsByLargeInterface
+        );
+        displayStatusReport(statusReport, ADD_TO_PROFILE);
 
-            List<? extends Element> annotatedClasses = annotatedElements.stream()
-                    //.filter(element -> element.getClass().getClassLoader().isRecord())
-                    .filter(element -> ElementKind.INTERFACE.equals(element.getKind()))
-                    .toList();
-
-            System.out.println(">>>>>>>> annotatedClasses >>>>>>>>>>>" + annotatedClasses);
-
-            List<? extends Element> annotatedMethods = annotatedElements.stream()
-                    .filter(element -> !element.getClass().isRecord())
-                    .filter(element -> ElementKind.METHOD.equals(element.getKind()))
-                    .toList();
-
-            System.out.println(">>>>>>>> annotateMethods >>>>>>>>>>>" + annotatedMethods);
+        try {
+            var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(
+                    processingEnv,
+                    sealedInterfacesToGenerateByLargeInterface,
+                    sealedInterfacesPermitsByLargeInterface
+            );
+            if (!generatedFiles.isEmpty()) {
+                log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining(format("%n")))));
+            }
+        } catch (IOException e) {
+            log.log(Level.SEVERE, FILE_GENERATION_ERROR, e);
         }
 
         return true;
     }
 
-    private void writeSealedInterfaceFile(String className, List<Element> gettersList, Map<String, String> getterMap, Set<Element> allAnnotatedElements) throws IOException {
-        String recordClassString = buildSealedInterfaceContent(className, gettersList, getterMap, allAnnotatedElements);
-        JavaFileObject recordClassFile = processingEnv.getFiler().createSourceFile(className + "Record");
-        try (PrintWriter out = new PrintWriter(recordClassFile.openWriter())) {
-            out.println(recordClassString);
+    private void populateAllAnnotatedElementsSets(final Set<? extends TypeElement> annotations,
+                                                  final RoundEnvironment roundEnv,
+                                                  final Set<Element> allAnnotatedSealForProfileElements,
+                                                  final Set<Element> allAnnotatedAddToProfileElements) {
+        for (var annotation : annotations) {
+            if (annotation.getSimpleName().toString().contains(SEAL_FOR_PROFILE)) {
+                allAnnotatedSealForProfileElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
+            }
+            if (annotation.getSimpleName().toString().contains(ADD_TO_PROFILE)) {
+                allAnnotatedAddToProfileElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
+            }
         }
     }
 
-    private String buildSealedInterfaceContent(String className, List<Element> gettersList, Map<String, String> getterMap, Set<Element> allAnnotatedElements) {
-
-        StringBuilder recordClassContent = new StringBuilder();
-
-        String packageName = null;
-
-        int lastDot = className.lastIndexOf('.');
-
-        if (lastDot > 0) {
-            packageName = className.substring(0, lastDot);
+    private void displayStatusReport(final Map<Element, String> statusReport, final String annotationName) {
+        if (!statusReport.values().stream().collect(joining()).isBlank()) {
+            var output = new StringBuilder(format("%n%s - @%s%n", STATUS_REPORT_TITLE, annotationName));
+            statusReport.entrySet().forEach(mapEntry -> {
+                if (!mapEntry.getValue().isBlank()) {
+                    output.append(format("\t> %s: %s%n", mapEntry.getKey().toString(), mapEntry.getValue()));
+                }
+            });
+            log.warning(output::toString);
         }
-
-        String simpleClassName = className.substring(lastDot + 1);
-        String recordClassName = className + "Record";
-        String recordSimpleClassName = recordClassName.substring(lastDot + 1);
-
-        if (packageName != null) {
-            recordClassContent.append("package ");
-            recordClassContent.append(packageName);
-            recordClassContent.append(";");
-            recordClassContent.append("\n\n");
-        }
-
-        recordClassContent.append("public record ");
-        recordClassContent.append(recordSimpleClassName);
-        recordClassContent.append("(");
-
-//        // System.out.println("################################" + recordSimpleClassName);
-//        buildRecordAttributesFromGettersList(recordClassContent, getterMap, gettersList, allAnnotatedElements);
-
-        recordClassContent.append(") {\n\n");
-
-       // buildRecordCustom1ArgConstructor(recordClassContent, simpleClassName, gettersList, allAnnotatedElements);
-
-        recordClassContent.append("}");
-
-        return recordClassContent.toString();
     }
 }
