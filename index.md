@@ -1,7 +1,6 @@
-# JISEL - Java Interface Segregation Library
-Minimum Java 17 Required
+Minimum Java 17 required
 
-Pitch Video: https://youtu.be/nkbu6zxV3R0
+Pitch Video: [https://youtu.be/nkbu6zxV3R0](https://youtu.be/nkbu6zxV3R0)
 
 ## Installation
 
@@ -108,3 +107,8 @@ public final class StudentWorkerHybrid implements SealedStudentSociable, SealedW
 
 ### Issues, Bugs, Suggestions
 Contribute to the project's growth by reporting issues or making improvement suggestions [here](https://github.com/mohamed-ashraf-bayor/jisel/issues/new/choose)
+
+[Jisel Github Repository](https://github.com/mohamed-ashraf-bayor/jisel)
+
+
+###### Jisel is an open source project, currently distributed under the [MIT License](https://github.com/mohamed-ashraf-bayor/jisel/blob/master/LICENSE)
