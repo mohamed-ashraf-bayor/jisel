@@ -1,3 +1,5 @@
+# JISEL - Java Interface Segregation Library
+
 Minimum Java 17 required
 
 Pitch Video: [https://youtu.be/nkbu6zxV3R0](https://youtu.be/nkbu6zxV3R0)
