@@ -114,10 +114,8 @@ public final class StudentWorkerHybrid implements SealedStudentSociable, SealedW
 ### Issues, Bugs, Suggestions
 Contribute to the project's growth by reporting issues or making improvement suggestions [here](https://github.com/mohamed-ashraf-bayor/jisel/issues/new/choose)
 
-[Jisel Github Repository](https://github.com/mohamed-ashraf-bayor/jisel)
-
 
 <br>
 <br>
 
-###### &#169; 2022, Jisel is an open source project, currently distributed under the [MIT License](https://github.com/mohamed-ashraf-bayor/jisel/blob/master/LICENSE)
+###### &#169; 2022, [Jisel](https://github.com/mohamed-ashraf-bayor/jisel) is an open source project, currently distributed under the [MIT License](https://github.com/mohamed-ashraf-bayor/jisel/blob/master/LICENSE)
