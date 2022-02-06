@@ -1,7 +1,10 @@
 # JISEL - Java Interface Segregation Library
-Minimum Java 17 Required
 
-Pitch Video: https://youtu.be/nkbu6zxV3R0
+Minimum Java 17 required
+
+Pitch Video: [https://youtu.be/nkbu6zxV3R0](https://youtu.be/nkbu6zxV3R0)
+
+<br>
 
 ## Installation
 
@@ -38,6 +41,8 @@ You will also need to include the same dependency as an additional annotation pr
 ```
 
 For other build tools, please check: [Maven Central](https://search.maven.org/artifact/org.jisel/jisel/1.0/jar).
+
+<br>
 
 ## Provided Annotations
 
@@ -103,8 +108,10 @@ public final class StudentWorkerHybrid implements SealedStudentSociable, SealedW
 
 ```
 
-## Sample interfaces and classes for testing
+<br>
+
+### Sample interfaces and classes for testing
 [https://github.com/mohamed-ashraf-bayor/jisel-annotation-client](https://github.com/mohamed-ashraf-bayor/jisel-annotation-client)
 
-## Issues, Bugs, Suggestions
+### Issues, Bugs, Suggestions
 Contribute to the project's growth by reporting issues or making improvement suggestions [here](https://github.com/mohamed-ashraf-bayor/jisel/issues/new/choose)
