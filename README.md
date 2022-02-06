@@ -103,8 +103,8 @@ public final class StudentWorkerHybrid implements SealedStudentSociable, SealedW
 
 ```
 
-### Sample interfaces and classes for testing
+## Sample interfaces and classes for testing
 [https://github.com/mohamed-ashraf-bayor/jisel-annotation-client](https://github.com/mohamed-ashraf-bayor/jisel-annotation-client)
 
-### Issues, Bugs, Suggestions
+## Issues, Bugs, Suggestions
 Contribute to the project's growth by reporting issues or making improvement suggestions [here](https://github.com/mohamed-ashraf-bayor/jisel/issues/new/choose)

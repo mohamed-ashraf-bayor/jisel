@@ -21,6 +21,8 @@
  */
 package org.jisel.handlers;
 
+import org.jisel.annotations.AddToProfile;
+import org.jisel.annotations.SealForProfile;
 import org.jisel.generator.StringGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -44,13 +46,13 @@ import static java.util.stream.Stream.concat;
 import static org.jisel.generator.StringGenerator.removeCommaSeparator;
 
 /**
- * Exposes contract to fulfill by any class handling all elements annotated with &#64;{@link org.jisel.SealForProfile}(s) and &#64;{@link org.jisel.AddToProfile}(s) annotations
+ * Exposes contract to fulfill by any class handling all elements annotated with &#64;{@link SealForProfile}(s) and &#64;{@link AddToProfile}(s) annotations
  */
 public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForProfileHandler, AddToProfileHandler,
         AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
 
     /**
-     * Reads values of all attributes provided through the use of &#64;{@link org.jisel.SealForProfile} and &#64;{@link org.jisel.AddToProfile} annotations and
+     * Reads values of all attributes provided through the use of &#64;{@link SealForProfile} and &#64;{@link AddToProfile} annotations and
      * populates the provided Map arguments
      *
      * @param processingEnv                              {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
@@ -74,7 +76,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
                                                  Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
 
     /**
-     * For a specified class or interface annotated with &#64;{@link org.jisel.AddToProfile}, constructs a Map storing a Set of all the provided
+     * For a specified class or interface annotated with &#64;{@link AddToProfile}, constructs a Map storing a Set of all the provided
      * profiles names (as the Map value) for each one of the large interfaces names (as the Map key) provided through &#64;AddToProfile.
      *
      * @param processingEnv             {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
@@ -87,7 +89,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
                 .map(Object::toString)
                 .collect(joining(COMMA_SEPARATOR));
         // sample values for annotationRawValueAsString:
-        // @org.jisel.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable"),@org.jisel.AddToProfile(largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
+        // @org.jisel.annotations.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable"),@org.jisel.annotations.AddToProfile(largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
         // process addToProfile
         var addToProfileMatcher = Pattern.compile(ADD_TO_PROFILE_REGEX).matcher(annotationRawValueAsString);
         while (addToProfileMatcher.find()) {
@@ -126,7 +128,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
     }
 
     /**
-     * For a specified large interface abstract method annotated with &#64;{@link org.jisel.SealForProfile}, constructs a Set storing all the provided profiles names
+     * For a specified large interface abstract method annotated with &#64;{@link SealForProfile}, constructs a Set storing all the provided profiles names
      *
      * @param processingEnv   {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param annotatedMethod {@link Element} instance representing the annotated method of the large interface
@@ -140,7 +142,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
                 .forEach(annotationRawValueAsString -> {
                     // sample values for annotationRawValueAsString:
                     // single value: "profile1name"
-                    // multiple: {@org.jisel.SealForProfile("profile2name"), @org.jisel.SealForProfile("profile3name"),...}
+                    // multiple: {@org.jisel.annotations.SealForProfile("profile2name"), @org.jisel.annotations.SealForProfile("profile3name"),...}
                     var matcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(annotationRawValueAsString);
                     while (matcher.find()) {
                         var profile = matcher.group(1).strip();

@@ -21,6 +21,8 @@
  */
 package org.jisel.handlers;
 
+import org.jisel.annotations.SealForProfile;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -37,7 +39,7 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 
 /**
- * Handles all elements annotated with &#64;{@link org.jisel.SealForProfile}
+ * Handles all elements annotated with &#64;{@link SealForProfile}
  */
 public final class SealForProfileHandler implements JiselAnnotationHandler {
 

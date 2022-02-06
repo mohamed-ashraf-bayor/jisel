@@ -21,6 +21,7 @@
  */
 module jisel {
     exports org.jisel;
+    exports org.jisel.annotations;
     requires java.compiler;
     requires java.logging;
     requires com.google.auto.service;

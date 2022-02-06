@@ -22,6 +22,10 @@
 package org.jisel;
 
 import com.google.auto.service.AutoService;
+import org.jisel.annotations.AddToProfile;
+import org.jisel.annotations.AddToProfiles;
+import org.jisel.annotations.SealForProfile;
+import org.jisel.annotations.SealForProfiles;
 import org.jisel.generator.SealedInterfaceSourceFileGenerator;
 import org.jisel.generator.StringGenerator;
 import org.jisel.handlers.AddToProfileHandler;

@@ -21,6 +21,8 @@
  */
 package org.jisel.handlers;
 
+import org.jisel.annotations.AddToProfile;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -36,7 +38,7 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 
 /**
- * Handles all elements annotated with &#64;{@link org.jisel.AddToProfile}
+ * Handles all elements annotated with &#64;{@link AddToProfile}
  */
 public final class AddToProfileHandler implements JiselAnnotationHandler {
 

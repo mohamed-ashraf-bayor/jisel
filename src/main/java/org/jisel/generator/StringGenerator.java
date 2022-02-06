@@ -21,6 +21,11 @@
  */
 package org.jisel.generator;
 
+import org.jisel.annotations.AddToProfile;
+import org.jisel.annotations.AddToProfiles;
+import org.jisel.annotations.SealForProfile;
+import org.jisel.annotations.SealForProfiles;
+
 import javax.lang.model.element.Element;
 import java.util.List;
 import java.util.Optional;
@@ -153,13 +158,13 @@ public interface StringGenerator {
      */
     String ANNOTATION_VALUES_REGEX = "\"([^\"]*)\"";
     /**
-     * Regex expression to read attributes information provided using the {@link org.jisel.AddToProfile} annotation.<br>
-     * Sample value to be parsed by the regex: @org.jisel.AddToProfile(profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
+     * Regex expression to read attributes information provided using the {@link AddToProfile} annotation.<br>
+     * Sample value to be parsed by the regex: @org.jisel.annotations.AddToProfile(profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
      */
     String ADD_TO_PROFILE_REGEX = "AddToProfile\\((.*?)\\)";
     /**
-     * Regex expression to read attributes information provided using the {@link org.jisel.AddToProfiles} annotation.<br>
-     * Sample value to be parsed by the regex: @org.jisel.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
+     * Regex expression to read attributes information provided using the {@link AddToProfiles} annotation.<br>
+     * Sample value to be parsed by the regex: @org.jisel.annotations.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
      */
     String ADD_TO_PROFILES_REGEX = "AddToProfiles\\((.*?)\\)";
 
@@ -179,37 +184,37 @@ public interface StringGenerator {
     String FILE_GENERATION_SUCCESS = "Successfully generated";
 
     /**
-     * Fully qualified name of the {@link org.jisel.SealForProfile} annotation
+     * Fully qualified name of the {@link SealForProfile} annotation
      */
-    String ORG_JISEL_SEAL_FOR_PROFILE = "org.jisel.SealForProfile";
+    String ORG_JISEL_SEAL_FOR_PROFILE = "org.jisel.annotations.SealForProfile";
     /**
-     * Fully qualified name of the {@link org.jisel.SealForProfiles} annotation
+     * Fully qualified name of the {@link SealForProfiles} annotation
      */
-    String ORG_JISEL_SEAL_FOR_PROFILES = "org.jisel.SealForProfiles";
+    String ORG_JISEL_SEAL_FOR_PROFILES = "org.jisel.annotations.SealForProfiles";
     /**
-     * Fully qualified name of the {@link org.jisel.SealForProfile.SealForProfilez} annotation
+     * Fully qualified name of the {@link SealForProfile.SealForProfilez} annotation
      */
-    String ORG_JISEL_SEAL_FOR_PROFILEZ = "org.jisel.SealForProfile.SealForProfilez";
+    String ORG_JISEL_SEAL_FOR_PROFILEZ = "org.jisel.annotations.SealForProfile.SealForProfilez";
     /**
-     * Fully qualified name of the {@link org.jisel.SealForProfiles.SealForProfilezz} annotation
+     * Fully qualified name of the {@link SealForProfiles.SealForProfilezz} annotation
      */
-    String ORG_JISEL_SEAL_FOR_PROFILEZZ = "org.jisel.SealForProfiles.SealForProfilezz";
+    String ORG_JISEL_SEAL_FOR_PROFILEZZ = "org.jisel.annotations.SealForProfiles.SealForProfilezz";
     /**
-     * Fully qualified name of the {@link org.jisel.AddToProfile} annotation
+     * Fully qualified name of the {@link AddToProfile} annotation
      */
-    String ORG_JISEL_ADD_TO_PROFILE = "org.jisel.AddToProfile";
+    String ORG_JISEL_ADD_TO_PROFILE = "org.jisel.annotations.AddToProfile";
     /**
-     * Fully qualified name of the {@link org.jisel.AddToProfiles} annotation
+     * Fully qualified name of the {@link AddToProfiles} annotation
      */
-    String ORG_JISEL_ADD_TO_PROFILES = "org.jisel.AddToProfiles";
+    String ORG_JISEL_ADD_TO_PROFILES = "org.jisel.annotations.AddToProfiles";
     /**
-     * Fully qualified name of the {@link org.jisel.AddToProfile.AddToProfilez} annotation
+     * Fully qualified name of the {@link AddToProfile.AddToProfilez} annotation
      */
-    String ORG_JISEL_ADD_TO_PROFILEZ = "org.jisel.AddToProfile.AddToProfilez";
+    String ORG_JISEL_ADD_TO_PROFILEZ = "org.jisel.annotations.AddToProfile.AddToProfilez";
     /**
-     * Fully qualified name of the {@link org.jisel.AddToProfiles.AddToProfilezz} annotation
+     * Fully qualified name of the {@link AddToProfiles.AddToProfilezz} annotation
      */
-    String ORG_JISEL_ADD_TO_PROFILEZZ = "org.jisel.AddToProfiles.AddToProfilezz";
+    String ORG_JISEL_ADD_TO_PROFILEZZ = "org.jisel.annotations.AddToProfiles.AddToProfilezz";
 
     /**
      * Default value to use for boolean returned values
