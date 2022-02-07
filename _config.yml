@@ -1,6 +1,3 @@
 theme: jekyll-theme-modernist
 title: JISEL - Java Interface Segregation Library
 description: Interface Segregation Principle Code Generation Tool
-plugins:
-  - jekyll-seo-tag
-  
