@@ -41,20 +41,20 @@ import static java.util.stream.Stream.concat;
 /**
  * Handles all elements annotated with &#64;{@link SealForProfile}
  */
-public final class SealForProfileHandler implements JiselAnnotationHandler {
+public final class SealForHandler implements JiselAnnotationHandler {
 
     private final AnnotationInfoCollectionHandler annotationInfoCollectionHandler;
     private final UniqueParentInterfaceHandler uniqueParentInterfaceHandler;
     private final ParentChildInheritanceHandler parentChildInheritanceHandler;
 
     /**
-     * SealForProfileHandler constructor. Instantiates needed instances of {@link SealForProfileInfoCollectionHandler},
-     * {@link SealForProfileUniqueParentInterfaceHandler} and {@link SealForProfileParentChildInheritanceHandler}
+     * SealForProfileHandler constructor. Instantiates needed instances of {@link SealForInfoCollectionHandler},
+     * {@link SealForUniqueParentInterfaceHandler} and {@link SealForParentChildInheritanceHandler}
      */
-    public SealForProfileHandler() {
-        this.annotationInfoCollectionHandler = new SealForProfileInfoCollectionHandler();
-        this.uniqueParentInterfaceHandler = new SealForProfileUniqueParentInterfaceHandler();
-        this.parentChildInheritanceHandler = new SealForProfileParentChildInheritanceHandler();
+    public SealForHandler() {
+        this.annotationInfoCollectionHandler = new SealForInfoCollectionHandler();
+        this.uniqueParentInterfaceHandler = new SealForUniqueParentInterfaceHandler();
+        this.parentChildInheritanceHandler = new SealForParentChildInheritanceHandler();
     }
 
     @Override
@@ -73,7 +73,7 @@ public final class SealForProfileHandler implements JiselAnnotationHandler {
  * Collects necessary information from the annotated elements, in order to populate the Map containing the sealed
  * interfaces information to be generated
  */
-final class SealForProfileInfoCollectionHandler implements AnnotationInfoCollectionHandler {
+final class SealForInfoCollectionHandler implements AnnotationInfoCollectionHandler {
 
     @Override
     public void populateSealedInterfacesMap(final ProcessingEnvironment processingEnv,
@@ -122,7 +122,7 @@ final class SealForProfileInfoCollectionHandler implements AnnotationInfoCollect
 /**
  * Builds parent-children relations based on information provided in the Map containing the sealed interfaces information to be generated
  */
-final class SealForProfileParentChildInheritanceHandler implements ParentChildInheritanceHandler {
+final class SealForParentChildInheritanceHandler implements ParentChildInheritanceHandler {
     @Override
     public void buildInheritanceRelations(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                           final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
@@ -155,7 +155,7 @@ final class SealForProfileParentChildInheritanceHandler implements ParentChildIn
 /**
  * Checks for the presence of an unique parent interface based on information provided in the Map containing the sealed interfaces information to be generated
  */
-final class SealForProfileUniqueParentInterfaceHandler implements UniqueParentInterfaceHandler {
+final class SealForUniqueParentInterfaceHandler implements UniqueParentInterfaceHandler {
     @Override
     public Map<Element, String> checkAndHandleUniqueParentInterface(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         var statusReport = new HashMap<Element, String>();

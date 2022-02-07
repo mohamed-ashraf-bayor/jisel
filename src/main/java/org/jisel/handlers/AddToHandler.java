@@ -40,7 +40,7 @@ import static java.util.stream.Stream.concat;
 /**
  * Handles all elements annotated with &#64;{@link AddToProfile}
  */
-public final class AddToProfileHandler implements JiselAnnotationHandler {
+public final class AddToHandler implements JiselAnnotationHandler {
 
     @Override
     public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,

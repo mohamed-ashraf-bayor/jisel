@@ -28,9 +28,9 @@ import org.jisel.annotations.SealForProfile;
 import org.jisel.annotations.SealForProfiles;
 import org.jisel.generator.SealedInterfaceSourceFileGenerator;
 import org.jisel.generator.StringGenerator;
-import org.jisel.handlers.AddToProfileHandler;
+import org.jisel.handlers.AddToHandler;
 import org.jisel.handlers.JiselAnnotationHandler;
-import org.jisel.handlers.SealForProfileHandler;
+import org.jisel.handlers.SealForHandler;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
@@ -80,11 +80,11 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
     private final SealedInterfaceSourceFileGenerator sealedInterfaceSourceFileGenerator;
 
     /**
-     * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForProfileHandler}, {@link AddToProfileHandler} and {@link SealedInterfaceSourceFileGenerator}
+     * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForHandler}, {@link AddToHandler} and {@link SealedInterfaceSourceFileGenerator}
      */
     public JiselAnnotationProcessor() {
-        this.sealForProfileHandler = new SealForProfileHandler();
-        this.addToProfileHandler = new AddToProfileHandler();
+        this.sealForProfileHandler = new SealForHandler();
+        this.addToProfileHandler = new AddToHandler();
         this.sealedInterfaceSourceFileGenerator = new SealedInterfaceSourceFileGenerator();
     }
 

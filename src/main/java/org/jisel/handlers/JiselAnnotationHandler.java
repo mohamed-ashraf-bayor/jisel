@@ -48,7 +48,7 @@ import static org.jisel.generator.StringGenerator.removeCommaSeparator;
 /**
  * Exposes contract to fulfill by any class handling all elements annotated with &#64;{@link SealForProfile}(s) and &#64;{@link AddToProfile}(s) annotations
  */
-public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForProfileHandler, AddToProfileHandler,
+public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForHandler, AddToHandler,
         AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
 
     /**
@@ -160,7 +160,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
  * Exposes contract to fulfill by any class dedicated to collecting necessary information from the annotated elements,
  * in order to populate the {@link Map} containing the sealed interfaces information to be generated
  */
-sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler permits SealForProfileInfoCollectionHandler {
+sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler permits SealForInfoCollectionHandler {
 
     /**
      * Populates the Map containing the sealed interfaces information to be generated
@@ -256,7 +256,7 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
  * Exposes contract to fulfill by any class dedicated to building parent-children relations based on information provided in
  * the Map containing the sealed interfaces information to be generated
  */
-sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler permits SealForProfileParentChildInheritanceHandler {
+sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler permits SealForParentChildInheritanceHandler {
 
     /**
      * Reads information stored in the Map containing the sealed interfaces information to be generated, and populates another Map storing subtypes of the provided profiles
@@ -333,7 +333,7 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
  * Exposes contract to fulfill by any class dedicated to checking for the presence of an unique parent interface based on
  * information provided in the Map containing the sealed interfaces information to be generated
  */
-sealed interface UniqueParentInterfaceHandler extends JiselAnnotationHandler permits SealForProfileUniqueParentInterfaceHandler {
+sealed interface UniqueParentInterfaceHandler extends JiselAnnotationHandler permits SealForUniqueParentInterfaceHandler {
 
     /**
      * Checks for the presence of an unique parent interface based on information provided in the Map containing the sealed interfaces information to be generated,
