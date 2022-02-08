@@ -34,6 +34,7 @@ import org.jisel.generator.StringGenerator;
 import org.jisel.handlers.AddToHandler;
 import org.jisel.handlers.JiselAnnotationHandler;
 import org.jisel.handlers.SealForHandler;
+import org.jisel.handlers.TopLevelHandler;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
@@ -53,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
+import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
@@ -89,15 +91,18 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
 
     private final JiselAnnotationHandler addToHandler;
 
+    private final JiselAnnotationHandler topLevelHandler;
+
     private final SealedInterfaceSourceFileGenerator sealedInterfaceSourceFileGenerator;
 
     /**
-     * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForHandler}, {@link AddToHandler}
+     * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForHandler}, {@link AddToHandler},
      * and {@link SealedInterfaceSourceFileGenerator}
      */
     public JiselAnnotationProcessor() {
         this.sealForHandler = new SealForHandler();
         this.addToHandler = new AddToHandler();
+        this.topLevelHandler = new TopLevelHandler();
         this.sealedInterfaceSourceFileGenerator = new SealedInterfaceSourceFileGenerator();
     }
 
@@ -105,29 +110,39 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
 
         var allAnnotatedSealForElements = new HashSet<Element>();
+        var allAnnotatedTopLevelElements = new HashSet<Element>();
         var allAnnotatedAddToElements = new HashSet<Element>();
         var sealedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Set<Element>>>();
         var sealedInterfacesPermitsByLargeInterface = new HashMap<Element, Map<String, List<String>>>();
 
-        populateAllAnnotatedElementsSets(annotations, roundEnv, allAnnotatedSealForElements, allAnnotatedAddToElements);
+        populateAllAnnotatedElementsSets(annotations, roundEnv, allAnnotatedSealForElements, allAnnotatedTopLevelElements, allAnnotatedAddToElements);
 
         // process all interface methods annotated with @SealFor
-        var statusReport = sealForHandler.handleAnnotatedElements(
+        var sealForStatusReport = sealForHandler.handleAnnotatedElements(
                 processingEnv,
                 unmodifiableSet(allAnnotatedSealForElements),
                 sealedInterfacesToGenerateByLargeInterface,
                 sealedInterfacesPermitsByLargeInterface
         );
-        displayStatusReport(statusReport, SEAL_FOR);
+
+        // process all interface methods annotated with @TopLevel
+        var topLevelStatusReport = topLevelHandler.handleAnnotatedElements(
+                processingEnv,
+                unmodifiableSet(allAnnotatedTopLevelElements),
+                sealedInterfacesToGenerateByLargeInterface,
+                sealedInterfacesPermitsByLargeInterface
+        );
+
+        displayStatusReport(mergeSealForAndTopLevelStatusReports(sealForStatusReport, topLevelStatusReport), SEAL_FOR, TOP_LEVEL);
 
         // process all child classes or interfaces annotated with @AddTo
-        statusReport = addToHandler.handleAnnotatedElements(
+        var addToStatusReport = addToHandler.handleAnnotatedElements(
                 processingEnv,
                 unmodifiableSet(allAnnotatedAddToElements),
                 unmodifiableMap(sealedInterfacesToGenerateByLargeInterface),
                 sealedInterfacesPermitsByLargeInterface
         );
-        displayStatusReport(statusReport, ADD_TO);
+        displayStatusReport(addToStatusReport, ADD_TO);
 
         try {
             var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(
@@ -147,21 +162,35 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
 
     private void populateAllAnnotatedElementsSets(final Set<? extends TypeElement> annotations,
                                                   final RoundEnvironment roundEnv,
-                                                  final Set<Element> allAnnotatedSealForProfileElements,
-                                                  final Set<Element> allAnnotatedAddToProfileElements) {
+                                                  final Set<Element> allAnnotatedSealForElements,
+                                                  final Set<Element> allAnnotatedTopLevelElements,
+                                                  final Set<Element> allAnnotatedAddToElements) {
         for (var annotation : annotations) {
             if (annotation.getSimpleName().toString().contains(SEAL_FOR)) {
-                allAnnotatedSealForProfileElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
+                allAnnotatedSealForElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
+            }
+            if (annotation.getSimpleName().toString().contains(TOP_LEVEL)) {
+                allAnnotatedTopLevelElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
             if (annotation.getSimpleName().toString().contains(ADD_TO)) {
-                allAnnotatedAddToProfileElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
+                allAnnotatedAddToElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
         }
     }
 
-    private void displayStatusReport(final Map<Element, String> statusReport, final String annotationName) {
+    private Map<Element, String> mergeSealForAndTopLevelStatusReports(final Map<Element, String> sealForStatusReport,
+                                                                      final Map<Element, String> topLevelStatusReport) {
+        topLevelStatusReport.forEach((largeInterfaceElement, reportText) -> sealForStatusReport.remove(largeInterfaceElement));
+        return sealForStatusReport;
+    }
+
+    private void displayStatusReport(final Map<Element, String> statusReport, final String... annotationsNames) {
         if (!statusReport.values().stream().collect(joining()).isBlank()) {
-            var output = new StringBuilder(format("%n%s - @%s%n", STATUS_REPORT_TITLE, annotationName));
+            var output = new StringBuilder(format(
+                    "%n%s - %s%n",
+                    STATUS_REPORT_TITLE,
+                    stream(annotationsNames).map(name -> AT_SIGN + name).collect(joining(COMMA_SEPARATOR + WHITESPACE))
+            ));
             statusReport.entrySet().forEach(mapEntry -> {
                 if (!mapEntry.getValue().isBlank()) {
                     output.append(format("\t> %s: %s%n", mapEntry.getKey().toString(), mapEntry.getValue()));

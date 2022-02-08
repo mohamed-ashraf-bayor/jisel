@@ -51,7 +51,7 @@ import static org.jisel.generator.StringGenerator.removeCommaSeparator;
  * Exposes contract to fulfill by any class handling all elements annotated with &#64;{@link SealFor}, &#64;{@link AddTo},
  * &#64;{@link SealForProfile}(s) and &#64;{@link AddToProfile}(s) annotations
  */
-public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForHandler, AddToHandler,
+public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForHandler, AddToHandler, TopLevelHandler,
         AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
 
     /**
@@ -98,7 +98,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
         while (addToMatcher.find()) {
             var attributesWithValues = addToMatcher.group(1).strip(); // profiles={"ActiveWorker", "Student"}, largeInterface=com.bayor.jisel.annotation.client.data.Sociable.class
             var profilesSet = new HashSet<String>();
-            if (attributesWithValues.contains(PROFILES + EQUALS)) {
+            if (attributesWithValues.contains(PROFILES + EQUALS_SIGN)) {
                 var commaSeparatedProfiles = attributesWithValues.substring(attributesWithValues.indexOf(OPENING_CURLY_BRACE) + 1, attributesWithValues.indexOf(CLOSING_CURLY_BRACE));
                 var profilesNamesMatcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(commaSeparatedProfiles);
                 while (profilesNamesMatcher.find()) {

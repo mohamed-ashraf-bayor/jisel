@@ -58,7 +58,7 @@ public interface StringGenerator {
     /**
      * "=" equals
      */
-    String EQUALS = "=";
+    String EQUALS_SIGN = "=";
     /**
      * "Sealed"
      */
@@ -124,13 +124,17 @@ public interface StringGenerator {
      */
     String DOT = ".";
     /**
+     * "@"
+     */
+    String AT_SIGN = "@";
+    /**
      * "param"
      */
     String PARAMETER_PREFIX = "param";
     /**
      * "@"
      */
-    String TEMP_PLACEHOLDER = "@";
+    String TEMP_PLACEHOLDER = AT_SIGN;
     /**
      * "_"
      */
@@ -160,6 +164,10 @@ public interface StringGenerator {
      * "AddTo"
      */
     String ADD_TO = "AddTo";
+    /**
+     * "TopLevel"
+     */
+    String TOP_LEVEL = "TopLevel";
     /**
      * "SealForProfile"
      */
@@ -373,7 +381,7 @@ public interface StringGenerator {
      * @return string containg the largeInterface attribute value with
      */
     default String addQuotesToLargeInterfaceValue(final String largeInterfaceAttributeRawString) {
-        return largeInterfaceAttributeRawString.replace(LARGE_INTERFACE + EQUALS, LARGE_INTERFACE + EQUALS + ESCAPED_DOUBLE_QUOTES).replace(DOT_CLASS, ESCAPED_DOUBLE_QUOTES);
+        return largeInterfaceAttributeRawString.replace(LARGE_INTERFACE + EQUALS_SIGN, LARGE_INTERFACE + EQUALS_SIGN + ESCAPED_DOUBLE_QUOTES).replace(DOT_CLASS, ESCAPED_DOUBLE_QUOTES);
     }
 
     /**
