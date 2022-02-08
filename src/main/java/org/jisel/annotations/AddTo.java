@@ -46,7 +46,7 @@ public @interface AddTo {
      *
      * @return array of profiles names
      */
-    String[] profile() default EMPTY_STRING;
+    String[] profiles() default EMPTY_STRING;
 
     /**
      * <i>Required</i> - <b>.class</b> representation of the large interface. That would be the <b>&#60;LargeInterfaceSimpleName&#62;</b> as seen in

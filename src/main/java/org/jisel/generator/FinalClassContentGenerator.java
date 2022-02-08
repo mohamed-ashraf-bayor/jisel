@@ -86,7 +86,7 @@ public class FinalClassContentGenerator implements StringGenerator {
                 largeInterfaceElement
         );
         // opening bracket after permits list
-        finalClassContent.append(format(" %s%n ", OPENING_BRACKET));
+        finalClassContent.append(format(" %s%n ", OPENING_CURLY_BRACE));
         // list of methods
         methodsGenerator.generateEmptyConcreteMethodsFromElementsSet(
                 finalClassContent,
@@ -96,7 +96,7 @@ public class FinalClassContentGenerator implements StringGenerator {
                         .collect(toSet())
         );
         // closing bracket
-        finalClassContent.append(CLOSING_BRACKET);
+        finalClassContent.append(CLOSING_CURLY_BRACE);
         //
         return removeDoubleSpaceOccurrences(finalClassContent.toString());
     }

@@ -22,10 +22,13 @@
 package org.jisel;
 
 import com.google.auto.service.AutoService;
+import org.jisel.annotations.AddTo;
 import org.jisel.annotations.AddToProfile;
 import org.jisel.annotations.AddToProfiles;
+import org.jisel.annotations.SealFor;
 import org.jisel.annotations.SealForProfile;
 import org.jisel.annotations.SealForProfiles;
+import org.jisel.annotations.TopLevel;
 import org.jisel.generator.SealedInterfaceSourceFileGenerator;
 import org.jisel.generator.StringGenerator;
 import org.jisel.handlers.AddToHandler;
@@ -53,68 +56,78 @@ import static java.lang.String.format;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TOS;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILE;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILES;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILEZ;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILEZZ;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FORS;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILE;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILES;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZ;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZZ;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_TOP_LEVEL;
 
 /**
- * Jisel annotation processor class. Picks up and processes all elements annotated with @{@link SealForProfile}, @{@link SealForProfiles}, @{@link AddToProfile} and @{@link AddToProfiles}<br>
+ * Jisel annotation processor class. Picks up and processes all elements annotated with &#64;{@link SealFor},
+ * &#64;{@link AddTo}, &#64;{@link TopLevel}, &#64;{@link SealForProfile}, &#64;{@link SealForProfiles},
+ * &#64;{@link AddToProfile} and &#64;{@link AddToProfiles}<br>
  */
-@SupportedAnnotationTypes({ORG_JISEL_SEAL_FOR_PROFILE, ORG_JISEL_SEAL_FOR_PROFILES, ORG_JISEL_SEAL_FOR_PROFILEZ, ORG_JISEL_SEAL_FOR_PROFILEZZ,
-        ORG_JISEL_ADD_TO_PROFILE, ORG_JISEL_ADD_TO_PROFILES, ORG_JISEL_ADD_TO_PROFILEZ, ORG_JISEL_ADD_TO_PROFILEZZ})
+@SupportedAnnotationTypes({ORG_JISEL_SEAL_FOR_PROFILE, ORG_JISEL_SEAL_FOR_PROFILES, ORG_JISEL_SEAL_FOR_PROFILEZ,
+        ORG_JISEL_SEAL_FOR_PROFILEZZ, ORG_JISEL_ADD_TO_PROFILE, ORG_JISEL_ADD_TO_PROFILES, ORG_JISEL_ADD_TO_PROFILEZ,
+        ORG_JISEL_ADD_TO_PROFILEZZ, ORG_JISEL_TOP_LEVEL, ORG_JISEL_ADD_TO, ORG_JISEL_SEAL_FOR, ORG_JISEL_SEAL_FORS,
+        ORG_JISEL_ADD_TOS})
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
 public class JiselAnnotationProcessor extends AbstractProcessor implements StringGenerator {
 
     private final Logger log = Logger.getLogger(JiselAnnotationProcessor.class.getName());
 
-    private final JiselAnnotationHandler sealForProfileHandler;
+    private final JiselAnnotationHandler sealForHandler;
 
-    private final JiselAnnotationHandler addToProfileHandler;
+    private final JiselAnnotationHandler addToHandler;
 
     private final SealedInterfaceSourceFileGenerator sealedInterfaceSourceFileGenerator;
 
     /**
-     * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForHandler}, {@link AddToHandler} and {@link SealedInterfaceSourceFileGenerator}
+     * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForHandler}, {@link AddToHandler}
+     * and {@link SealedInterfaceSourceFileGenerator}
      */
     public JiselAnnotationProcessor() {
-        this.sealForProfileHandler = new SealForHandler();
-        this.addToProfileHandler = new AddToHandler();
+        this.sealForHandler = new SealForHandler();
+        this.addToHandler = new AddToHandler();
         this.sealedInterfaceSourceFileGenerator = new SealedInterfaceSourceFileGenerator();
     }
 
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
 
-        var allAnnotatedSealForProfileElements = new HashSet<Element>();
-        var allAnnotatedAddToProfileElements = new HashSet<Element>();
+        var allAnnotatedSealForElements = new HashSet<Element>();
+        var allAnnotatedAddToElements = new HashSet<Element>();
         var sealedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Set<Element>>>();
         var sealedInterfacesPermitsByLargeInterface = new HashMap<Element, Map<String, List<String>>>();
 
-        populateAllAnnotatedElementsSets(annotations, roundEnv, allAnnotatedSealForProfileElements, allAnnotatedAddToProfileElements);
+        populateAllAnnotatedElementsSets(annotations, roundEnv, allAnnotatedSealForElements, allAnnotatedAddToElements);
 
-        // process all interface methods annotated with @SealForProfile
-        var statusReport = sealForProfileHandler.handleAnnotatedElements(
+        // process all interface methods annotated with @SealFor
+        var statusReport = sealForHandler.handleAnnotatedElements(
                 processingEnv,
-                unmodifiableSet(allAnnotatedSealForProfileElements),
+                unmodifiableSet(allAnnotatedSealForElements),
                 sealedInterfacesToGenerateByLargeInterface,
                 sealedInterfacesPermitsByLargeInterface
         );
-        displayStatusReport(statusReport, SEAL_FOR_PROFILE);
+        displayStatusReport(statusReport, SEAL_FOR);
 
-        // process all child classes or interfaces annotated with @AddToProfile
-        statusReport = addToProfileHandler.handleAnnotatedElements(
+        // process all child classes or interfaces annotated with @AddTo
+        statusReport = addToHandler.handleAnnotatedElements(
                 processingEnv,
-                unmodifiableSet(allAnnotatedAddToProfileElements),
+                unmodifiableSet(allAnnotatedAddToElements),
                 unmodifiableMap(sealedInterfacesToGenerateByLargeInterface),
                 sealedInterfacesPermitsByLargeInterface
         );
-        displayStatusReport(statusReport, ADD_TO_PROFILE);
+        displayStatusReport(statusReport, ADD_TO);
 
         try {
             var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(
@@ -137,10 +150,10 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
                                                   final Set<Element> allAnnotatedSealForProfileElements,
                                                   final Set<Element> allAnnotatedAddToProfileElements) {
         for (var annotation : annotations) {
-            if (annotation.getSimpleName().toString().contains(SEAL_FOR_PROFILE)) {
+            if (annotation.getSimpleName().toString().contains(SEAL_FOR)) {
                 allAnnotatedSealForProfileElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
-            if (annotation.getSimpleName().toString().contains(ADD_TO_PROFILE)) {
+            if (annotation.getSimpleName().toString().contains(ADD_TO)) {
                 allAnnotatedAddToProfileElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
         }

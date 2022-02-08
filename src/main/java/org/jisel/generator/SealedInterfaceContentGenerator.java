@@ -81,11 +81,11 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
         // list of permits
         permitsGenerator.generatePermitsClauseFromPermitsMapAndProcessedProfile(sealedInterfaceContent, sealedInterfacesPermitsMap, profile, largeInterfaceElement);
         // opening bracket after permits list
-        sealedInterfaceContent.append(format(" %s%n ", OPENING_BRACKET));
+        sealedInterfaceContent.append(format(" %s%n ", OPENING_CURLY_BRACE));
         // list of methods
         methodsGenerator.generateAbstractMethodsFromElementsSet(sealedInterfaceContent, sealedInterfacesToGenerateMapEntrySet.getValue());
         // closing bracket
-        sealedInterfaceContent.append(CLOSING_BRACKET);
+        sealedInterfaceContent.append(CLOSING_CURLY_BRACE);
         //
         return removeDoubleSpaceOccurrences(sealedInterfaceContent.toString());
     }
@@ -177,8 +177,8 @@ final class SealedInterfaceMethodsGenerator implements MethodsGenerator {
                                 generateReturnType(methodElement),
                                 generateMethodNameAndParameters(methodElement),
                                 generateThrownExceptions(methodElement).isEmpty()
-                                        ? OPENING_BRACKET + generateDefaultReturnValueForMethod(methodElement) + SEMICOLON + CLOSING_BRACKET
-                                        : format("throws %s", generateThrownExceptions(methodElement) + WHITESPACE + OPENING_BRACKET + generateDefaultReturnValueForMethod(methodElement) + SEMICOLON + CLOSING_BRACKET)
+                                        ? OPENING_CURLY_BRACE + generateDefaultReturnValueForMethod(methodElement) + SEMICOLON + CLOSING_CURLY_BRACE
+                                        : format("throws %s", generateThrownExceptions(methodElement) + WHITESPACE + OPENING_CURLY_BRACE + generateDefaultReturnValueForMethod(methodElement) + SEMICOLON + CLOSING_CURLY_BRACE)
                         ))
                         .toList()
         );

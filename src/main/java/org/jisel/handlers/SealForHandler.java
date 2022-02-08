@@ -21,7 +21,7 @@
  */
 package org.jisel.handlers;
 
-import org.jisel.annotations.SealForProfile;
+import org.jisel.annotations.SealFor;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -39,7 +39,7 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 
 /**
- * Handles all elements annotated with &#64;{@link SealForProfile}
+ * Handles all elements annotated with &#64;{@link SealFor}
  */
 public final class SealForHandler implements JiselAnnotationHandler {
 
@@ -92,7 +92,7 @@ final class SealForInfoCollectionHandler implements AnnotationInfoCollectionHand
                 (interfaceElement, annotatedMethodsElements) -> annotatedMethodsElements.forEach(
                         annotatedMethod -> extractProfilesAndPopulateMaps(
                                 interfaceElement,
-                                buildSealForProfileProvidedProfilesSet(processingEnv, annotatedMethod),
+                                buildSealForProvidedProfilesSet(processingEnv, annotatedMethod),
                                 annotatedMethod,
                                 annotatedMethodsByProfileByInterface
                         )
@@ -166,7 +166,7 @@ final class SealForUniqueParentInterfaceHandler implements UniqueParentInterface
                 sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).put(interfaceElement.getSimpleName().toString(), sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).get(longestConcatenedProfilesStringOpt.get()));
                 sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).remove(longestConcatenedProfilesStringOpt.get());
             } else {
-                statusReport.put(interfaceElement, SEAL_FOR_PROFILE_REPORT_MSG);
+                statusReport.put(interfaceElement, SEAL_FOR_REPORT_MSG);
             }
         });
         return statusReport;

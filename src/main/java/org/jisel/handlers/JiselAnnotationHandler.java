@@ -21,7 +21,9 @@
  */
 package org.jisel.handlers;
 
+import org.jisel.annotations.AddTo;
 import org.jisel.annotations.AddToProfile;
+import org.jisel.annotations.SealFor;
 import org.jisel.annotations.SealForProfile;
 import org.jisel.generator.StringGenerator;
 
@@ -46,14 +48,15 @@ import static java.util.stream.Stream.concat;
 import static org.jisel.generator.StringGenerator.removeCommaSeparator;
 
 /**
- * Exposes contract to fulfill by any class handling all elements annotated with &#64;{@link SealForProfile}(s) and &#64;{@link AddToProfile}(s) annotations
+ * Exposes contract to fulfill by any class handling all elements annotated with &#64;{@link SealFor}, &#64;{@link AddTo},
+ * &#64;{@link SealForProfile}(s) and &#64;{@link AddToProfile}(s) annotations
  */
 public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForHandler, AddToHandler,
         AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
 
     /**
-     * Reads values of all attributes provided through the use of &#64;{@link SealForProfile} and &#64;{@link AddToProfile} annotations and
-     * populates the provided Map arguments
+     * Reads values of all attributes provided through the use of #64;{@link SealFor}, &#64;{@link AddTo}, &#64;{@link SealForProfile}
+     * and &#64;{@link AddToProfile} annotations and populates the provided Map arguments
      *
      * @param processingEnv                              {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param allAnnotatedElements                       {@link Set} of {@link Element} instances representing all classes annotated with &#64;AddToProfile and
@@ -74,6 +77,38 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
                                                  Set<Element> allAnnotatedElements,
                                                  Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                  Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
+
+    /**
+     * For a specified class or interface annotated with &#64;{@link AddTo}, constructs a Map storing a Set of all the provided
+     * profiles names (as the Map value) for each one of the large interfaces names (as the Map key) provided through &#64;AddToProfile.
+     *
+     * @param processingEnv             {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
+     * @param annotatedClassOrInterface {@link Element} instance representing the annotated class or interface
+     * @return a Map storing a Set of all the provided profiles names (as the Map value) for each one of the large interfaces names (as the Map key)
+     */
+    default Map<String, Set<String>> buildAddToProvidedProfilesMap(final ProcessingEnvironment processingEnv, final Element annotatedClassOrInterface) {
+        var providedProfilesMap = new HashMap<String, Set<String>>();
+        var annotationRawValueAsString = processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedClassOrInterface).stream()
+                .map(Object::toString)
+                .collect(joining(COMMA_SEPARATOR));
+        // sample values for annotationRawValueAsString:
+        // @org.jisel.annotations.AddTo(profiles={"Student", "Worker"}, largeInterface=com.bayor.jisel.annotation.client.data.Sociable.class),@org.jisel.annotations.AddTo(largeInterface=com.bayor.jisel.annotation.client.data.Sociable.class)
+        // process addToProfile
+        var addToMatcher = Pattern.compile(ADD_TO_REGEX).matcher(annotationRawValueAsString);
+        while (addToMatcher.find()) {
+            var attributesWithValues = addToMatcher.group(1).strip(); // profiles={"ActiveWorker", "Student"}, largeInterface=com.bayor.jisel.annotation.client.data.Sociable.class
+            var profilesSet = new HashSet<String>();
+            if (attributesWithValues.contains(PROFILES + EQUALS)) {
+                var commaSeparatedProfiles = attributesWithValues.substring(attributesWithValues.indexOf(OPENING_CURLY_BRACE) + 1, attributesWithValues.indexOf(CLOSING_CURLY_BRACE));
+                var profilesNamesMatcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(commaSeparatedProfiles);
+                while (profilesNamesMatcher.find()) {
+                    profilesSet.add(profilesNamesMatcher.group(1).strip());
+                }
+            }
+            updateProvidedProfilesMapBasedOnProfilesSet(providedProfilesMap, profilesSet, addQuotesToLargeInterfaceValue(attributesWithValues));
+        }
+        return providedProfilesMap;
+    }
 
     /**
      * For a specified class or interface annotated with &#64;{@link AddToProfile}, constructs a Map storing a Set of all the provided
@@ -106,8 +141,8 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
         while (addToProfilesMatcher.find()) {
             var attributesWithValues = addToProfilesMatcher.group(1).strip();
             // sample values for annotationRawValueAsString:
-            // profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
-            var commaSeparatedProfiles = attributesWithValues.substring(attributesWithValues.indexOf(OPENING_BRACKET) + 1, attributesWithValues.indexOf(CLOSING_BRACKET));
+            // profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable"
+            var commaSeparatedProfiles = attributesWithValues.substring(attributesWithValues.indexOf(OPENING_CURLY_BRACE) + 1, attributesWithValues.indexOf(CLOSING_CURLY_BRACE));
             var profilesSet = new HashSet<String>();
             var profilesNamesMatcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(commaSeparatedProfiles);
             while (profilesNamesMatcher.find()) {
@@ -121,20 +156,26 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
     private void updateProvidedProfilesMapBasedOnProfilesSet(final Map<String, Set<String>> providedProfilesMap, final Set<String> profilesSet, final String attributesWithValues) {
         var largeInterface = EMPTY_STRING;
         var largeInterfaceAttributeMatcher = Pattern.compile(LARGE_INTERFACE_ATTRIBUTE_REGEX).matcher(attributesWithValues);
-        if (largeInterfaceAttributeMatcher.find()) { // get only the first occurence
-            largeInterface = largeInterfaceAttributeMatcher.group(1).strip();
+        if (largeInterfaceAttributeMatcher.find()) { // get only the first occurrence
+            largeInterface = removeDotClass(largeInterfaceAttributeMatcher.group(1).strip());
         }
-        providedProfilesMap.merge(largeInterface, profilesSet.isEmpty() ? new HashSet<>(Set.of(EMPTY_STRING)) : profilesSet, (currentSet, newSet) -> concat(currentSet.stream(), newSet.stream()).collect(toSet()));
+        providedProfilesMap.merge(
+                largeInterface,
+                profilesSet.isEmpty()
+                        ? new HashSet<>(Set.of(EMPTY_STRING))
+                        : profilesSet, (currentSet, newSet) -> concat(currentSet.stream(), newSet.stream()).collect(toSet())
+        );
     }
 
     /**
-     * For a specified large interface abstract method annotated with &#64;{@link SealForProfile}, constructs a Set storing all the provided profiles names
+     * For a specified large interface abstract method annotated with #64;{@link SealFor} or &#64;{@link SealForProfile},
+     * constructs a Set storing all the provided profiles names
      *
      * @param processingEnv   {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param annotatedMethod {@link Element} instance representing the annotated method of the large interface
      * @return a Set storing all the provided profiles names
      */
-    default Set<String> buildSealForProfileProvidedProfilesSet(final ProcessingEnvironment processingEnv, final Element annotatedMethod) {
+    default Set<String> buildSealForProvidedProfilesSet(final ProcessingEnvironment processingEnv, final Element annotatedMethod) {
         var providedProfilesSet = new HashSet<String>();
         processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedMethod).stream()
                 .flatMap(annotationMirror -> annotationMirror.getElementValues().entrySet().stream())
@@ -142,7 +183,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
                 .forEach(annotationRawValueAsString -> {
                     // sample values for annotationRawValueAsString:
                     // single value: "profile1name"
-                    // multiple: {@org.jisel.annotations.SealForProfile("profile2name"), @org.jisel.annotations.SealForProfile("profile3name"),...}
+                    // multiple: {@org.jisel.annotations.SealFor("profile2name"), @org.jisel.annotations.SealFor("profile3name"),...}
                     var matcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(annotationRawValueAsString);
                     while (matcher.find()) {
                         var profile = matcher.group(1).strip();
@@ -165,9 +206,11 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
     /**
      * Populates the Map containing the sealed interfaces information to be generated
      *
-     * @param processingEnv                              {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param allAnnotatedElements                       {@link Set} of {@link Element} instances representing all classes annotated with &#64;AddToProfile and
-     *                                                   all abstract methods annotated with &#64;SealForProfile
+     * @param processingEnv                              {@link ProcessingEnvironment} object, needed to access low-level
+     *                                                   information regarding the used annotations
+     * @param allAnnotatedElements                       {@link Set} of {@link Element} instances representing all classes
+     *                                                   annotated with &#64;{@link AddTo}, &#64;{@link AddToProfile}
+     *                                                   and all abstract methods annotated with &#64;{@link SealFor}, &#64;{@link SealForProfile}
      * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
      *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
