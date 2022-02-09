@@ -25,13 +25,13 @@ import org.jisel.annotations.TopLevel;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import java.util.Collection;
+import javax.lang.model.element.ElementKind;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -45,40 +45,19 @@ public final class TopLevelHandler implements JiselAnnotationHandler {
                                                         final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
-        sealedInterfacesToGenerateByLargeInterface.forEach((largeInterfaceElement, sealedInterfacesToGenerate) -> {
-            var allAnnotatedElementsToProcess = extractAnnotatedElementsFromLargeInterface(allAnnotatedElements, largeInterfaceElement);
-            sealedInterfacesToGenerate.forEach((profile, methodsElement) -> methodsElement.removeIf(allAnnotatedElementsToProcess::contains));
-            if (sealedInterfacesToGenerate.containsKey(largeInterfaceElement.getSimpleName().toString())) {
-                // unique top-level parent detected, update only sealedInterfacesToGenerateByLargeInterface
-                sealedInterfacesToGenerate.merge(
-                        largeInterfaceElement.getSimpleName().toString(),
-                        allAnnotatedElementsToProcess,
-                        (oldValue, newValue) -> Stream.concat(oldValue.stream(), newValue.stream()).collect(toSet())
-                );
-            } else {
-                // multiple top-level parent sealed interfaces, update both sealedInterfacesToGenerateByLargeInterface and sealedInterfacesPermitsByLargeInterface
-                // add the toplevel parent interface with all methods annotated with toplevel
-                sealedInterfacesToGenerate.put(largeInterfaceElement.getSimpleName().toString(), allAnnotatedElementsToProcess);
-                // update the hierarchy
-                var sealedInterfacesPermits = sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement);
-                sealedInterfacesPermits.put(largeInterfaceElement.getSimpleName().toString(), extractTopLevelParentProfiles(sealedInterfacesPermits));
-            }
-            statusReport.put(largeInterfaceElement, EMPTY_STRING);
-        });
+        allAnnotatedElements.stream()
+                .filter(element -> ElementKind.METHOD.equals(element.getKind()))
+                .filter(element -> ElementKind.INTERFACE.equals(element.getEnclosingElement().getKind()))
+                .collect(groupingBy(Element::getEnclosingElement, toSet()))
+                .forEach((largeInterfaceElement, annotatedMethodsSet) -> {
+                    // top parent sealed interfaces to be generated
+                    sealedInterfacesToGenerateByLargeInterface.put(
+                            largeInterfaceElement,
+                            new HashMap<>(Map.of(largeInterfaceElement.getSimpleName().toString(), annotatedMethodsSet))
+                    );
+                    // fill the status rep with the large interfaces processed, no description needed
+                    statusReport.put(largeInterfaceElement, EMPTY_STRING);
+                });
         return statusReport;
-    }
-
-    private Set<Element> extractAnnotatedElementsFromLargeInterface(final Set<Element> allAnnotatedElements, final Element largeInterfaceElement) {
-        return allAnnotatedElements.stream()
-                .filter(element -> element.getEnclosingElement().equals(largeInterfaceElement))
-                .collect(toSet());
-    }
-
-    private List<String> extractTopLevelParentProfiles(final Map<String, List<String>> sealedInterfacesPermitsMap) {
-        var allLowerLevelsProfiles = sealedInterfacesPermitsMap.values().stream().flatMap(Collection::stream).collect(toSet());
-        return sealedInterfacesPermitsMap.entrySet().stream()
-                .map(Map.Entry::getKey)
-                .filter(profile -> !allLowerLevelsProfiles.contains(profile))
-                .toList();
     }
 }

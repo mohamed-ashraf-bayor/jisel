@@ -169,14 +169,6 @@ public interface StringGenerator {
      */
     String TOP_LEVEL = "TopLevel";
     /**
-     * "SealForProfile"
-     */
-    String SEAL_FOR_PROFILE = "SealForProfile";
-    /**
-     * "AddToProfile"
-     */
-    String ADD_TO_PROFILE = "AddToProfile";
-    /**
      * "profile"
      */
     String PROFILE = "profile";
@@ -188,10 +180,6 @@ public interface StringGenerator {
      * "profiles"
      */
     String PROFILES = "profiles";
-    /**
-     * Regex expression to read the string value of the "profile" attribute
-     */
-    String PROFILES_ATTRIBUTE_REGEX = "profiles=\"([^\"]*)\"";
     /**
      * "largeInterface"
      */
@@ -309,11 +297,13 @@ public interface StringGenerator {
     /**
      * Message displayed during compilation when 1 or many provided profiles are not found in the provided parent interfaces.
      */
-    String ADD_TO_REPORT_MSG = "1 or many provided profiles are not found in the provided parent interfaces. Check your profiles and/or parent interfaces names.";
+    String ADD_TO_REPORT_MSG = "1 or many provided profiles are not found in the provided parent interfaces. " +
+            "Check your profiles and/or parent interfaces names. " +
+            "Also check the use of @TopLevel in the provided large interfaces.";
     /**
-     * Message displayed during compilation when more than 1 top-level parent sealed interfaces was encountered based on provided profiles
+     * Message displayed during compilation when &#64;TopLevel is not found within the provided large interface
      */
-    String SEAL_FOR_REPORT_MSG = "More than 1 Top-Level Parent Sealed Interfaces will be generated. Check your profiles mapping.";
+    String TOP_LEVEL_REPORT_MSG = "@TopLevel annotation not found. Check your mappings.";
 
     /**
      * "Report.txt"

@@ -67,7 +67,7 @@ public final class AddToHandler implements JiselAnnotationHandler {
                                            final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new StringBuilder();
         var addToProfileProvidedProfilesMap = buildAddToProvidedProfilesMap(processingEnv, annotatedClassOrInterface);
-        addToProfileProvidedProfilesMap.putAll(buildAddToProfileProvidedProfilesMap(processingEnv, annotatedClassOrInterface)); // remove when AddToProfile(s) removed
+        addToProfileProvidedProfilesMap.putAll(buildAddToProfileProvidedProfilesMap(processingEnv, annotatedClassOrInterface)); // remove line when @AddToProfile(s) removed
         if (addToProfileProvidedProfilesMap.isEmpty()) {
             // do not process if no profiles are provided
             return statusReport.toString();
@@ -82,7 +82,7 @@ public final class AddToHandler implements JiselAnnotationHandler {
             if (providedLargeInterfaceTypeOpt.isPresent()) {
                 var providedLargeInterfaceElement = processingEnv.getTypeUtils().asElement(processingEnv.getElementUtils().getTypeElement(providedLargeInterfaceQualifiedName).asType());
                 var annotatedMethodsByProfile = sealedInterfacesToGenerateByLargeInterface.get(providedLargeInterfaceElement);
-                profileFound = updateSealedInterfacesPermitsMapWithProvidedProfiles(
+                profileFound = Optional.ofNullable(annotatedMethodsByProfile).isPresent() && updateSealedInterfacesPermitsMapWithProvidedProfiles(
                         annotatedMethodsByProfile.keySet(),
                         providedLargeInterfaceElement,
                         annotatedClassOrInterface,

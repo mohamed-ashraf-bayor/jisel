@@ -97,7 +97,7 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
 
     /**
      * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForHandler}, {@link AddToHandler},
-     * and {@link SealedInterfaceSourceFileGenerator}
+     * {@link TopLevelHandler} and {@link SealedInterfaceSourceFileGenerator}
      */
     public JiselAnnotationProcessor() {
         this.sealForHandler = new SealForHandler();
@@ -117,44 +117,48 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
 
         populateAllAnnotatedElementsSets(annotations, roundEnv, allAnnotatedSealForElements, allAnnotatedTopLevelElements, allAnnotatedAddToElements);
 
-        // process all interface methods annotated with @SealFor
-        var sealForStatusReport = sealForHandler.handleAnnotatedElements(
-                processingEnv,
-                unmodifiableSet(allAnnotatedSealForElements),
-                sealedInterfacesToGenerateByLargeInterface,
-                sealedInterfacesPermitsByLargeInterface
-        );
+        // continue execution only if at least 1 element has been annotated with @TopLevel
+        if (!allAnnotatedTopLevelElements.isEmpty()) {
 
-        // process all interface methods annotated with @TopLevel
-        var topLevelStatusReport = topLevelHandler.handleAnnotatedElements(
-                processingEnv,
-                unmodifiableSet(allAnnotatedTopLevelElements),
-                sealedInterfacesToGenerateByLargeInterface,
-                sealedInterfacesPermitsByLargeInterface
-        );
-
-        displayStatusReport(mergeSealForAndTopLevelStatusReports(sealForStatusReport, topLevelStatusReport), SEAL_FOR, TOP_LEVEL);
-
-        // process all child classes or interfaces annotated with @AddTo
-        var addToStatusReport = addToHandler.handleAnnotatedElements(
-                processingEnv,
-                unmodifiableSet(allAnnotatedAddToElements),
-                unmodifiableMap(sealedInterfacesToGenerateByLargeInterface),
-                sealedInterfacesPermitsByLargeInterface
-        );
-        displayStatusReport(addToStatusReport, ADD_TO);
-
-        try {
-            var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(
+            // process all interface methods annotated with @TopLevel
+            var topLevelStatusReport = topLevelHandler.handleAnnotatedElements(
                     processingEnv,
+                    unmodifiableSet(allAnnotatedTopLevelElements),
+                    sealedInterfacesToGenerateByLargeInterface,
+                    unmodifiableMap(sealedInterfacesPermitsByLargeInterface)
+            );
+
+            // process all interface methods annotated with @SealFor
+            var sealForStatusReport = sealForHandler.handleAnnotatedElements(
+                    processingEnv,
+                    unmodifiableSet(allAnnotatedSealForElements),
                     sealedInterfacesToGenerateByLargeInterface,
                     sealedInterfacesPermitsByLargeInterface
             );
-            if (!generatedFiles.isEmpty()) {
-                log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining(format("%n")))));
+
+            displayStatusReport(extractLargeInterfacesWithNoTopLevel(sealForStatusReport, topLevelStatusReport), SEAL_FOR, TOP_LEVEL);
+
+            // process all child classes or interfaces annotated with @AddTo
+            var addToStatusReport = addToHandler.handleAnnotatedElements(
+                    processingEnv,
+                    unmodifiableSet(allAnnotatedAddToElements),
+                    unmodifiableMap(sealedInterfacesToGenerateByLargeInterface),
+                    sealedInterfacesPermitsByLargeInterface
+            );
+            displayStatusReport(addToStatusReport, ADD_TO);
+
+            try {
+                var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(
+                        processingEnv,
+                        sealedInterfacesToGenerateByLargeInterface,
+                        sealedInterfacesPermitsByLargeInterface
+                );
+                if (!generatedFiles.isEmpty()) {
+                    log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining(format("%n")))));
+                }
+            } catch (IOException e) {
+                log.log(Level.SEVERE, FILE_GENERATION_ERROR, e);
             }
-        } catch (IOException e) {
-            log.log(Level.SEVERE, FILE_GENERATION_ERROR, e);
         }
 
         return true;
@@ -165,7 +169,7 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
                                                   final Set<Element> allAnnotatedSealForElements,
                                                   final Set<Element> allAnnotatedTopLevelElements,
                                                   final Set<Element> allAnnotatedAddToElements) {
-        for (var annotation : annotations) {
+        for (final var annotation : annotations) {
             if (annotation.getSimpleName().toString().contains(SEAL_FOR)) {
                 allAnnotatedSealForElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
@@ -178,9 +182,10 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
         }
     }
 
-    private Map<Element, String> mergeSealForAndTopLevelStatusReports(final Map<Element, String> sealForStatusReport,
+    private Map<Element, String> extractLargeInterfacesWithNoTopLevel(final Map<Element, String> sealForStatusReport,
                                                                       final Map<Element, String> topLevelStatusReport) {
         topLevelStatusReport.forEach((largeInterfaceElement, reportText) -> sealForStatusReport.remove(largeInterfaceElement));
+        sealForStatusReport.replaceAll((key, value) -> TOP_LEVEL_REPORT_MSG);
         return sealForStatusReport;
     }
 

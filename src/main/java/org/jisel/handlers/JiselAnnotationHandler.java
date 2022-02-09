@@ -31,7 +31,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,14 +44,13 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
-import static org.jisel.generator.StringGenerator.removeCommaSeparator;
 
 /**
  * Exposes contract to fulfill by any class handling all elements annotated with &#64;{@link SealFor}, &#64;{@link AddTo},
  * &#64;{@link SealForProfile}(s) and &#64;{@link AddToProfile}(s) annotations
  */
 public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForHandler, AddToHandler, TopLevelHandler,
-        AnnotationInfoCollectionHandler, UniqueParentInterfaceHandler, ParentChildInheritanceHandler {
+        AnnotationInfoCollectionHandler, ParentChildInheritanceHandler {
 
     /**
      * Reads values of all attributes provided through the use of #64;{@link SealFor}, &#64;{@link AddTo}, &#64;{@link SealForProfile}
@@ -244,6 +242,8 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
                 methodsSetsList.add(methodsSet);
             });
             var totalProfiles = profilesList.size();
+            sealedInterfacesToGenerateByLargeInterface.putIfAbsent(interfaceElement, new HashMap<>());
+            sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).putAll(annotatedMethodsByProfileByLargeInterface.get(interfaceElement));
             for (int i = 0; i < totalProfiles - 1; i++) {
                 var allProcessedCommonMethodsByConcatenatedProfiles = concatenateProfilesBasedOnCommonMethods(profilesList.get(i), profilesList, methodsSetsList);
                 // remove all commonMethodElmnts 1 by 1 and in each profile
@@ -251,12 +251,7 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
                     methodsSetsList.forEach(methodsSets -> methodsSets.remove(method));
                     annotatedMethodsByProfileByLargeInterface.get(interfaceElement).forEach((profileName, methodsSets) -> methodsSets.remove(method));
                 });
-                //
-                if (!sealedInterfacesToGenerateByLargeInterface.containsKey(interfaceElement)) {
-                    sealedInterfacesToGenerateByLargeInterface.put(interfaceElement, new HashMap<>());
-                }
                 sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).putAll(allProcessedCommonMethodsByConcatenatedProfiles);
-                sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).putAll(annotatedMethodsByProfileByLargeInterface.get(interfaceElement));
             }
         });
     }
@@ -314,12 +309,9 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
      *                                                   To be populated and/or modified if needed. The key represents the Element instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a Map of profile name as the key and a List of profiles names as the value.
-     * @param uniqueParentInterfaceStatusReport          Map returned by a call to {@link org.jisel.handlers.UniqueParentInterfaceHandler#checkAndHandleUniqueParentInterface(java.util.Map)},
-     *                                                   providing information about the presence of a unique parent interface detected based on common methods of profiles
      */
     void buildInheritanceRelations(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                   Map<Element, String> uniqueParentInterfaceStatusReport);
+                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
 
     /**
      * Populates a Map storing subtypes of the provided profiles
@@ -335,112 +327,26 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
      *                                                   To be populated and/or modified if needed. The key represents the Element instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a Map of profile name as the key and a List of profiles names as the value.
-     * @param uniqueParentInterfaceStatusReport          Map returned by a call to {@link org.jisel.handlers.UniqueParentInterfaceHandler#checkAndHandleUniqueParentInterface(java.util.Map)},
-     *                                                   providing information about the presence of a unique parent sealed interface detected based on common methods of profiles
      */
     default void buildSealedInterfacesPermitsMap(final Element interfaceElement,
                                                  final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                 final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                                 final Map<Element, String> uniqueParentInterfaceStatusReport) {
+                                                 final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         sealedInterfacesPermitsByLargeInterface.get(interfaceElement).putAll(
                 sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).keySet().stream()
                         .filter(profiles -> profiles.contains(COMMA_SEPARATOR))
                         .collect(toMap(profiles -> profiles, profiles -> asList(profiles.split(COMMA_SEPARATOR))))
         );
-        // if unique parent interface is present, the parent interface permits all,
+        // unique parent interface is present and permits all,
         // if there are other permits already existing then the profiles in those permits lists should be removed from parent interf permits list
-        if (Optional.ofNullable(uniqueParentInterfaceStatusReport).isPresent() && !uniqueParentInterfaceStatusReport.containsKey(interfaceElement)) {
-            var parentInterfaceSimpleName = interfaceElement.getSimpleName().toString();
-            var allPermittedProfiles = sealedInterfacesPermitsByLargeInterface.get(interfaceElement).values().stream().flatMap(Collection::stream).collect(toSet());
-            sealedInterfacesPermitsByLargeInterface.get(interfaceElement).put(
-                    parentInterfaceSimpleName,
-                    sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).keySet().stream()
-                            .filter(profile -> !parentInterfaceSimpleName.equals(profile))
-                            .filter(profile -> !allPermittedProfiles.contains(profile))
-                            .toList()
-            );
-        }
-    }
-
-    @Override
-    default Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
-                                                         final Set<Element> allAnnotatedElements,
-                                                         final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
-        buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface, null);
-        return Map.of();
-    }
-}
-
-/**
- * Exposes contract to fulfill by any class dedicated to checking for the presence of an unique parent interface based on
- * information provided in the Map containing the sealed interfaces information to be generated
- */
-sealed interface UniqueParentInterfaceHandler extends JiselAnnotationHandler permits SealForUniqueParentInterfaceHandler {
-
-    /**
-     * Checks for the presence of an unique parent interface based on information provided in the Map containing the sealed interfaces information to be generated,
-     * and updates the provided map with the parent sealed interface to be generated
-     *
-     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
-     *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
-     *                                                   The Element instances represent each one of the abstract methods to be
-     *                                                   added to the generated sealed interface corresponding to a profile.
-     * @return Map providing information about the presence of an unique parent sealed interface detected based on common methods of profiles.<br>
-     * The informational message provided is a String literal describing the absence of an unique parent sealed interface,
-     * for each one of the provided large interfaces to be segregated
-     */
-    Map<Element, String> checkAndHandleUniqueParentInterface(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface);
-
-    /**
-     * Checks for the presence of an unique parent interface based on information provided in the Map containing the sealed interfaces information to be generated
-     *
-     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
-     *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
-     *                                                   The Element instances represent each one of the abstract methods to be
-     *                                                   added to the generated sealed interface corresponding to a profile.
-     * @return Map providing information about the presence of an unique parent sealed interface detected based on common methods of profiles.<br>
-     * If an unique parent sealed interface is detected, the Map value is an Optional containing a comma-separated concatenation of all profiles sharing same common methods
-     */
-    default Map<Element, Optional<String>> checkUniqueParentInterfacePresence(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
-
-        var providedProfilesListByInterface = new HashMap<Element, List<String>>();
-        sealedInterfacesToGenerateByLargeInterface.forEach(
-                (interfaceElement, annotatedMethodsByProfile) -> annotatedMethodsByProfile.keySet().stream()
-                        .filter(concatenatedProfiles -> !concatenatedProfiles.contains(COMMA_SEPARATOR)).forEach(
-                                profileName -> providedProfilesListByInterface.merge(
-                                        interfaceElement,
-                                        asList(profileName),
-                                        (currentList, newList) -> concat(currentList.stream(), newList.stream()).toList())
-                        )
+        var parentInterfaceSimpleName = interfaceElement.getSimpleName().toString();
+        var allPermittedProfiles = sealedInterfacesPermitsByLargeInterface.get(interfaceElement).values().stream().flatMap(Collection::stream).collect(toSet());
+        sealedInterfacesPermitsByLargeInterface.get(interfaceElement).put(
+                parentInterfaceSimpleName,
+                sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).keySet().stream()
+                        .filter(profile -> !parentInterfaceSimpleName.equals(profile))
+                        .filter(profile -> !allPermittedProfiles.contains(profile))
+                        .toList()
         );
-
-        var uniqueParentInterfaceByInterface = new HashMap<Element, Optional<String>>();
-
-        providedProfilesListByInterface.forEach((interfaceElement, profilesList) -> {
-            // if only 1 key of sealedInterfacesToGenerateByLargeInterface map contains all of the profiles names and its total length = all profiles names lenghts combined -> use fat interface name for that key and move on
-            var totalProfilesNamesLengths = profilesList.stream().mapToInt(String::length).sum();
-            var longestConcatenedProfilesStringOpt = sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).keySet().stream()
-                    .sorted(Comparator.comparingInt(String::length).reversed()).findFirst();
-            if (longestConcatenedProfilesStringOpt.isPresent()) {
-                var foundUniqueParentInterface = false;
-                for (var profileName : profilesList) {
-                    foundUniqueParentInterface = removeCommaSeparator(longestConcatenedProfilesStringOpt.get()).contains(profileName);
-                }
-                uniqueParentInterfaceByInterface.put(
-                        interfaceElement,
-                        foundUniqueParentInterface && removeCommaSeparator(longestConcatenedProfilesStringOpt.get()).length() == totalProfilesNamesLengths
-                                ? Optional.of(longestConcatenedProfilesStringOpt.get())
-                                : Optional.empty()
-                );
-            }
-        });
-
-        return uniqueParentInterfaceByInterface;
     }
 
     @Override
@@ -448,6 +354,7 @@ sealed interface UniqueParentInterfaceHandler extends JiselAnnotationHandler per
                                                          final Set<Element> allAnnotatedElements,
                                                          final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
-        return checkAndHandleUniqueParentInterface(sealedInterfacesToGenerateByLargeInterface);
+        buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+        return Map.of();
     }
 }
