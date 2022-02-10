@@ -61,7 +61,7 @@ For other build tools, please check: [Maven Central](https://search.maven.org/ar
 ### @SealFor
  - Annotation to be applied only on top of abstract methods of an interface you intend to segregate.<br>
  - Picked up and processed <b>ONLY</b> if at least 1 of the abstract methods of the large interface has been annotated with &#64;TopLevel.<br>
- - Ignored if combined with &#64;{@link TopLevel} on the same abstract method.<br>
+ - Ignored if combined with &#64;TopLevel on the same abstract method.<br>
  - Expects an array of String values corresponding to the list of profiles you want to seal the method for.<br>
  - For each one of the specified profile names, a sealed interface will be generated following the naming convention <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b>(<b>&#60;LargeInterfaceSimpleName&#62;</b> corresponds to the simplename of the interface being segregated).
 ```java
