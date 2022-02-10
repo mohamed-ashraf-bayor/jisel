@@ -1,6 +1,14 @@
-Minimum Java 17 required
 
-Pitch Video: [https://youtu.be/nkbu6zxV3R0](https://youtu.be/nkbu6zxV3R0)
+> ### JISEL 1.1 released:
+> - Deprecated existing annotations: ~~@SealForProfile(s)~~, ~~@AddToProfile(s)~~. Replaced with: **@SealFor** and **@AddTo**
+> - Added new annotation **@TopLevel**, which **MUST** be applied on at least 1 abstract method of the large interface to segregate. Allows to specify abstract methods of the generated Sealed Interfaces Top-Level Parent
+> - Bug fixes and improvements
+
+<br>
+
+Version 1.1 Quick Intro: [https://youtu.be/Yu3bR8ZkpYE](https://youtu.be/Yu3bR8ZkpYE)
+
+Project's Pitch Video: [https://youtu.be/nkbu6zxV3R0](https://youtu.be/nkbu6zxV3R0)
 
 <br>
 
@@ -11,7 +19,7 @@ If you are running a Maven project, add the latest release dependency to your po
 <dependency>
     <groupId>org.jisel</groupId>
     <artifactId>jisel</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 </dependency>
 ``` 
 You will also need to include the same dependency as an additional annotation processor in the Maven Compiler plugin of your project
@@ -29,7 +37,7 @@ You will also need to include the same dependency as an additional annotation pr
                         <path>
                             <groupId>org.jisel</groupId>
                             <artifactId>jisel</artifactId>
-                            <version>1.0</version>
+                            <version>1.1</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -38,14 +46,26 @@ You will also need to include the same dependency as an additional annotation pr
     </build>
 ```
 
-For other build tools, please check: [Maven Central](https://search.maven.org/artifact/org.jisel/jisel/1.0/jar).
+For other build tools, please check: [Maven Central](https://search.maven.org/artifact/org.jisel/jisel/1.1/jar).
 
 <br>
 
 ## Provided Annotations
 
-### @SealForProfile / @SealForProfiles
-To be used only on abstract methods of the large interfaces you need to segregate
+### @TopLevel
+- **MANDATORY** annotation, to be applied only on top of abstract methods of the large interface you intend to segregate.<br>
+- Allows you to specify methods which should be part of the top-level parent interface generated during segregation.<br>
+- As a result, a sealed interface will be generated following the naming convention:
+ <b>Sealed&#60;LargeInterfaceSimpleName&#62;</b> (<b>&#60;LargeInterfaceSimpleName&#62;</b> corresponds to the simplename of the interface being segregated).<br>
+ - The generated sealed interface will contain all abstract methods annotated with &#64;TopLevel.<br>
+ - Also, any other Jisel annotation combined with &#64;TopLevel on the same abstract method, will be ignored in the processing.
+
+### @SealFor
+ - Annotation to be applied only on top of abstract methods of an interface you intend to segregate.<br>
+ - Picked up and processed <b>ONLY</b> if at least 1 of the abstract methods of the large interface has been annotated with &#64;TopLevel.<br>
+ - Ignored if combined with &#64;{@link TopLevel} on the same abstract method.<br>
+ - Expects an array of String values corresponding to the list of profiles you want to seal the method for.<br>
+ - For each one of the specified profile names, a sealed interface will be generated following the naming convention <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b>(<b>&#60;LargeInterfaceSimpleName&#62;</b> corresponds to the simplename of the interface being segregated).
 ```java
 public interface Sociable {
 
@@ -53,35 +73,34 @@ public interface Sociable {
     String WORKER = "Worker";
     String ACTIVE_WORKER = "ActiveWorker";
 
-    @SealForProfiles({STUDENT, WORKER, ACTIVE_WORKER})
-    String startConversation();
+    @TopLevel
+    String startConversation() throws IllegalStateException;
 
-    @SealForProfile(STUDENT)
-    boolean attendClass(String fieldOfStudy);
+    @SealFor(STUDENT)
+    boolean attendClass(String fieldOfStudy) throws IllegalArgumentException;
 
-    @SealForProfile(STUDENT)
+    @SealFor(STUDENT)
     void askForHelpWhenNeeded();
 
-    @SealForProfile(WORKER)
-    @SealForProfile(ACTIVE_WORKER)
-    // both annotations above can be replaced with: @SealForProfiles({WORKER, ACTIVE_WORKER})
+    @SealFor({WORKER, ACTIVE_WORKER})
     boolean[] joinOfficeSocialGroups(String[] groups, int maximum);
 
-    @SealForProfile(ACTIVE_WORKER)
+    @SealFor(ACTIVE_WORKER)
     void leadOfficeSocialGroup(String groupName);
 
-    @SealForProfile(ACTIVE_WORKER)
-    double createNewOfficeSocialGroup(String groupName, List<String> starters);
+    @SealFor(ACTIVE_WORKER)
+    double createNewOfficeSocialGroup(String groupName, List<String> starters) throws ArithmeticException;
 }
 ```
 
-### @AddToProfile / @AddToProfiles
-To be used only on classes (or interfaces) implementing (or extending) any of the sealed interfaces generated by the use of @SealForProfile(s)
+### @AddTo
+ Annotation to be applied on top of a class, interface or record, which is implementing or extending a sealed interface generated by Jisel.<br>
+ Expects 2 arguments:
+ - <b>profiles</b>: OPTIONAL - array of String values corresponding to the list of profiles whose generated sealed interfaces are implemented by the annotated class, interface or record.<br>
+ If not provided or empty, the annotated class, interface or record will be added to the permits list of the generated top-level parent sealed interface.<br>
+ - <b>largeInterface</b>: <b>MANDATORY</b> - <i>.class</i> representation of the large interface. That would be the <b>&#60;LargeInterfaceSimpleName&#62;</b> as seen in the sealed interface name convention, followed by "<i>.class</i>".<br>
 ```java
-@AddToProfiles(profiles = {STUDENT, WORKER}, largeInterface = "com.bayor.jisel.annotation.client.hierarchicalinheritance.Sociable")
-// the above line can be replaced with the following 2:
-// @AddToProfile(profile = STUDENT, largeInterface = "com.bayor.jisel.annotation.client.hierarchicalinheritance.Sociable")
-// @AddToProfile(profile = WORKER, largeInterface = "com.bayor.jisel.annotation.client.hierarchicalinheritance.Sociable")
+@AddTo(profiles = {STUDENT, WORKER}, largeInterface = Sociable.class)
 public final class StudentWorkerHybrid implements SealedStudentSociable, SealedWorkerSociable {
     @Override
     public String startConversation() throws IllegalStateException {
@@ -90,7 +109,6 @@ public final class StudentWorkerHybrid implements SealedStudentSociable, SealedW
 
     @Override
     public void askForHelpWhenNeeded() {
-
     }
 
     @Override
@@ -103,7 +121,6 @@ public final class StudentWorkerHybrid implements SealedStudentSociable, SealedW
         return new boolean[0];
     }
 }
-
 ```
 
 <br>
