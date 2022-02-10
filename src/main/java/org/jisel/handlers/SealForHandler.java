@@ -26,6 +26,7 @@ import org.jisel.annotations.SealFor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -135,8 +136,14 @@ final class SealForParentChildInheritanceHandler implements ParentChildInheritan
                     for (var profile : profilesArray) {
                         var profileMethodsOpt = Optional.ofNullable(sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).get(profile));
                         if (profileMethodsOpt.isPresent() && profileMethodsOpt.get().isEmpty()) {
-                            sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).put(profile, sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).get(concatenatedProfiles));
-                            sealedInterfacesPermitsByLargeInterface.get(interfaceElement).put(profile, Arrays.stream(profilesArray).filter(profileName -> !profile.equals(profileName)).toList());
+                            sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).put(
+                                    profile,
+                                    sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).get(concatenatedProfiles)
+                            );
+                            sealedInterfacesPermitsByLargeInterface.get(interfaceElement).put(
+                                    profile,
+                                    new ArrayList<>(Arrays.stream(profilesArray).filter(profileName -> !profile.equals(profileName)).toList())
+                            );
                             allProfilesToRemove.add(concatenatedProfiles);
                             break;
                         }

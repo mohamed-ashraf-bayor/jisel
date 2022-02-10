@@ -184,7 +184,7 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
 
     private Map<Element, String> extractLargeInterfacesWithNoTopLevel(final Map<Element, String> sealForStatusReport,
                                                                       final Map<Element, String> topLevelStatusReport) {
-        topLevelStatusReport.forEach((largeInterfaceElement, reportText) -> sealForStatusReport.remove(largeInterfaceElement));
+        topLevelStatusReport.keySet().forEach(sealForStatusReport::remove);
         sealForStatusReport.replaceAll((key, value) -> TOP_LEVEL_REPORT_MSG);
         return sealForStatusReport;
     }

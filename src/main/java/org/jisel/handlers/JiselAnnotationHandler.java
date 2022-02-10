@@ -35,12 +35,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
@@ -181,7 +181,7 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
                 .forEach(annotationRawValueAsString -> {
                     // sample values for annotationRawValueAsString:
                     // single value: "profile1name"
-                    // multiple: {@org.jisel.annotations.SealFor("profile2name"), @org.jisel.annotations.SealFor("profile3name"),...}
+                    // multiple: @org.jisel.annotations.SealFor("profile2name"), @org.jisel.annotations.SealFor("profile3name"),...
                     var matcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(annotationRawValueAsString);
                     while (matcher.find()) {
                         var profile = matcher.group(1).strip();
@@ -342,11 +342,32 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
         var allPermittedProfiles = sealedInterfacesPermitsByLargeInterface.get(interfaceElement).values().stream().flatMap(Collection::stream).collect(toSet());
         sealedInterfacesPermitsByLargeInterface.get(interfaceElement).put(
                 parentInterfaceSimpleName,
-                sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).keySet().stream()
-                        .filter(profile -> !parentInterfaceSimpleName.equals(profile))
-                        .filter(profile -> !allPermittedProfiles.contains(profile))
-                        .toList()
+                new ArrayList<>( // making the constructed list mutable
+                        sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).keySet().stream()
+                                .filter(profile -> !parentInterfaceSimpleName.equals(profile))
+                                .filter(profile -> !allPermittedProfiles.contains(profile))
+                                .toList()
+                )
         );
+        // if a profile from the List<String> is a key within the same map, then remove it from the list
+        eliminateCyclicRelationships(sealedInterfacesPermitsByLargeInterface.get(interfaceElement));
+    }
+
+    private void eliminateCyclicRelationships(final Map<String, List<String>> sealedInterfacesPermits) {
+        var childProfilesListToRemoveByParentProfile = new HashMap<String, List<String>>();
+        sealedInterfacesPermits.forEach((parentProfile, childProfilesList) -> {
+            var childProfilesListToRemove = new ArrayList<String>();
+            for (var childProfile : childProfilesList) {
+                if (sealedInterfacesPermits.containsKey(childProfile)) {
+                    childProfilesListToRemove.addAll(childProfilesList);
+                    childProfilesListToRemove.retainAll(sealedInterfacesPermits.get(childProfile));
+                    break;
+                }
+            }
+            childProfilesListToRemoveByParentProfile.put(parentProfile, childProfilesListToRemove);
+        });
+        sealedInterfacesPermits.keySet().forEach(parentProfile ->
+                sealedInterfacesPermits.get(parentProfile).removeAll(childProfilesListToRemoveByParentProfile.get(parentProfile)));
     }
 
     @Override
