@@ -27,9 +27,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to be applied only on top of abstract methods of an interface you intend to segregate.<br><br>
+ * Mandatory annotation, to be applied only on top of abstract methods of the large interface you intend to segregate.<br>
  * Allows you to specify methods which should be part of the top-level parent interface generated during segregation.
- * No profile name needs to be specified.
+ * No profiles names need to be specified.<br><br>
+ * As a result, a sealed interface will be generated following the naming convention:
+ * <b>Sealed&#60;LargeInterfaceSimpleName&#62;</b><br>
+ * (<b>&#60;LargeInterfaceSimpleName&#62;</b> corresponds to the simplename of the large interface being segregated).<br><br>
+ * The generated sealed interface will contain all abstract methods annotated with &#64;TopLevel.<br><br>
+ * Also, any other Jisel annotation combined with &#64;TopLevel on the same abstract method, will be ignored in the processing.
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD})
