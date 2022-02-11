@@ -4,7 +4,7 @@
 > - Added new annotation **@TopLevel**, which **MUST** be applied on at least 1 abstract method of the large interface to segregate. Allows to specify abstract methods of the generated Sealed Interfaces Top-Level Parent
 > - Bug fixes and improvements
 
-Version 1.1 Quick Intro: [https://youtu.be/Yu3bR8ZkpYE](https://youtu.be/Yu3bR8ZkpYE)
+Version 1.1 Quick Intro: [https://youtu.be/cbYdt8NRUaM](https://youtu.be/cbYdt8NRUaM)
 
 Project's Pitch Video: [https://youtu.be/nkbu6zxV3R0](https://youtu.be/nkbu6zxV3R0)
 
