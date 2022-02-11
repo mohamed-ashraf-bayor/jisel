@@ -21,10 +21,13 @@
  */
 package org.jisel.generator;
 
+import org.jisel.annotations.AddTo;
 import org.jisel.annotations.AddToProfile;
 import org.jisel.annotations.AddToProfiles;
+import org.jisel.annotations.SealFor;
 import org.jisel.annotations.SealForProfile;
 import org.jisel.annotations.SealForProfiles;
+import org.jisel.annotations.TopLevel;
 
 import javax.lang.model.element.Element;
 import java.util.List;
@@ -53,6 +56,10 @@ public interface StringGenerator {
      */
     String WHITESPACE = " ";
     /**
+     * "=" equals
+     */
+    String EQUALS_SIGN = "=";
+    /**
      * "Sealed"
      */
     String SEALED_PREFIX = "Sealed";
@@ -68,6 +75,10 @@ public interface StringGenerator {
      * "class"
      */
     String CLASS = "class";
+    /**
+     * ".class"
+     */
+    String DOT_CLASS = ".class";
     /**
      * "public sealed interface"
      */
@@ -91,11 +102,11 @@ public interface StringGenerator {
     /**
      * "{"
      */
-    String OPENING_BRACKET = "{";
+    String OPENING_CURLY_BRACE = "{";
     /**
      * "}"
      */
-    String CLOSING_BRACKET = "}";
+    String CLOSING_CURLY_BRACE = "}";
     /**
      * "("
      */
@@ -113,17 +124,25 @@ public interface StringGenerator {
      */
     String DOT = ".";
     /**
+     * "@"
+     */
+    String AT_SIGN = "@";
+    /**
      * "param"
      */
     String PARAMETER_PREFIX = "param";
     /**
      * "@"
      */
-    String TEMP_PLACEHOLDER = "@";
+    String TEMP_PLACEHOLDER = AT_SIGN;
     /**
      * "_"
      */
     String UNDERSCORE = "_";
+    /**
+     * "\""
+     */
+    String ESCAPED_DOUBLE_QUOTES = "\"";
     /**
      * "FinalClass"
      */
@@ -138,17 +157,33 @@ public interface StringGenerator {
     String JAVA_LANG_OBJECT = "java.lang.Object";
 
     /**
-     * "SealForProfile"
+     * "SealFor"
      */
-    String SEAL_FOR_PROFILE = "SealForProfile";
+    String SEAL_FOR = "SealFor";
     /**
-     * "AddToProfile"
+     * "AddTo"
      */
-    String ADD_TO_PROFILE = "AddToProfile";
+    String ADD_TO = "AddTo";
+    /**
+     * "TopLevel"
+     */
+    String TOP_LEVEL = "TopLevel";
+    /**
+     * "profile"
+     */
+    String PROFILE = "profile";
     /**
      * Regex expression to read the string value of the "profile" attribute
      */
     String PROFILE_ATTRIBUTE_REGEX = "profile=\"([^\"]*)\"";
+    /**
+     * "profiles"
+     */
+    String PROFILES = "profiles";
+    /**
+     * "largeInterface"
+     */
+    String LARGE_INTERFACE = "largeInterface";
     /**
      * Regex expression to read the string value of the "largeInterface" attribute
      */
@@ -157,6 +192,11 @@ public interface StringGenerator {
      * Regex expression to read any attribute value provided within ""
      */
     String ANNOTATION_VALUES_REGEX = "\"([^\"]*)\"";
+    /**
+     * Regex expression to read attributes information provided using the {@link AddTo} annotation.<br>
+     * Sample value to be parsed by the regex: @org.jisel.annotations.AddTo(profiles={"ActiveWorker"}, largeInterface=Sociable.class)
+     */
+    String ADD_TO_REGEX = "AddTo\\((.*?)\\)";
     /**
      * Regex expression to read attributes information provided using the {@link AddToProfile} annotation.<br>
      * Sample value to be parsed by the regex: @org.jisel.annotations.AddToProfile(profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
@@ -184,6 +224,14 @@ public interface StringGenerator {
     String FILE_GENERATION_SUCCESS = "Successfully generated";
 
     /**
+     * Fully qualified name of the {@link SealFor} annotation
+     */
+    String ORG_JISEL_SEAL_FOR = "org.jisel.annotations.SealFor";
+    /**
+     * Fully qualified name of the {@link SealFor.SealFors} annotation
+     */
+    String ORG_JISEL_SEAL_FORS = "org.jisel.annotations.SealFor.SealFors";
+    /**
      * Fully qualified name of the {@link SealForProfile} annotation
      */
     String ORG_JISEL_SEAL_FOR_PROFILE = "org.jisel.annotations.SealForProfile";
@@ -200,6 +248,14 @@ public interface StringGenerator {
      */
     String ORG_JISEL_SEAL_FOR_PROFILEZZ = "org.jisel.annotations.SealForProfiles.SealForProfilezz";
     /**
+     * Fully qualified name of the {@link AddTo} annotation
+     */
+    String ORG_JISEL_ADD_TO = "org.jisel.annotations.AddTo";
+    /**
+     * Fully qualified name of the {@link AddTo.AddTos} annotation
+     */
+    String ORG_JISEL_ADD_TOS = "org.jisel.annotations.AddTo.AddTos";
+    /**
      * Fully qualified name of the {@link AddToProfile} annotation
      */
     String ORG_JISEL_ADD_TO_PROFILE = "org.jisel.annotations.AddToProfile";
@@ -215,6 +271,10 @@ public interface StringGenerator {
      * Fully qualified name of the {@link AddToProfiles.AddToProfilezz} annotation
      */
     String ORG_JISEL_ADD_TO_PROFILEZZ = "org.jisel.annotations.AddToProfiles.AddToProfilezz";
+    /**
+     * Fully qualified name of the {@link TopLevel} annotation
+     */
+    String ORG_JISEL_TOP_LEVEL = "org.jisel.annotations.TopLevel";
 
     /**
      * Default value to use for boolean returned values
@@ -237,11 +297,13 @@ public interface StringGenerator {
     /**
      * Message displayed during compilation when 1 or many provided profiles are not found in the provided parent interfaces.
      */
-    String ADD_TO_PROFILE_REPORT_MSG = "1 or many provided profiles are not found in the provided parent interfaces. Check your profiles and/or parent interfaces names.";
+    String ADD_TO_REPORT_MSG = "1 or many provided profiles are not found in the provided parent interfaces. " +
+            "Check your profiles and/or parent interfaces names. " +
+            "Also check the use of @TopLevel in the provided large interfaces.";
     /**
-     * Message displayed during compilation when more than 1 top-level parent sealed interfaces was encountered based on provided profiles
+     * Message displayed during compilation when &#64;TopLevel is not found within the provided large interface
      */
-    String SEAL_FOR_PROFILE_REPORT_MSG = "More than 1 Top-Level Parent Sealed Interfaces will be generated. Check your profiles mapping.";
+    String TOP_LEVEL_REPORT_MSG = "@TopLevel annotation not found. Check your mappings.";
 
     /**
      * "Report.txt"
@@ -285,6 +347,31 @@ public interface StringGenerator {
                 removeCommaSeparator(profile),
                 nameSuffix
         );
+    }
+
+    /**
+     * Constructs a string made of the qualified name of the class without the latest occurrence of ".class". <br>
+     * If the provided name doesn't end with ".class", it is returned as is
+     *
+     * @param qualifiedName qualified name of the class or interface
+     * @return qualified name of the class without the latest occurrence of ".class"
+     */
+    default String removeDotClass(final String qualifiedName) {
+        return qualifiedName.contains(DOT_CLASS)
+                ? qualifiedName.substring(0, qualifiedName.lastIndexOf(DOT_CLASS))
+                : qualifiedName;
+    }
+
+    /**
+     * Adds double quotes to the largeInterface attribute value and removes the ".class" string.<br>
+     * To be called while processing largeInterface attribute values provided though &#64;{@link AddTo}
+     *
+     * @param largeInterfaceAttributeRawString the toString representation of the provided largeInterface attribute value<br>
+     *                                         ex: largeInterface=com.bayor.Drivable.class
+     * @return string containg the largeInterface attribute value with
+     */
+    default String addQuotesToLargeInterfaceValue(final String largeInterfaceAttributeRawString) {
+        return largeInterfaceAttributeRawString.replace(LARGE_INTERFACE + EQUALS_SIGN, LARGE_INTERFACE + EQUALS_SIGN + ESCAPED_DOUBLE_QUOTES).replace(DOT_CLASS, ESCAPED_DOUBLE_QUOTES);
     }
 
     /**

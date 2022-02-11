@@ -21,7 +21,7 @@
  */
 package org.jisel.handlers;
 
-import org.jisel.annotations.AddToProfile;
+import org.jisel.annotations.AddTo;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -38,15 +38,15 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 
 /**
- * Handles all elements annotated with &#64;{@link AddToProfile}
+ * Handles all elements annotated with &#64;{@link AddTo}
  */
-public final class AddToProfileHandler implements JiselAnnotationHandler {
+public final class AddToHandler implements JiselAnnotationHandler {
 
     @Override
-    public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
-                                                        Set<Element> allAnnotatedElements,
-                                                        Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+    public Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
+                                                        final Set<Element> allAnnotatedElements,
+                                                        final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                        final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var annotatedClassesAndInterfaces = allAnnotatedElements.stream()
                 .filter(element -> !element.getClass().isEnum())
                 .filter(element -> ElementKind.CLASS.equals(element.getKind())
@@ -66,7 +66,8 @@ public final class AddToProfileHandler implements JiselAnnotationHandler {
                                            final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                            final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new StringBuilder();
-        var addToProfileProvidedProfilesMap = buildAddToProfileProvidedProfilesMap(processingEnv, annotatedClassOrInterface);
+        var addToProfileProvidedProfilesMap = buildAddToProvidedProfilesMap(processingEnv, annotatedClassOrInterface);
+        addToProfileProvidedProfilesMap.putAll(buildAddToProfileProvidedProfilesMap(processingEnv, annotatedClassOrInterface)); // remove line when @AddToProfile(s) removed
         if (addToProfileProvidedProfilesMap.isEmpty()) {
             // do not process if no profiles are provided
             return statusReport.toString();
@@ -81,7 +82,7 @@ public final class AddToProfileHandler implements JiselAnnotationHandler {
             if (providedLargeInterfaceTypeOpt.isPresent()) {
                 var providedLargeInterfaceElement = processingEnv.getTypeUtils().asElement(processingEnv.getElementUtils().getTypeElement(providedLargeInterfaceQualifiedName).asType());
                 var annotatedMethodsByProfile = sealedInterfacesToGenerateByLargeInterface.get(providedLargeInterfaceElement);
-                profileFound = updateSealedInterfacesPermitsMapWithProvidedProfiles(
+                profileFound = Optional.ofNullable(annotatedMethodsByProfile).isPresent() && updateSealedInterfacesPermitsMapWithProvidedProfiles(
                         annotatedMethodsByProfile.keySet(),
                         providedLargeInterfaceElement,
                         annotatedClassOrInterface,
@@ -93,7 +94,7 @@ public final class AddToProfileHandler implements JiselAnnotationHandler {
             }
         }
         if (!profileFound || providedLargeInterfaceTypeNotFound) {
-            statusReport.append(ADD_TO_PROFILE_REPORT_MSG);
+            statusReport.append(ADD_TO_REPORT_MSG);
         }
         return statusReport.toString();
     }

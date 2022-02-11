@@ -28,37 +28,38 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @deprecated Use &#64;{@link SealFor} instead<br>
- * Annotation to be applied only on top of abstract methods of an interface you intend to segregate.<br><br>
- * For each one of the specified profiles names, a sealed interface will be generated following the naming convention: <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
- * <b>&#60;LargeInterfaceSimpleName&#62;</b> corresponds to the simplename of the interface being segregated.<br><br>
+ * Annotation to be applied only on top of abstract methods of an interface you intend to segregate.<br>
+ * Picked up and processed <b>ONLY</b> if at least 1 of the abstract methods of the large interface has been annotated with &#64;TopLevel.<br>
+ * Ignored if combined with &#64;{@link TopLevel} on the same abstract method.<br><br>
+ * Expects an array of String values corresponding to the list of profiles you want to seal the method for.<br><br>
+ * For each one of the specified profile names, a sealed interface will be generated following the naming convention:
+ * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br>
+ * (<b>&#60;LargeInterfaceSimpleName&#62;</b> corresponds to the simplename of the interface being segregated).
  */
-@Deprecated(since = "1.1", forRemoval = true)
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD})
-@Repeatable(SealForProfiles.SealForProfilezz.class)
-public @interface SealForProfiles {
+@Repeatable(SealFor.SealFors.class)
+public @interface SealFor {
 
     /**
-     * Profile name to use while segregation the large interface. A sealed interface file will be generated following the naming convention:
+     * array of String values, each one specifying the profile names to use while segregating the large interface. A sealed interface file will be generated following the naming convention:
      * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b>
      *
-     * @return an array of the profiles names
+     * @return array of profiles names
      */
     String[] value();
 
     /**
-     * Internal annotation allowing &#64;{@link SealForProfiles} to be repeatable
+     * Internal annotation allowing &#64;{@link SealFor} to be repeatable
      */
-    @Deprecated(since = "1.1", forRemoval = true)
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.METHOD)
-    @interface SealForProfilezz {
+    @interface SealFors {
         /**
-         * array attribute allowing &#64;{@link SealForProfiles} to be repeatable
+         * array attribute allowing &#64;{@link SealFor} to be repeatable
          *
-         * @return array of &#64;SealForProfiles instances
+         * @return array of &#64;SealFor instances
          */
-        SealForProfiles[] value();
+        SealFor[] value();
     }
 }
