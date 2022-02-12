@@ -3,7 +3,7 @@
 
 > ### JISEL 1.1 released:
 > - Deprecated existing annotations: ~~@SealForProfile(s)~~, ~~@AddToProfile(s)~~. Replaced with: **@SealFor** and **@AddTo**
-> - Added new annotation **@TopLevel**, which **MUST** be applied on at least 1 abstract method of the large interface to segregate. Allows to specify abstract methods of the generated Sealed Interfaces Top-Level Parent
+> - Added new annotation **@TopLevel**, which **MUST** be applied on at least 1 abstract method of the interface to segregate. Allows to specify abstract methods of the generated Sealed Interfaces Top-Level Parent
 > - Bug fixes and improvements
 
 Version 1.1 Quick Intro: [https://youtu.be/cbYdt8NRUaM](https://youtu.be/cbYdt8NRUaM)
