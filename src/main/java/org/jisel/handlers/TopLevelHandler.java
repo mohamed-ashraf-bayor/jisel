@@ -40,10 +40,10 @@ import static java.util.stream.Collectors.toSet;
 public final class TopLevelHandler implements JiselAnnotationHandler {
 
     @Override
-    public Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
-                                                        final Set<Element> allAnnotatedElements,
-                                                        final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+    public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
+                                                        Set<Element> allAnnotatedElements,
+                                                        Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
         allAnnotatedElements.stream()
                 .filter(element -> ElementKind.METHOD.equals(element.getKind()))

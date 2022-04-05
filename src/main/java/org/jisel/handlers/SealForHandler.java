@@ -57,10 +57,10 @@ public final class SealForHandler implements JiselAnnotationHandler {
     }
 
     @Override
-    public Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
-                                                        final Set<Element> allAnnotatedElements,
-                                                        final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+    public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
+                                                        Set<Element> allAnnotatedElements,
+                                                        Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
         var allAnnotatedElementsToProcess = allAnnotatedElements.stream()
                 .filter(element -> ElementKind.METHOD.equals(element.getKind()))
@@ -85,9 +85,9 @@ public final class SealForHandler implements JiselAnnotationHandler {
 final class SealForInfoCollectionHandler implements AnnotationInfoCollectionHandler {
 
     @Override
-    public void populateSealedInterfacesMap(final ProcessingEnvironment processingEnv,
-                                            final Set<Element> allAnnotatedElements,
-                                            final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
+    public void populateSealedInterfacesMap(ProcessingEnvironment processingEnv,
+                                            Set<Element> allAnnotatedElements,
+                                            Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         var annotatedMethodsByInterface = allAnnotatedElements.stream()
                 .collect(groupingBy(Element::getEnclosingElement, toSet()));
         var annotatedMethodsByProfileByInterface = new HashMap<Element, Map<String, Set<Element>>>();
@@ -104,10 +104,10 @@ final class SealForInfoCollectionHandler implements AnnotationInfoCollectionHand
         createParentInterfacesBasedOnCommonMethods(annotatedMethodsByProfileByInterface, sealedInterfacesToGenerateByLargeInterface);
     }
 
-    private void extractProfilesAndPopulateMaps(final Element interfaceElement,
-                                                final Set<String> providedProfilesSet,
-                                                final Element annotatedMethod,
-                                                final Map<Element, Map<String, Set<Element>>> annotatedMethodsByProfileByInterface) {
+    private void extractProfilesAndPopulateMaps(Element interfaceElement,
+                                                Set<String> providedProfilesSet,
+                                                Element annotatedMethod,
+                                                Map<Element, Map<String, Set<Element>>> annotatedMethodsByProfileByInterface) {
         providedProfilesSet.forEach(profile -> {
             annotatedMethodsByProfileByInterface.putIfAbsent(interfaceElement, new HashMap<>(Map.of(profile, new HashSet<>(Set.of(annotatedMethod)))));
             annotatedMethodsByProfileByInterface.get(interfaceElement).merge(
@@ -124,8 +124,8 @@ final class SealForInfoCollectionHandler implements AnnotationInfoCollectionHand
  */
 final class SealForParentChildInheritanceHandler implements ParentChildInheritanceHandler {
     @Override
-    public void buildInheritanceRelations(final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                          final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+    public void buildInheritanceRelations(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                          Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         sealedInterfacesToGenerateByLargeInterface.keySet().forEach(interfaceElement -> {
             sealedInterfacesPermitsByLargeInterface.put(interfaceElement, new HashMap<>()); // start with initializing sealedInterfacesPermitsByLargeInterface with empty mutable maps
             // promote profiles with empty methods to parent level

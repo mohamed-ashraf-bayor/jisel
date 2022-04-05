@@ -22,11 +22,7 @@
 package org.jisel.generator;
 
 import org.jisel.annotations.AddTo;
-import org.jisel.annotations.AddToProfile;
-import org.jisel.annotations.AddToProfiles;
 import org.jisel.annotations.SealFor;
-import org.jisel.annotations.SealForProfile;
-import org.jisel.annotations.SealForProfiles;
 import org.jisel.annotations.TopLevel;
 
 import javax.lang.model.element.Element;
@@ -197,16 +193,17 @@ public interface StringGenerator {
      * Sample value to be parsed by the regex: @org.jisel.annotations.AddTo(profiles={"ActiveWorker"}, largeInterface=Sociable.class)
      */
     String ADD_TO_REGEX = "AddTo\\((.*?)\\)";
-    /**
-     * Regex expression to read attributes information provided using the {@link AddToProfile} annotation.<br>
-     * Sample value to be parsed by the regex: @org.jisel.annotations.AddToProfile(profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
-     */
-    String ADD_TO_PROFILE_REGEX = "AddToProfile\\((.*?)\\)";
-    /**
-     * Regex expression to read attributes information provided using the {@link AddToProfiles} annotation.<br>
-     * Sample value to be parsed by the regex: @org.jisel.annotations.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
-     */
-    String ADD_TO_PROFILES_REGEX = "AddToProfiles\\((.*?)\\)";
+    // TODO chck if can b rused w new annots
+//    /**
+//     * Regex expression to read attributes information provided using the {@link AddToProfile} annotation.<br>
+//     * Sample value to be parsed by the regex: @org.jisel.annotations.AddToProfile(profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
+//     */
+//    String ADD_TO_PROFILE_REGEX = "AddToProfile\\((.*?)\\)";
+//    /**
+//     * Regex expression to read attributes information provided using the {@link AddToProfiles} annotation.<br>
+//     * Sample value to be parsed by the regex: @org.jisel.annotations.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
+//     */
+//    String ADD_TO_PROFILES_REGEX = "AddToProfiles\\((.*?)\\)";
 
     /**
      * Title of the text report displayed in the logs during compilation.<br>
@@ -232,21 +229,17 @@ public interface StringGenerator {
      */
     String ORG_JISEL_SEAL_FORS = "org.jisel.annotations.SealFor.SealFors";
     /**
-     * Fully qualified name of the {@link SealForProfile} annotation
+     * Fully qualified name of the {@link UnSeal} annotation
      */
-    String ORG_JISEL_SEAL_FOR_PROFILE = "org.jisel.annotations.SealForProfile";
+    String ORG_JISEL_UNSEAL = "org.jisel.annotations.UnSeal";
     /**
-     * Fully qualified name of the {@link SealForProfiles} annotation
+     * Fully qualified name of the {@link Detach} annotation
      */
-    String ORG_JISEL_SEAL_FOR_PROFILES = "org.jisel.annotations.SealForProfiles";
+    String ORG_JISEL_DETACH = "org.jisel.annotations.Detach";
     /**
-     * Fully qualified name of the {@link SealForProfile.SealForProfilez} annotation
+     * Fully qualified name of the {@link SealForProfile.Detachs} annotation
      */
-    String ORG_JISEL_SEAL_FOR_PROFILEZ = "org.jisel.annotations.SealForProfile.SealForProfilez";
-    /**
-     * Fully qualified name of the {@link SealForProfiles.SealForProfilezz} annotation
-     */
-    String ORG_JISEL_SEAL_FOR_PROFILEZZ = "org.jisel.annotations.SealForProfiles.SealForProfilezz";
+    String ORG_JISEL_DETACHS = "org.jisel.annotations.Detach.Detachs";
     /**
      * Fully qualified name of the {@link AddTo} annotation
      */
@@ -255,22 +248,6 @@ public interface StringGenerator {
      * Fully qualified name of the {@link AddTo.AddTos} annotation
      */
     String ORG_JISEL_ADD_TOS = "org.jisel.annotations.AddTo.AddTos";
-    /**
-     * Fully qualified name of the {@link AddToProfile} annotation
-     */
-    String ORG_JISEL_ADD_TO_PROFILE = "org.jisel.annotations.AddToProfile";
-    /**
-     * Fully qualified name of the {@link AddToProfiles} annotation
-     */
-    String ORG_JISEL_ADD_TO_PROFILES = "org.jisel.annotations.AddToProfiles";
-    /**
-     * Fully qualified name of the {@link AddToProfile.AddToProfilez} annotation
-     */
-    String ORG_JISEL_ADD_TO_PROFILEZ = "org.jisel.annotations.AddToProfile.AddToProfilez";
-    /**
-     * Fully qualified name of the {@link AddToProfiles.AddToProfilezz} annotation
-     */
-    String ORG_JISEL_ADD_TO_PROFILEZZ = "org.jisel.annotations.AddToProfiles.AddToProfilezz";
     /**
      * Fully qualified name of the {@link TopLevel} annotation
      */
@@ -326,7 +303,7 @@ public interface StringGenerator {
      * @param text contains commas as a string separator
      * @return provided text with all commas removed
      */
-    static String removeCommaSeparator(final String text) {
+    static String removeCommaSeparator(String text) {
         return asList(text.split(COMMA_SEPARATOR)).stream().collect(joining());
     }
 
@@ -338,8 +315,10 @@ public interface StringGenerator {
      * @param interfaceElement {@link Element} instance of the large interface to be segregated
      * @return a string following Jisel sealed interface naming convention
      */
-    default String sealedInterfaceNameConvention(final String profile, final Element interfaceElement) {
-        var nameSuffix = removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString()) ? EMPTY_STRING : interfaceElement.getSimpleName().toString();
+    default String sealedInterfaceNameConvention(String profile, Element interfaceElement) {
+        var nameSuffix = removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString())
+                ? EMPTY_STRING
+                : interfaceElement.getSimpleName().toString();
         // any profile name starting w _ (final classes names) or containing a dot (classes annotated with addtoprofile) is returned as is
         return removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeCommaSeparator(profile) : format(
                 "%s%s%s",
@@ -356,7 +335,7 @@ public interface StringGenerator {
      * @param qualifiedName qualified name of the class or interface
      * @return qualified name of the class without the latest occurrence of ".class"
      */
-    default String removeDotClass(final String qualifiedName) {
+    default String removeDotClass(String qualifiedName) {
         return qualifiedName.contains(DOT_CLASS)
                 ? qualifiedName.substring(0, qualifiedName.lastIndexOf(DOT_CLASS))
                 : qualifiedName;
@@ -368,10 +347,12 @@ public interface StringGenerator {
      *
      * @param largeInterfaceAttributeRawString the toString representation of the provided largeInterface attribute value<br>
      *                                         ex: largeInterface=com.bayor.Drivable.class
-     * @return string containg the largeInterface attribute value with
+     * @return string containing the largeInterface attribute value with
      */
-    default String addQuotesToLargeInterfaceValue(final String largeInterfaceAttributeRawString) {
-        return largeInterfaceAttributeRawString.replace(LARGE_INTERFACE + EQUALS_SIGN, LARGE_INTERFACE + EQUALS_SIGN + ESCAPED_DOUBLE_QUOTES).replace(DOT_CLASS, ESCAPED_DOUBLE_QUOTES);
+    default String addQuotesToLargeInterfaceValue(String largeInterfaceAttributeRawString) {
+        return largeInterfaceAttributeRawString
+                .replace(LARGE_INTERFACE + EQUALS_SIGN, LARGE_INTERFACE + EQUALS_SIGN + ESCAPED_DOUBLE_QUOTES)
+                .replace(DOT_CLASS, ESCAPED_DOUBLE_QUOTES);
     }
 
     /**
@@ -382,8 +363,11 @@ public interface StringGenerator {
      * @param interfaceElement {@link Element} instance of the large interface to be segregated
      * @return a List of string literals following Jisel sealed interface naming convention
      */
-    default List<String> sealedInterfaceNameConventionForList(final List<String> profiles, final Element interfaceElement) {
-        final UnaryOperator<String> nameSuffix = profile -> removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString()) ? EMPTY_STRING : interfaceElement.getSimpleName().toString();
+    default List<String> sealedInterfaceNameConventionForList(List<String> profiles, Element interfaceElement) {
+        final UnaryOperator<String> nameSuffix = profile ->
+                removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString())
+                        ? EMPTY_STRING
+                        : interfaceElement.getSimpleName().toString();
         return profiles.stream()
                 .map(profile -> removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeCommaSeparator(profile) : format(
                         "%s%s%s",
@@ -399,9 +383,9 @@ public interface StringGenerator {
      * @param largeInterfaceElement {@link Element} instance of the large interface to be segregated
      * @return the package name if any
      */
-    default Optional<String> generatePackageName(final Element largeInterfaceElement) {
+    default Optional<String> generatePackageName(Element largeInterfaceElement) {
         var qualifiedClassName = largeInterfaceElement.toString();
-        int lastDot = qualifiedClassName.lastIndexOf('.');
+        int lastDot = qualifiedClassName.lastIndexOf(DOT);
         return lastDot > 0 ? Optional.of(qualifiedClassName.substring(0, lastDot)) : Optional.empty();
     }
 
@@ -411,7 +395,7 @@ public interface StringGenerator {
      * @param text contains double occurrences of whitespace
      * @return the provided text with all double occurrences of whitespace replaced with a single occurence
      */
-    default String removeDoubleSpaceOccurrences(final String text) {
+    default String removeDoubleSpaceOccurrences(String text) {
         return text.replace(WHITESPACE + WHITESPACE, WHITESPACE);
     }
 }

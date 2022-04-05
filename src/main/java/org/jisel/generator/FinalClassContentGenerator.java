@@ -61,10 +61,9 @@ public class FinalClassContentGenerator implements StringGenerator {
      * @param sealedInterfacesPermitsMap {@link Map} containing information about the subtypes permitted by each one of the sealed interfaces to be generated
      * @return the final class string content
      */
-    public String generateFinalClassContent(
-            final ProcessingEnvironment processingEnvironment,
-            final Element largeInterfaceElement,
-            final Map<String, List<String>> sealedInterfacesPermitsMap) {
+    public String generateFinalClassContent(ProcessingEnvironment processingEnvironment,
+                                            Element largeInterfaceElement,
+                                            Map<String, List<String>> sealedInterfacesPermitsMap) {
         var finalClassName = UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
         var finalClassContent = new StringBuilder();
         // package name

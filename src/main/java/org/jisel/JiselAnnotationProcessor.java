@@ -23,11 +23,7 @@ package org.jisel;
 
 import com.google.auto.service.AutoService;
 import org.jisel.annotations.AddTo;
-import org.jisel.annotations.AddToProfile;
-import org.jisel.annotations.AddToProfiles;
 import org.jisel.annotations.SealFor;
-import org.jisel.annotations.SealForProfile;
-import org.jisel.annotations.SealForProfiles;
 import org.jisel.annotations.TopLevel;
 import org.jisel.generator.SealedInterfaceSourceFileGenerator;
 import org.jisel.generator.StringGenerator;
@@ -60,27 +56,19 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TOS;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILE;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILES;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILEZ;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO_PROFILEZZ;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_UNSEAL;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_DETACH;
+import static org.jisel.generator.StringGenerator.ORG_JISEL_DETACHS;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FORS;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILE;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILES;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZ;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR_PROFILEZZ;
 import static org.jisel.generator.StringGenerator.ORG_JISEL_TOP_LEVEL;
 
 /**
  * Jisel annotation processor class. Picks up and processes all elements annotated with &#64;{@link SealFor},
- * &#64;{@link AddTo}, &#64;{@link TopLevel}, &#64;{@link SealForProfile}, &#64;{@link SealForProfiles},
- * &#64;{@link AddToProfile} and &#64;{@link AddToProfiles}<br>
+ * &#64;{@link AddTo}, &#64;{@link TopLevel}, &#64;{@link UnSeal} and &#64;{@link Detach}<br>
  */
-@SupportedAnnotationTypes({ORG_JISEL_SEAL_FOR_PROFILE, ORG_JISEL_SEAL_FOR_PROFILES, ORG_JISEL_SEAL_FOR_PROFILEZ,
-        ORG_JISEL_SEAL_FOR_PROFILEZZ, ORG_JISEL_ADD_TO_PROFILE, ORG_JISEL_ADD_TO_PROFILES, ORG_JISEL_ADD_TO_PROFILEZ,
-        ORG_JISEL_ADD_TO_PROFILEZZ, ORG_JISEL_TOP_LEVEL, ORG_JISEL_ADD_TO, ORG_JISEL_SEAL_FOR, ORG_JISEL_SEAL_FORS,
-        ORG_JISEL_ADD_TOS})
+@SupportedAnnotationTypes({ORG_JISEL_TOP_LEVEL, ORG_JISEL_ADD_TO, ORG_JISEL_SEAL_FOR, ORG_JISEL_SEAL_FORS, ORG_JISEL_ADD_TOS,
+        ORG_JISEL_UNSEAL, ORG_JISEL_DETACH, ORG_JISEL_DETACHS})
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
 public class JiselAnnotationProcessor extends AbstractProcessor implements StringGenerator {
@@ -107,7 +95,7 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
     }
 
     @Override
-    public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
         var allAnnotatedSealForElements = new HashSet<Element>();
         var allAnnotatedTopLevelElements = new HashSet<Element>();
@@ -164,11 +152,11 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
         return true;
     }
 
-    private void populateAllAnnotatedElementsSets(final Set<? extends TypeElement> annotations,
-                                                  final RoundEnvironment roundEnv,
-                                                  final Set<Element> allAnnotatedSealForElements,
-                                                  final Set<Element> allAnnotatedTopLevelElements,
-                                                  final Set<Element> allAnnotatedAddToElements) {
+    private void populateAllAnnotatedElementsSets(Set<? extends TypeElement> annotations,
+                                                  RoundEnvironment roundEnv,
+                                                  Set<Element> allAnnotatedSealForElements,
+                                                  Set<Element> allAnnotatedTopLevelElements,
+                                                  Set<Element> allAnnotatedAddToElements) {
         for (final var annotation : annotations) {
             if (annotation.getSimpleName().toString().contains(SEAL_FOR)) {
                 allAnnotatedSealForElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
@@ -182,8 +170,8 @@ public class JiselAnnotationProcessor extends AbstractProcessor implements Strin
         }
     }
 
-    private Map<Element, String> extractLargeInterfacesWithNoTopLevel(final Map<Element, String> sealForStatusReport,
-                                                                      final Map<Element, String> topLevelStatusReport) {
+    private Map<Element, String> extractLargeInterfacesWithNoTopLevel(Map<Element, String> sealForStatusReport,
+                                                                      Map<Element, String> topLevelStatusReport) {
         topLevelStatusReport.keySet().forEach(sealForStatusReport::remove);
         sealForStatusReport.replaceAll((key, value) -> TOP_LEVEL_REPORT_MSG);
         return sealForStatusReport;

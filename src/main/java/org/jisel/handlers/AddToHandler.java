@@ -43,10 +43,10 @@ import static java.util.stream.Stream.concat;
 public final class AddToHandler implements JiselAnnotationHandler {
 
     @Override
-    public Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
-                                                        final Set<Element> allAnnotatedElements,
-                                                        final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+    public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
+                                                        Set<Element> allAnnotatedElements,
+                                                        Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var annotatedClassesAndInterfaces = allAnnotatedElements.stream()
                 .filter(element -> !element.getClass().isEnum())
                 .filter(element -> ElementKind.CLASS.equals(element.getKind())
@@ -61,10 +61,10 @@ public final class AddToHandler implements JiselAnnotationHandler {
         return statusReport;
     }
 
-    private String processAnnotatedElement(final ProcessingEnvironment processingEnv,
-                                           final Element annotatedClassOrInterface,
-                                           final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                           final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+    private String processAnnotatedElement(ProcessingEnvironment processingEnv,
+                                           Element annotatedClassOrInterface,
+                                           Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                           Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new StringBuilder();
         var addToProfileProvidedProfilesMap = buildAddToProvidedProfilesMap(processingEnv, annotatedClassOrInterface);
         addToProfileProvidedProfilesMap.putAll(buildAddToProfileProvidedProfilesMap(processingEnv, annotatedClassOrInterface)); // remove line when @AddToProfile(s) removed
@@ -99,11 +99,11 @@ public final class AddToHandler implements JiselAnnotationHandler {
         return statusReport.toString();
     }
 
-    private boolean updateSealedInterfacesPermitsMapWithProvidedProfiles(final Set<String> largeInterfaceProfilesSet,
-                                                                         final Element providedLargeInterfaceElement,
-                                                                         final Element annotatedClassOrInterface,
-                                                                         final Set<String> providedProfilesForProvidedLargeInterface,
-                                                                         final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+    private boolean updateSealedInterfacesPermitsMapWithProvidedProfiles(Set<String> largeInterfaceProfilesSet,
+                                                                         Element providedLargeInterfaceElement,
+                                                                         Element annotatedClassOrInterface,
+                                                                         Set<String> providedProfilesForProvidedLargeInterface,
+                                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var notFoundProfiles = new HashSet<String>();
         for (var providedProfile : providedProfilesForProvidedLargeInterface) {
             if (providedProfile.isBlank()) {

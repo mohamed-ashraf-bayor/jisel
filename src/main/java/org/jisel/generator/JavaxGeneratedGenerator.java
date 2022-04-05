@@ -38,7 +38,7 @@ public final class JavaxGeneratedGenerator implements CodeGenerator {
 
     private static final String DEFAULT_APP_VERSION = "1.1.0";
 
-    private void buildGeneratedAnnotationSection(final StringBuilder recordClassContent) {
+    private void buildGeneratedAnnotationSection(StringBuilder recordClassContent) {
         recordClassContent.append(format("""
                         @javax.annotation.processing.Generated(
                             value = "%s",
@@ -64,7 +64,7 @@ public final class JavaxGeneratedGenerator implements CodeGenerator {
     }
 
     @Override
-    public void generateCode(final StringBuilder classOrInterfaceContent, final List<String> params) {
+    public void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
         buildGeneratedAnnotationSection(classOrInterfaceContent);
     }
 }

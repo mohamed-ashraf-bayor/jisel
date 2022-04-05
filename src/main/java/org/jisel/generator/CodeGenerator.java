@@ -36,7 +36,7 @@ import static java.util.stream.Collectors.joining;
 /**
  * Exposes contract to be fulfilled by a class generating the code of a sealed interface
  */
-public sealed interface CodeGenerator permits JavaxGeneratedGenerator, ExtendsGenerator, PermitsGenerator, MethodsGenerator {
+public sealed interface CodeGenerator extends StringGenerator permits JavaxGeneratedGenerator, ExtendsGenerator, PermitsGenerator, MethodsGenerator {
 
     /**
      * Generates piece of code requested, based on the parameters provided in the params object and appends it to the provided classOrInterfaceContent param
@@ -51,7 +51,7 @@ public sealed interface CodeGenerator permits JavaxGeneratedGenerator, ExtendsGe
  * Exposes contract to be fulfilled by a class generating the "extends" clause of a sealed interface definition, along with
  * the list of the parent classes or interfaces
  */
-sealed interface ExtendsGenerator extends CodeGenerator, StringGenerator permits SealedInterfaceExtendsGenerator {
+sealed interface ExtendsGenerator extends CodeGenerator permits SealedInterfaceExtendsGenerator {
 
     /**
      * Generates the "extends" clause of a sealed interface being generated, along with the list of parent interfaces, based on
@@ -92,7 +92,7 @@ sealed interface ExtendsGenerator extends CodeGenerator, StringGenerator permits
  * Exposes contract to be fulfilled by a class generating the "permits" clause of a sealed interface definition, along with
  * the list of the subtypes classes or interfaces permitted by the sealed interface being generated
  */
-sealed interface PermitsGenerator extends CodeGenerator, StringGenerator permits SealedInterfacePermitsGenerator {
+sealed interface PermitsGenerator extends CodeGenerator permits SealedInterfacePermitsGenerator {
 
     /**
      * Generates the "permits" clause of a sealed interface being generated, along with the list of parent interfaces, based on
@@ -149,7 +149,7 @@ sealed interface PermitsGenerator extends CodeGenerator, StringGenerator permits
  * Exposes contract to be fulfilled by a class generating the list of abstracts methods of a sealed interface being generated.<br>
  * Same is also used to generate the list of concrete methods of the convenience final class generated for the bottom-level generated sealed interfaces
  */
-sealed interface MethodsGenerator extends CodeGenerator, StringGenerator permits SealedInterfaceMethodsGenerator {
+sealed interface MethodsGenerator extends CodeGenerator permits SealedInterfaceMethodsGenerator {
 
     /**
      * Generates a list of abstracts methods definitions and appends it to the sealed interface code being generated
@@ -207,7 +207,8 @@ sealed interface MethodsGenerator extends CodeGenerator, StringGenerator permits
                 output = output.replace(COMMA_SEPARATOR, WHITESPACE + PARAMETER_PREFIX + paramIdx + TEMP_PLACEHOLDER + WHITESPACE);
                 paramIdx++;
             }
-            output = output.replace(CLOSING_PARENTHESIS, WHITESPACE + PARAMETER_PREFIX + paramIdx + CLOSING_PARENTHESIS).replaceAll(TEMP_PLACEHOLDER, COMMA_SEPARATOR);
+            output = output.replace(CLOSING_PARENTHESIS, WHITESPACE + PARAMETER_PREFIX + paramIdx + CLOSING_PARENTHESIS)
+                    .replaceAll(TEMP_PLACEHOLDER, COMMA_SEPARATOR);
         }
         return output;
     }
@@ -219,7 +220,8 @@ sealed interface MethodsGenerator extends CodeGenerator, StringGenerator permits
      * @return a comma-separated list of exceptions classes thrown by the provided method {@link Element} instance
      */
     default String generateThrownExceptions(final Element methodElement) {
-        return ((ExecutableType) methodElement.asType()).getThrownTypes().stream().map(Object::toString).collect(joining(COMMA_SEPARATOR + WHITESPACE));
+        return ((ExecutableType) methodElement.asType()).getThrownTypes().stream()
+                .map(Object::toString).collect(joining(COMMA_SEPARATOR + WHITESPACE));
     }
 
     /**

@@ -60,10 +60,10 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
      * @param sealedInterfacesPermitsMap            Map containing information about the subtypes permitted by each one of the sealed interfaces to be generated
      * @return the string content of the sealed interface to generate
      */
-    public String generateSealedInterfaceContent(final ProcessingEnvironment processingEnvironment,
-                                                 final Map.Entry<String, Set<Element>> sealedInterfacesToGenerateMapEntrySet,
-                                                 final Element largeInterfaceElement,
-                                                 final Map<String, List<String>> sealedInterfacesPermitsMap) {
+    public String generateSealedInterfaceContent(ProcessingEnvironment processingEnvironment,
+                                                 Map.Entry<String, Set<Element>> sealedInterfacesToGenerateMapEntrySet,
+                                                 Element largeInterfaceElement,
+                                                 Map<String, List<String>> sealedInterfacesPermitsMap) {
         var sealedInterfaceContent = new StringBuilder();
         // package name
         generatePackageName(largeInterfaceElement).ifPresent(name -> sealedInterfaceContent.append(format("%s %s;%n%n", PACKAGE, name)));
@@ -96,11 +96,11 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
  */
 final class SealedInterfaceExtendsGenerator implements ExtendsGenerator {
     @Override
-    public void generateExtendsClauseFromPermitsMapAndProcessedProfile(final ProcessingEnvironment processingEnvironment,
-                                                                       final StringBuilder sealedInterfaceContent,
-                                                                       final Map<String, List<String>> permitsMap,
-                                                                       final String processedProfile,
-                                                                       final Element largeInterfaceElement) {
+    public void generateExtendsClauseFromPermitsMapAndProcessedProfile(ProcessingEnvironment processingEnvironment,
+                                                                       StringBuilder sealedInterfaceContent,
+                                                                       Map<String, List<String>> permitsMap,
+                                                                       String processedProfile,
+                                                                       Element largeInterfaceElement) {
         Optional.ofNullable(permitsMap).ifPresent(nonNullPermitsMap -> {
             var parentList = nonNullPermitsMap.entrySet().stream()
                     .filter(permitsMapEntry -> permitsMapEntry.getValue().contains(processedProfile))
@@ -131,10 +131,10 @@ final class SealedInterfaceExtendsGenerator implements ExtendsGenerator {
  */
 final class SealedInterfacePermitsGenerator implements PermitsGenerator {
     @Override
-    public void generatePermitsClauseFromPermitsMapAndProcessedProfile(final StringBuilder sealedInterfaceContent,
-                                                                       final Map<String, List<String>> permitsMap,
-                                                                       final String processedProfile,
-                                                                       final Element largeInterfaceElement) {
+    public void generatePermitsClauseFromPermitsMapAndProcessedProfile(StringBuilder sealedInterfaceContent,
+                                                                       Map<String, List<String>> permitsMap,
+                                                                       String processedProfile,
+                                                                       Element largeInterfaceElement) {
         addFinalClassToPermitsMap(permitsMap, largeInterfaceElement);
         var permitsMapOpt = Optional.ofNullable(permitsMap);
         if (permitsMapOpt.isPresent() && !permitsMapOpt.get().isEmpty()) {
@@ -151,7 +151,7 @@ final class SealedInterfacePermitsGenerator implements PermitsGenerator {
 final class SealedInterfaceMethodsGenerator implements MethodsGenerator {
 
     @Override
-    public void generateAbstractMethodsFromElementsSet(final StringBuilder sealedInterfaceContent, final Set<Element> methodsSet) {
+    public void generateAbstractMethodsFromElementsSet(StringBuilder sealedInterfaceContent, Set<Element> methodsSet) {
         generateCode(
                 sealedInterfaceContent,
                 methodsSet.stream()
@@ -168,7 +168,7 @@ final class SealedInterfaceMethodsGenerator implements MethodsGenerator {
     }
 
     @Override
-    public void generateEmptyConcreteMethodsFromElementsSet(final StringBuilder sealedInterfaceContent, final Set<Element> methodsSet) {
+    public void generateEmptyConcreteMethodsFromElementsSet(StringBuilder sealedInterfaceContent, Set<Element> methodsSet) {
         generateCode(
                 sealedInterfaceContent,
                 methodsSet.stream()
