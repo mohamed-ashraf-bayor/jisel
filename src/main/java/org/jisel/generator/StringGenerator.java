@@ -308,6 +308,16 @@ public interface StringGenerator {
     }
 
     /**
+     * Replace all double occurences of whitespace ("  ") into a single whitespace (" ")
+     *
+     * @param text contains double occurrences of whitespace
+     * @return the provided text with all double occurrences of whitespace replaced with a single occurence
+     */
+    static String removeDoubleSpaceOccurrences(String text) {
+        return text.replace(WHITESPACE + WHITESPACE, WHITESPACE);
+    }
+
+    /**
      * Constructs a string based on the provided profile and a large interface {@link Element} instance, according to the naming convention:<br>
      * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
      *
@@ -319,7 +329,7 @@ public interface StringGenerator {
         var nameSuffix = removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString())
                 ? EMPTY_STRING
                 : interfaceElement.getSimpleName().toString();
-        // any profile name starting w _ (final classes names) or containing a dot (classes annotated with addtoprofile) is returned as is
+        // any profile name starting w _ (final classes names) or containing a dot (classes annotated with @Addto) is returned as is
         return removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeCommaSeparator(profile) : format(
                 "%s%s%s",
                 SEALED_PREFIX,
@@ -387,15 +397,5 @@ public interface StringGenerator {
         var qualifiedClassName = largeInterfaceElement.toString();
         int lastDot = qualifiedClassName.lastIndexOf(DOT);
         return lastDot > 0 ? Optional.of(qualifiedClassName.substring(0, lastDot)) : Optional.empty();
-    }
-
-    /**
-     * Replace all double occurences of whitespace ("  ") into a single whitespace (" ")
-     *
-     * @param text contains double occurrences of whitespace
-     * @return the provided text with all double occurrences of whitespace replaced with a single occurence
-     */
-    default String removeDoubleSpaceOccurrences(String text) {
-        return text.replace(WHITESPACE + WHITESPACE, WHITESPACE);
     }
 }

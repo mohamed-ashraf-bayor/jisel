@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.String.format;
+import static org.jisel.generator.StringGenerator.removeDoubleSpaceOccurrences;
 
 /**
  * Generates the content of a sealed interface

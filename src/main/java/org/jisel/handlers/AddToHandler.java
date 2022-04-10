@@ -67,7 +67,6 @@ public final class AddToHandler implements JiselAnnotationHandler {
                                            Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new StringBuilder();
         var addToProfileProvidedProfilesMap = buildAddToProvidedProfilesMap(processingEnv, annotatedClassOrInterface);
-        addToProfileProvidedProfilesMap.putAll(buildAddToProfileProvidedProfilesMap(processingEnv, annotatedClassOrInterface)); // remove line when @AddToProfile(s) removed
         if (addToProfileProvidedProfilesMap.isEmpty()) {
             // do not process if no profiles are provided
             return statusReport.toString();

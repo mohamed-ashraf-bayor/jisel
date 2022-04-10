@@ -31,6 +31,7 @@ import java.util.Map;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
+import static org.jisel.generator.StringGenerator.removeDoubleSpaceOccurrences;
 
 /**
  * Generates content for a final class.<br>

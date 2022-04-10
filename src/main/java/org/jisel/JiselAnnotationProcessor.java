@@ -25,6 +25,8 @@ import com.google.auto.service.AutoService;
 import org.jisel.annotations.AddTo;
 import org.jisel.annotations.SealFor;
 import org.jisel.annotations.TopLevel;
+import org.jisel.annotations.UnSeal;
+import org.jisel.annotations.Detach;
 import org.jisel.generator.SealedInterfaceSourceFileGenerator;
 import org.jisel.generator.StringGenerator;
 import org.jisel.handlers.AddToHandler;

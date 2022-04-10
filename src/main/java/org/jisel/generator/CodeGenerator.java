@@ -139,7 +139,7 @@ sealed interface PermitsGenerator extends CodeGenerator permits SealedInterfaceP
                 .distinct()
                 .filter(childProfileName -> permitsMap.keySet().stream().noneMatch(parentProfile -> parentProfile.equals(childProfileName)))
                 .filter(childProfileName -> !finalClassName.equals(childProfileName)) // if finalClassName found remove it from the new list
-                .filter(childProfileName -> !childProfileName.contains(DOT)) // also skip all qualifiedname classes added by @addToProfile
+                .filter(childProfileName -> !childProfileName.contains(DOT)) // also skip all qualifiedname classes added by @AddTo
                 .toList();
         childlessProfiles.forEach(childlessProfile -> permitsMap.put(childlessProfile, asList(finalClassName)));
     }
