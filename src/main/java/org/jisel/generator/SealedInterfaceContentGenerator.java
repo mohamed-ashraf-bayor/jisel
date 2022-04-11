@@ -179,7 +179,10 @@ final class SealedInterfaceMethodsGenerator implements MethodsGenerator {
                                 generateMethodNameAndParameters(methodElement),
                                 generateThrownExceptions(methodElement).isEmpty()
                                         ? OPENING_CURLY_BRACE + generateDefaultReturnValueForMethod(methodElement) + SEMICOLON + CLOSING_CURLY_BRACE
-                                        : format("throws %s", generateThrownExceptions(methodElement) + WHITESPACE + OPENING_CURLY_BRACE + generateDefaultReturnValueForMethod(methodElement) + SEMICOLON + CLOSING_CURLY_BRACE)
+                                        : format("throws %s",
+                                        generateThrownExceptions(methodElement) + WHITESPACE + OPENING_CURLY_BRACE
+                                                + generateDefaultReturnValueForMethod(methodElement) + SEMICOLON + CLOSING_CURLY_BRACE
+                                )
                         ))
                         .toList()
         );

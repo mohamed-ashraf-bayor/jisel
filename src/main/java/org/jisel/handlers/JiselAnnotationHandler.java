@@ -102,13 +102,9 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
     }
 
     private void updateProvidedProfilesMapBasedOnProfilesSet(Map<String, Set<String>> providedProfilesMap, Set<String> profilesSet, String attributesWithValues) {
-        var largeInterface = EMPTY_STRING;
         var largeInterfaceAttributeMatcher = Pattern.compile(LARGE_INTERFACE_ATTRIBUTE_REGEX).matcher(attributesWithValues);
-        if (largeInterfaceAttributeMatcher.find()) { // get only the first occurrence
-            largeInterface = removeDotClass(largeInterfaceAttributeMatcher.group(1).strip());
-        }
         providedProfilesMap.merge(
-                largeInterface,
+                largeInterfaceAttributeMatcher.find() ? removeDotClass(largeInterfaceAttributeMatcher.group(1).strip()) : EMPTY_STRING,
                 profilesSet.isEmpty()
                         ? new HashSet<>(Set.of(EMPTY_STRING))
                         : profilesSet, (currentSet, newSet) -> concat(currentSet.stream(), newSet.stream()).collect(toSet())
@@ -236,7 +232,7 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
                                                          Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                          Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByLargeInterface);
-        return Map.of(); // returning empty map instead of null
+        return Map.of();
     }
 }
 

@@ -75,7 +75,7 @@ sealed interface ExtendsGenerator extends CodeGenerator permits SealedInterfaceE
     );
 
     @Override
-    default void generateCode(final StringBuilder classOrInterfaceContent, final List<String> params) {
+    default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
         classOrInterfaceContent.append(format(
                 " %s %s ",
                 isInterface(classOrInterfaceContent.toString()) ? EXTENDS : IMPLEMENTS,
@@ -83,7 +83,7 @@ sealed interface ExtendsGenerator extends CodeGenerator permits SealedInterfaceE
         ));
     }
 
-    private boolean isInterface(final String classOrInterfaceContent) {
+    private boolean isInterface(String classOrInterfaceContent) {
         return classOrInterfaceContent.contains(INTERFACE + WHITESPACE) && !classOrInterfaceContent.contains(CLASS + WHITESPACE);
     }
 }
@@ -114,7 +114,7 @@ sealed interface PermitsGenerator extends CodeGenerator permits SealedInterfaceP
     );
 
     @Override
-    default void generateCode(final StringBuilder classOrInterfaceContent, final List<String> params) {
+    default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
         classOrInterfaceContent.append(format(
                 " %s %s ",
                 PERMITS,
@@ -132,7 +132,7 @@ sealed interface PermitsGenerator extends CodeGenerator permits SealedInterfaceP
      *                              sealed interfaces will be generated as subtypes
      * @param largeInterfaceElement {@link Element} instance of the large interface being segregated
      */
-    default void addFinalClassToPermitsMap(final Map<String, List<String>> permitsMap, final Element largeInterfaceElement) {
+    default void addFinalClassToPermitsMap(Map<String, List<String>> permitsMap, Element largeInterfaceElement) {
         var finalClassName = UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
         var childlessProfiles = permitsMap.values().stream()
                 .flatMap(Collection::stream)
@@ -169,7 +169,7 @@ sealed interface MethodsGenerator extends CodeGenerator permits SealedInterfaceM
     void generateEmptyConcreteMethodsFromElementsSet(StringBuilder sealedInterfaceContent, Set<Element> methodsSet);
 
     @Override
-    default void generateCode(final StringBuilder classOrInterfaceContent, final List<String> params) {
+    default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
         params.forEach(methodDefinition -> classOrInterfaceContent.append(format("\t%s%n", methodDefinition)));
     }
 
@@ -179,7 +179,8 @@ sealed interface MethodsGenerator extends CodeGenerator permits SealedInterfaceM
      * @param methodElement method {@link Element} instance
      * @return true if the provided method has any arguments, false otherwise
      */
-    default boolean methodHasArguments(final Element methodElement) {
+    default boolean methodHasArguments(Element methodElement) {
+        // TODO rewrite using processingEnv
         return methodElement.toString().indexOf(CLOSING_PARENTHESIS) - methodElement.toString().indexOf(OPENING_PARENTHESIS) > 1;
     }
 
@@ -189,7 +190,7 @@ sealed interface MethodsGenerator extends CodeGenerator permits SealedInterfaceM
      * @param methodElement method {@link Element} instance
      * @return a string representing the fully qualified name of the provided method's return type
      */
-    default String generateReturnType(final Element methodElement) {
+    default String generateReturnType(Element methodElement) {
         return ((ExecutableType) methodElement.asType()).getReturnType().toString();
     }
 
@@ -199,7 +200,7 @@ sealed interface MethodsGenerator extends CodeGenerator permits SealedInterfaceM
      * @param methodElement method {@link Element} instance
      * @return a string containing a method name and parameters formatted as in the method signature
      */
-    default String generateMethodNameAndParameters(final Element methodElement) {
+    default String generateMethodNameAndParameters(Element methodElement) {
         var output = methodElement.toString();
         if (methodHasArguments(methodElement)) {
             int paramIdx = 0;
@@ -219,9 +220,10 @@ sealed interface MethodsGenerator extends CodeGenerator permits SealedInterfaceM
      * @param methodElement method {@link Element} instance
      * @return a comma-separated list of exceptions classes thrown by the provided method {@link Element} instance
      */
-    default String generateThrownExceptions(final Element methodElement) {
+    default String generateThrownExceptions(Element methodElement) {
         return ((ExecutableType) methodElement.asType()).getThrownTypes().stream()
-                .map(Object::toString).collect(joining(COMMA_SEPARATOR + WHITESPACE));
+                .map(Object::toString)
+                .collect(joining(COMMA_SEPARATOR + WHITESPACE));
     }
 
     /**
@@ -230,7 +232,7 @@ sealed interface MethodsGenerator extends CodeGenerator permits SealedInterfaceM
      * @param methodElement method {@link Element} instance
      * @return a string containing the default value for the provided method's return type
      */
-    default String generateDefaultReturnValueForMethod(final Element methodElement) {
+    default String generateDefaultReturnValueForMethod(Element methodElement) {
         return switch (((ExecutableType) methodElement.asType()).getReturnType().getKind()) {
             case BOOLEAN -> RETURN + WHITESPACE + DEFAULT_BOOLEAN_VALUE;
             case VOID -> RETURN;

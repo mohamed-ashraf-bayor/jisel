@@ -32,11 +32,12 @@ import java.util.Properties;
 import static java.lang.String.format;
 
 /**
- * Generates the {@link javax.annotation.processing.Generated} annotation section at the top of the generated interfaces or classes with the attributes: value, date and comments<br>
+ * Generates the {@link javax.annotation.processing.Generated} annotation section at the top of the generated interfaces or
+ * classes with the attributes: value, date and comments<br>
  */
 public final class JavaxGeneratedGenerator implements CodeGenerator {
 
-    private static final String DEFAULT_APP_VERSION = "1.1.0";
+    private static final String DEFAULT_APP_VERSION = "1.2.0";
 
     private void buildGeneratedAnnotationSection(StringBuilder recordClassContent) {
         recordClassContent.append(format("""

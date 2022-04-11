@@ -70,7 +70,7 @@ public class FinalClassContentGenerator implements StringGenerator {
         // package name
         generatePackageName(largeInterfaceElement).ifPresent(name -> finalClassContent.append(format("%s %s;%n%n", PACKAGE, name)));
         // javaxgenerated
-        javaxGeneratedGenerator.generateCode(finalClassContent, null);
+        javaxGeneratedGenerator.generateCode(finalClassContent, List.of());
         // public final class
         finalClassContent.append(format(
                 "%s %s ",
