@@ -69,7 +69,7 @@ public final class SealedInterfaceContentGenerator implements StringGenerator {
         // package name
         generatePackageName(largeInterfaceElement).ifPresent(name -> sealedInterfaceContent.append(format("%s %s;%n%n", PACKAGE, name)));
         // javaxgenerated
-        javaxGeneratedGenerator.generateCode(sealedInterfaceContent, null);
+        javaxGeneratedGenerator.generateCode(sealedInterfaceContent, List.of());
         // public sealed interface
         var profile = sealedInterfacesToGenerateMapEntrySet.getKey();
         sealedInterfaceContent.append(format(
