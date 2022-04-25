@@ -47,22 +47,24 @@ import static org.jisel.generator.StringGenerator.WHITESPACE;
 
 public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
 
+    String ALL_ANNOTATED_SEALFOR_ELEMENTS = "allAnnotatedSealForElements";
+    String ALL_ANNOTATED_TOPLEVEL_ELEMENTS = "allAnnotatedTopLevelElements";
+    String ALL_ANNOTATED_ADDTO_ELEMENTS = "allAnnotatedAddToElements";
+
     void notifyReportDisplay(String reportText);
 
     default void populateAllAnnotatedElementsSets(Set<? extends TypeElement> annotations,
                                                   RoundEnvironment roundEnv,
-                                                  Set<Element> allAnnotatedSealForElements,
-                                                  Set<Element> allAnnotatedTopLevelElements,
-                                                  Set<Element> allAnnotatedAddToElements) {
-        for (final var annotation : annotations) {
+                                                  Map<String, Set<Element>> allAnnotatedElementsMap) {
+        for (var annotation : annotations) {
             if (annotation.getSimpleName().toString().contains(SEAL_FOR)) {
-                allAnnotatedSealForElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
+                allAnnotatedElementsMap.get(ALL_ANNOTATED_SEALFOR_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
             if (annotation.getSimpleName().toString().contains(TOP_LEVEL)) {
-                allAnnotatedTopLevelElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
+                allAnnotatedElementsMap.get(ALL_ANNOTATED_TOPLEVEL_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
             if (annotation.getSimpleName().toString().contains(ADD_TO)) {
-                allAnnotatedAddToElements.addAll(roundEnv.getElementsAnnotatedWith(annotation));
+                allAnnotatedElementsMap.get(ALL_ANNOTATED_ADDTO_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
         }
     }
@@ -70,14 +72,13 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
     default void processTopLevelAndSealForAnnotatedElements(ProcessingEnvironment processingEnv,
                                                             JiselAnnotationHandler topLevelHandler,
                                                             JiselAnnotationHandler sealForHandler,
-                                                            Set<Element> allAnnotatedTopLevelElements,
-                                                            Set<Element> allAnnotatedSealForElements,
+                                                            Map<String, Set<Element>> allAnnotatedElementsMap,
                                                             Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                             Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         // process all interface methods annotated with @TopLevel
         var topLevelStatusReport = topLevelHandler.handleAnnotatedElements(
                 processingEnv,
-                unmodifiableSet(allAnnotatedTopLevelElements),
+                unmodifiableSet(allAnnotatedElementsMap.get(ALL_ANNOTATED_TOPLEVEL_ELEMENTS)),
                 sealedInterfacesToGenerateByLargeInterface,
                 unmodifiableMap(sealedInterfacesPermitsByLargeInterface)
         );
@@ -85,7 +86,7 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         // process all interface methods annotated with @SealFor
         var sealForStatusReport = sealForHandler.handleAnnotatedElements(
                 processingEnv,
-                unmodifiableSet(allAnnotatedSealForElements),
+                unmodifiableSet(allAnnotatedElementsMap.get(ALL_ANNOTATED_SEALFOR_ELEMENTS)),
                 sealedInterfacesToGenerateByLargeInterface,
                 sealedInterfacesPermitsByLargeInterface
         );
@@ -108,7 +109,6 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         displayStatusReport(addToStatusReport, ADD_TO);
     }
 
-    // TODO extract or exclude ??
     private Map<Element, String> extractLargeInterfacesWithNoTopLevel(Map<Element, String> sealForStatusReport,
                                                                       Map<Element, String> topLevelStatusReport) {
         topLevelStatusReport.keySet().forEach(sealForStatusReport::remove);
@@ -116,7 +116,7 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         return sealForStatusReport;
     }
 
-    private void displayStatusReport(final Map<Element, String> statusReport, final String... annotationsNames) {
+    private void displayStatusReport(Map<Element, String> statusReport, String... annotationsNames) {
         if (!statusReport.values().stream().collect(joining()).isBlank()) {
             var output = new StringBuilder(format(
                     "%n%s - %s%n",

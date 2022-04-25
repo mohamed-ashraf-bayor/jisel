@@ -40,5 +40,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE})
 public @interface UnSeal {
-    boolean value() default false;
+    boolean value() default true;
 }

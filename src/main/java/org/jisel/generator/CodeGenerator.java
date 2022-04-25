@@ -23,6 +23,7 @@ package org.jisel.generator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ExecutableType;
 import java.util.Collection;
 import java.util.List;
@@ -174,17 +175,6 @@ sealed interface MethodsGenerator extends CodeGenerator permits SealedInterfaceM
     }
 
     /**
-     * Checks whether the provided method {@link Element} instance has any arguments
-     *
-     * @param methodElement method {@link Element} instance
-     * @return true if the provided method has any arguments, false otherwise
-     */
-    default boolean methodHasArguments(Element methodElement) {
-        // TODO rewrite using processingEnv
-        return methodElement.toString().indexOf(CLOSING_PARENTHESIS) - methodElement.toString().indexOf(OPENING_PARENTHESIS) > 1;
-    }
-
-    /**
      * Returns a string representing the fully qualified name of a method return type
      *
      * @param methodElement method {@link Element} instance
@@ -195,23 +185,23 @@ sealed interface MethodsGenerator extends CodeGenerator permits SealedInterfaceM
     }
 
     /**
-     * Constructs a string containing a method name and parameters formatted as in the method signature
+     * Constructs a string containing a method name and parameters formatted as per the method signature
      *
      * @param methodElement method {@link Element} instance
-     * @return a string containing a method name and parameters formatted as in the method signature
+     * @return a string containing a method name and parameters formatted as per the method signature
      */
     default String generateMethodNameAndParameters(Element methodElement) {
-        var output = methodElement.toString();
-        if (methodHasArguments(methodElement)) {
-            int paramIdx = 0;
-            while (output.contains(COMMA_SEPARATOR)) {
-                output = output.replace(COMMA_SEPARATOR, WHITESPACE + PARAMETER_PREFIX + paramIdx + TEMP_PLACEHOLDER + WHITESPACE);
-                paramIdx++;
-            }
-            output = output.replace(CLOSING_PARENTHESIS, WHITESPACE + PARAMETER_PREFIX + paramIdx + CLOSING_PARENTHESIS)
-                    .replaceAll(TEMP_PLACEHOLDER, COMMA_SEPARATOR);
+        if (((ExecutableElement) methodElement).getParameters().isEmpty()) { // checks whether the provided method Element instance has 0 args
+            return methodElement.toString();
         }
-        return output;
+        int paramIdx = 0;
+        var output = methodElement.toString();
+        while (output.contains(COMMA_SEPARATOR)) {
+            output = output.replace(COMMA_SEPARATOR, WHITESPACE + PARAMETER_PREFIX + paramIdx + TEMP_PLACEHOLDER + WHITESPACE);
+            paramIdx++;
+        }
+        return output.replace(CLOSING_PARENTHESIS, WHITESPACE + PARAMETER_PREFIX + paramIdx + CLOSING_PARENTHESIS)
+                .replaceAll(TEMP_PLACEHOLDER, COMMA_SEPARATOR);
     }
 
     /**

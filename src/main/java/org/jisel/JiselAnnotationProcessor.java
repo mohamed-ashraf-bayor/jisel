@@ -103,16 +103,23 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
         var sealedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Set<Element>>>();
         var sealedInterfacesPermitsByLargeInterface = new HashMap<Element, Map<String, List<String>>>();
 
-        populateAllAnnotatedElementsSets(annotations, roundEnv, allAnnotatedSealForElements, allAnnotatedTopLevelElements, allAnnotatedAddToElements);
+        populateAllAnnotatedElementsSets(annotations, roundEnv, Map.of(
+                ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements,
+                ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements,
+                ALL_ANNOTATED_ADDTO_ELEMENTS, allAnnotatedAddToElements
+        ));
 
         // continue execution only if at least 1 element has been annotated with @TopLevel
         if (!allAnnotatedTopLevelElements.isEmpty()) {
 
-            processTopLevelAndSealForAnnotatedElements(processingEnv, topLevelHandler, sealForHandler, allAnnotatedTopLevelElements,
-                    allAnnotatedSealForElements, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+            processTopLevelAndSealForAnnotatedElements(processingEnv, topLevelHandler, sealForHandler,
+                    Map.of(ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements, ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements),
+                    sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
 
             processAddToAnnotatedElements(processingEnv, addToHandler, allAnnotatedAddToElements,
                     sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+
+            // TODO process unseal and detach
 
             try {
                 var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(
