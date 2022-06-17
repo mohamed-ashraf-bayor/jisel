@@ -8,7 +8,7 @@ import static java.lang.String.format;
 /**
  * Generates the list of abstracts methods of a sealed interface being generated
  */
-public final class SealedInterfaceMethodsGenerator implements MethodsGenerator {
+public final class InterfaceMethodsGenerator implements MethodsGenerator {
 
     @Override
     public void generateAbstractMethodsFromElementsSet(StringBuilder sealedInterfaceContent, Set<Element> methodsSet) {

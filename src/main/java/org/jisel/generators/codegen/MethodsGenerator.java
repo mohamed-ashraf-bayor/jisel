@@ -13,7 +13,7 @@ import static java.util.stream.Collectors.joining;
  * Exposes contract to be fulfilled by a class generating the list of abstracts methods of a sealed interface being generated.<br>
  * Same is also used to generate the list of concrete methods of the convenience final class generated for the bottom-level generated sealed interfaces
  */
-public sealed interface MethodsGenerator extends CodeGenerator permits SealedInterfaceMethodsGenerator {
+public sealed interface MethodsGenerator extends CodeGenerator permits InterfaceMethodsGenerator {
 
     /**
      * Generates a list of abstracts methods definitions and appends it to the sealed interface code being generated

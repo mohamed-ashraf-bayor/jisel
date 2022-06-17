@@ -27,7 +27,8 @@ import org.jisel.annotations.Detach;
 import org.jisel.annotations.SealFor;
 import org.jisel.annotations.TopLevel;
 import org.jisel.annotations.UnSeal;
-import org.jisel.generators.filegen.SealedInterfaceSourceFileGenerator;
+import org.jisel.generators.filegen.InterfaceSourceFileGenerator;
+import org.jisel.generators.filegen.SealedAbstractSourceFileGenerator;
 import org.jisel.handlers.AddToHandler;
 import org.jisel.handlers.JiselAnnotationHandler;
 import org.jisel.handlers.SealForHandler;
@@ -84,18 +85,18 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
 
     private final JiselAnnotationHandler unSealHandler;
 
-    private final SealedInterfaceSourceFileGenerator sealedInterfaceSourceFileGenerator;
+    private final SealedAbstractSourceFileGenerator interfaceSourceFileGenerator;
 
     /**
      * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForHandler}, {@link AddToHandler},
-     * {@link TopLevelHandler} and {@link SealedInterfaceSourceFileGenerator}
+     * {@link TopLevelHandler}, {@link UnSealHandler} and {@link InterfaceSourceFileGenerator}
      */
     public JiselAnnotationProcessor() {
         this.sealForHandler = new SealForHandler();
         this.addToHandler = new AddToHandler();
         this.topLevelHandler = new TopLevelHandler();
         this.unSealHandler = new UnSealHandler();
-        this.sealedInterfaceSourceFileGenerator = new SealedInterfaceSourceFileGenerator();
+        this.interfaceSourceFileGenerator = new InterfaceSourceFileGenerator();
     }
 
     @Override
@@ -131,7 +132,7 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
                     sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
 
             try {
-                var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(
+                var generatedFiles = interfaceSourceFileGenerator.createSourceFiles(
                         processingEnv,
                         sealedInterfacesToGenerateByLargeInterface,
                         sealedInterfacesPermitsByLargeInterface,

@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * Generates the "extends" clause of a sealed interface definition, along with the list of the parent interfaces
  */
-public final class SealedInterfaceExtendsGenerator implements ExtendsGenerator {
+public final class InterfaceExtendsGenerator implements ExtendsGenerator {
     @Override
     public void generateExtendsClauseFromPermitsMapAndProcessedProfile(ProcessingEnvironment processingEnvironment,
                                                                        StringBuilder sealedInterfaceContent,

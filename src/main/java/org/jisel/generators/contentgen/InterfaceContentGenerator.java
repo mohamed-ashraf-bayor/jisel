@@ -31,24 +31,20 @@ import static java.lang.String.format;
 import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
 
 /**
+ * // TODO jdoc all
  * Generates the content of a sealed interface
+ * ...
+ * In this specific case, though a Map is received as sealedInterfacesToGenerateMap param, ONLY A SINGLE ENTRY IS EXPECTED AS CONTENT.
  */
-public final class SealedInterfaceContentGenerator extends SealedAbstractContentGenerator {
+public final class InterfaceContentGenerator extends SealedAbstractContentGenerator {
 
-    /**
-     * Generates the content of a sealed interface
-     *
-     * @param processingEnvironment         {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param sealedInterfacesToGenerateMap {@link java.util.Map} instance containing information about the sealed interface to be generated.
-     *                                      In this specific case, though a Map, only a single entry is expected as content.
-     * @param largeInterfaceElement         {@link Element} instance of the large interface being segregated
-     * @param sealedInterfacesPermitsMap    Map containing information about the subtypes permitted by each one of the sealed interfaces to be generated
-     * @return the string content of the sealed interface to generate
-     */
-    public String generateSealedInterfaceContent(ProcessingEnvironment processingEnvironment,
-                                                 Map<String, Set<Element>> sealedInterfacesToGenerateMap,
-                                                 Element largeInterfaceElement,
-                                                 Map<String, List<String>> sealedInterfacesPermitsMap) {
+    @Override
+    public String generateContent(ProcessingEnvironment processingEnvironment,
+                                  Element largeInterfaceElement,
+                                  boolean unSeal,
+                                  Map<String, Set<Element>> sealedInterfacesToGenerateMap,
+                                  Map<String, List<String>> sealedInterfacesPermitsMap) {
+        // TODO FAIRE LA MAGIE DES IF ICI AVEC LA VALR DE UNSEAL
         var sealedInterfaceContent = new StringBuilder();
         // package name
         generatePackageName(largeInterfaceElement).ifPresent(name -> sealedInterfaceContent.append(format("%s %s;%n%n", PACKAGE, name)));

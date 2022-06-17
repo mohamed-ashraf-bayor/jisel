@@ -27,6 +27,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -40,17 +41,12 @@ import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
  */
 public final class FinalClassContentGenerator extends SealedAbstractContentGenerator {
 
-    /**
-     * Generates content of the final class generated for the provided large interface
-     *
-     * @param processingEnvironment      {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param largeInterfaceElement      {@link Element} instance of the large interface being segregated
-     * @param sealedInterfacesPermitsMap {@link Map} containing information about the subtypes permitted by each one of the sealed interfaces to be generated
-     * @return the final class string content
-     */
-    public String generateFinalClassContent(ProcessingEnvironment processingEnvironment,
-                                            Element largeInterfaceElement,
-                                            Map<String, List<String>> sealedInterfacesPermitsMap) {
+    @Override
+    public String generateContent(ProcessingEnvironment processingEnvironment,
+                                  Element largeInterfaceElement,
+                                  boolean unSeal,
+                                  Map<String, Set<Element>> sealedInterfacesToGenerateMap,
+                                  Map<String, List<String>> sealedInterfacesPermitsMap) {
         var finalClassName = UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + FINAL_CLASS_SUFFIX;
         var finalClassContent = new StringBuilder();
         // package name

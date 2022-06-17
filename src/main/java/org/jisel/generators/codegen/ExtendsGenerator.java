@@ -14,7 +14,7 @@ import static java.util.stream.Collectors.joining;
  * Exposes contract to be fulfilled by a class generating the "extends" clause of a sealed interface definition, along with
  * the list of the parent classes or interfaces
  */
-public sealed interface ExtendsGenerator extends CodeGenerator permits SealedInterfaceExtendsGenerator {
+public sealed interface ExtendsGenerator extends CodeGenerator permits InterfaceExtendsGenerator {
 
     /**
      * Generates the "extends" clause of a sealed interface being generated, along with the list of parent interfaces, based on
