@@ -19,29 +19,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.annotations;
+package org.jisel.generators.codegen;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.jisel.generators.StringGenerator;
+
+import java.util.List;
 
 /**
- * Annotation to be applied only on top of large interfaces to segregate.<br>
- * Generates a classic pre-java 17 interfaces hierarchy, which is basically the Interface Segregation Principle applied
- * without sealing the hierarchy. The unsealed hierarchy is generated (besides the sealed hierarchy generated files, and stored
- * within the created <i>unsealed</i> sub-folder.<br>
- * Each one of the generated interfaces follows the naming convention: <b>&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br>
- * (<b>&#60;LargeInterfaceSimpleName&#62;</b> is the simplename of the large interface being segregated).<br><br>
+ * Exposes contract to be fulfilled by a class generating the code of a sealed interface
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface UnSeal {
+public sealed interface CodeGenerator extends StringGenerator permits JavaxGeneratedGenerator, ExtendsGenerator, PermitsGenerator, MethodsGenerator {
 
     /**
-     * if set to false the "un-sealed" interfaces hierarchy is not generated
+     * Generates piece of code requested, based on the parameters provided in the params object and appends it to the provided classOrInterfaceContent param
      *
-     * @return true (default value) if requested to generate the unsealed hierarchy, false if not
+     * @param classOrInterfaceContent StringBuilder object containing the sealed interface code being generated
+     * @param params                  expected parameters
      */
-    boolean value() default true;
+    void generateCode(StringBuilder classOrInterfaceContent, List<String> params);
 }

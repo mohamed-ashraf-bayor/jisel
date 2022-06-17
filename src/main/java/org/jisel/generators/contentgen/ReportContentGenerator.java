@@ -19,7 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generator;
+package org.jisel.generators.contentgen;
+
+import org.jisel.generators.StringGenerator;
 
 import javax.lang.model.element.Element;
 import java.util.List;
@@ -31,6 +33,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
 /**
+ * //TODO add classic interf generation parts
  * Generates a Report file listing all generated sealed interfaces for the provided large interfaces.<br>
  * Sample report:<br>
  * com.bayor.jisel.annotation.client.hierarchicalinheritance.Sociable<br>
@@ -50,7 +53,7 @@ import static java.util.stream.Collectors.joining;
  * &#9;&#9;&#9;SealedWorkerSociable<br>
  * &#9;&#9;&#9;SealedStudentSociable<br>
  */
-public class ReportGenerator implements StringGenerator {
+public final class ReportContentGenerator extends SealedAbstractContentGenerator {
 
     /**
      * Generates a Report file listing all generated sealed interfaces for the provided large interfaces.
@@ -60,9 +63,9 @@ public class ReportGenerator implements StringGenerator {
      * @param sealedInterfacesPermitsMap    {@link Map} containing information about the subtypes permitted by each one of the sealed interfaces to be generated
      * @return a string containing the text report
      */
-    public String generateReportForLargeInterface(Element largeInterfaceElement,
-                                                  Map<String, Set<Element>> sealedInterfacesToGenerateMap,
-                                                  Map<String, List<String>> sealedInterfacesPermitsMap) {
+    public String generateReportContentForLargeInterface(Element largeInterfaceElement,
+                                                         Map<String, Set<Element>> sealedInterfacesToGenerateMap,
+                                                         Map<String, List<String>> sealedInterfacesPermitsMap) {
         var reportContent = new StringBuilder();
         var packageNameOpt = generatePackageName(largeInterfaceElement);
         var qualifiedName = packageNameOpt.isPresent()

@@ -19,9 +19,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generator;
+package org.jisel.generators.codegen;
 
 import org.jisel.JiselAnnotationProcessor;
+import org.jisel.generators.codegen.CodeGenerator;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;

@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generator;
+package org.jisel.generators;
 
 import org.jisel.annotations.AddTo;
 import org.jisel.annotations.SealFor;

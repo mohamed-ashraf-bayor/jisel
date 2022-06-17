@@ -36,20 +36,22 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
-import static org.jisel.generator.StringGenerator.ADD_TO;
-import static org.jisel.generator.StringGenerator.AT_SIGN;
-import static org.jisel.generator.StringGenerator.COMMA_SEPARATOR;
-import static org.jisel.generator.StringGenerator.SEAL_FOR;
-import static org.jisel.generator.StringGenerator.STATUS_REPORT_TITLE;
-import static org.jisel.generator.StringGenerator.TOP_LEVEL;
-import static org.jisel.generator.StringGenerator.TOP_LEVEL_REPORT_MSG;
-import static org.jisel.generator.StringGenerator.WHITESPACE;
+import static org.jisel.generators.StringGenerator.ADD_TO;
+import static org.jisel.generators.StringGenerator.AT_SIGN;
+import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.SEAL_FOR;
+import static org.jisel.generators.StringGenerator.STATUS_REPORT_TITLE;
+import static org.jisel.generators.StringGenerator.TOP_LEVEL;
+import static org.jisel.generators.StringGenerator.TOP_LEVEL_REPORT_MSG;
+import static org.jisel.generators.StringGenerator.WHITESPACE;
 
+// TODO jdoc entire clss
 public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
 
     String ALL_ANNOTATED_SEALFOR_ELEMENTS = "allAnnotatedSealForElements";
     String ALL_ANNOTATED_TOPLEVEL_ELEMENTS = "allAnnotatedTopLevelElements";
     String ALL_ANNOTATED_ADDTO_ELEMENTS = "allAnnotatedAddToElements";
+    String ALL_ANNOTATED_UNSEAL_ELEMENTS = "allAnnotatedUnSealElements";
 
     void notifyReportDisplay(String reportText);
 
@@ -80,7 +82,7 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
                 processingEnv,
                 unmodifiableSet(allAnnotatedElementsMap.get(ALL_ANNOTATED_TOPLEVEL_ELEMENTS)),
                 sealedInterfacesToGenerateByLargeInterface,
-                unmodifiableMap(sealedInterfacesPermitsByLargeInterface)
+                Map.of()
         );
 
         // process all interface methods annotated with @SealFor
@@ -92,6 +94,19 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         );
 
         displayStatusReport(extractLargeInterfacesWithNoTopLevel(sealForStatusReport, topLevelStatusReport), SEAL_FOR, TOP_LEVEL);
+    }
+
+    default void processUnSealAnnotatedElements(ProcessingEnvironment processingEnv,
+                                                JiselAnnotationHandler unSealHandler,
+                                                Set<Element> allAnnotatedUnSealElements,
+                                                Map<Element, Boolean> unSealValueByLargeInterface) {
+        var unSealStatusReport = unSealHandler.handleAnnotatedElements(
+                processingEnv,
+                unmodifiableSet(allAnnotatedUnSealElements),
+                Map.of(),
+                Map.of()
+        );
+        unSealStatusReport.forEach(((element, unSealValueString) -> unSealValueByLargeInterface.put(element, Boolean.valueOf(unSealValueString))));
     }
 
     default void processAddToAnnotatedElements(ProcessingEnvironment processingEnv,

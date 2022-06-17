@@ -23,7 +23,7 @@ package org.jisel.handlers;
 
 import org.jisel.annotations.AddTo;
 import org.jisel.annotations.SealFor;
-import org.jisel.generator.StringGenerator;
+import org.jisel.generators.StringGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -46,7 +46,7 @@ import static java.util.stream.Stream.concat;
  * Exposes contract to fulfill by any class handling all elements annotated with Jisel annotations
  */
 public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForHandler, AddToHandler, TopLevelHandler,
-        AnnotationInfoCollectionHandler, ParentChildInheritanceHandler {
+        UnSealHandler, AnnotationInfoCollectionHandler, ParentChildInheritanceHandler {
 
     /**
      * Reads values of all attributes provided through the use of Jisel annotations and populates the provided Map arguments

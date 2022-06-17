@@ -27,11 +27,12 @@ import org.jisel.annotations.Detach;
 import org.jisel.annotations.SealFor;
 import org.jisel.annotations.TopLevel;
 import org.jisel.annotations.UnSeal;
-import org.jisel.generator.SealedInterfaceSourceFileGenerator;
+import org.jisel.generators.filegen.SealedInterfaceSourceFileGenerator;
 import org.jisel.handlers.AddToHandler;
 import org.jisel.handlers.JiselAnnotationHandler;
 import org.jisel.handlers.SealForHandler;
 import org.jisel.handlers.TopLevelHandler;
+import org.jisel.handlers.UnSealHandler;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
@@ -52,16 +53,16 @@ import java.util.logging.Logger;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
-import static org.jisel.generator.StringGenerator.FILE_GENERATION_ERROR;
-import static org.jisel.generator.StringGenerator.FILE_GENERATION_SUCCESS;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TO;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_ADD_TOS;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_DETACH;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_DETACHS;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FOR;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_SEAL_FORS;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_TOP_LEVEL;
-import static org.jisel.generator.StringGenerator.ORG_JISEL_UNSEAL;
+import static org.jisel.generators.StringGenerator.FILE_GENERATION_ERROR;
+import static org.jisel.generators.StringGenerator.FILE_GENERATION_SUCCESS;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_ADD_TO;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_ADD_TOS;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACH;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACHS;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_SEAL_FOR;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_SEAL_FORS;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_TOP_LEVEL;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_UNSEAL;
 
 /**
  * Jisel annotation processor class. Picks up and processes all elements annotated with &#64;{@link SealFor},
@@ -81,6 +82,8 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
 
     private final JiselAnnotationHandler topLevelHandler;
 
+    private final JiselAnnotationHandler unSealHandler;
+
     private final SealedInterfaceSourceFileGenerator sealedInterfaceSourceFileGenerator;
 
     /**
@@ -91,6 +94,7 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
         this.sealForHandler = new SealForHandler();
         this.addToHandler = new AddToHandler();
         this.topLevelHandler = new TopLevelHandler();
+        this.unSealHandler = new UnSealHandler();
         this.sealedInterfaceSourceFileGenerator = new SealedInterfaceSourceFileGenerator();
     }
 
@@ -100,13 +104,16 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
         var allAnnotatedSealForElements = new HashSet<Element>();
         var allAnnotatedTopLevelElements = new HashSet<Element>();
         var allAnnotatedAddToElements = new HashSet<Element>();
+        var allAnnotatedUnSealElements = new HashSet<Element>();
         var sealedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Set<Element>>>();
         var sealedInterfacesPermitsByLargeInterface = new HashMap<Element, Map<String, List<String>>>();
+        var unSealValueByLargeInterface = new HashMap<Element, Boolean>();
 
         populateAllAnnotatedElementsSets(annotations, roundEnv, Map.of(
                 ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements,
                 ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements,
-                ALL_ANNOTATED_ADDTO_ELEMENTS, allAnnotatedAddToElements
+                ALL_ANNOTATED_ADDTO_ELEMENTS, allAnnotatedAddToElements,
+                ALL_ANNOTATED_UNSEAL_ELEMENTS, allAnnotatedUnSealElements
         ));
 
         // continue execution only if at least 1 element has been annotated with @TopLevel
@@ -116,16 +123,19 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
                     Map.of(ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements, ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements),
                     sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
 
+            processUnSealAnnotatedElements(processingEnv, unSealHandler, allAnnotatedUnSealElements, unSealValueByLargeInterface);
+
+            // TODO process detach
+
             processAddToAnnotatedElements(processingEnv, addToHandler, allAnnotatedAddToElements,
                     sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
-
-            // TODO process unseal and detach
 
             try {
                 var generatedFiles = sealedInterfaceSourceFileGenerator.createSourceFiles(
                         processingEnv,
                         sealedInterfacesToGenerateByLargeInterface,
-                        sealedInterfacesPermitsByLargeInterface
+                        sealedInterfacesPermitsByLargeInterface,
+                        unSealValueByLargeInterface
                 );
                 if (!generatedFiles.isEmpty()) {
                     log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining(format("%n")))));

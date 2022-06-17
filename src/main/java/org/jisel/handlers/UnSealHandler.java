@@ -21,7 +21,7 @@
  */
 package org.jisel.handlers;
 
-import org.jisel.annotations.TopLevel;
+import org.jisel.annotations.UnSeal;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -31,13 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toSet;
-
 /**
- * Handles all elements annotated with &#64;{@link TopLevel}
+ * Handles all elements annotated with &#64;{@link UnSeal}
  */
-public final class TopLevelHandler implements JiselAnnotationHandler {
+public final class UnSealHandler implements JiselAnnotationHandler {
 
     @Override
     public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
@@ -46,20 +43,14 @@ public final class TopLevelHandler implements JiselAnnotationHandler {
                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
         allAnnotatedElements.stream()
-                .filter(element -> ElementKind.METHOD.equals(element.getKind()))
-                .filter(element -> ElementKind.INTERFACE.equals(element.getEnclosingElement().getKind()))
-                .collect(groupingBy(Element::getEnclosingElement, toSet()))
-                .forEach((largeInterfaceElement, annotatedMethodsSet) -> {
-                    // TODO remv change
-                    System.out.println(">>>>>>>>>>>>> " + annotatedMethodsSet.stream().map(element -> element.getAnnotationMirrors()).toList());
-                    // top parent sealed interfaces to be generated
-                    sealedInterfacesToGenerateByLargeInterface.put(
-                            largeInterfaceElement,
-                            new HashMap<>(Map.of(largeInterfaceElement.getSimpleName().toString(), annotatedMethodsSet))
-                    );
-                    // fill the status rep with the large interfaces processed, no description needed
-                    statusReport.put(largeInterfaceElement, EMPTY_STRING);
-                });
+                .filter(element -> ElementKind.INTERFACE.equals(element.getKind()))
+                .forEach(element -> statusReport.put( // stores values of UnSeal parameters (true or false) in the statusReport map
+                        element,
+                        element.getAnnotationMirrors().stream()
+                                .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_UNSEAL))
+                                .toList()
+                                .get(0).getElementValues().get("value").toString() // TODO value cnstnte
+                ));
         return statusReport;
     }
 }

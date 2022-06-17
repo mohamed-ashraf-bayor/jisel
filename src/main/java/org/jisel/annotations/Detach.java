@@ -27,7 +27,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static org.jisel.generator.StringGenerator.EMPTY_STRING;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 
 /**
  * // TODO jdoc
