@@ -52,7 +52,7 @@ import static java.util.stream.Collectors.joining;
  * &#9;&#9;&#9;SealedWorkerSociable<br>
  * &#9;&#9;&#9;SealedStudentSociable<br>
  */
-public final class ReportContentGenerator extends SealedAbstractContentGenerator {
+public final class ReportSealedContentGenerator extends AbstractSealedContentGenerator {
 
     @Override
     public String generateContent(ProcessingEnvironment processingEnvironment,

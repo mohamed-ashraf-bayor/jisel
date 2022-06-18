@@ -3,11 +3,11 @@ package org.jisel.generators.contentgen;
 import org.jisel.generators.StringGenerator;
 import org.jisel.generators.codegen.CodeGenerator;
 import org.jisel.generators.codegen.ExtendsGenerator;
+import org.jisel.generators.codegen.InterfaceExtendsGenerator;
+import org.jisel.generators.codegen.InterfaceMethodsGenerator;
 import org.jisel.generators.codegen.JavaxGeneratedGenerator;
 import org.jisel.generators.codegen.MethodsGenerator;
 import org.jisel.generators.codegen.PermitsGenerator;
-import org.jisel.generators.codegen.InterfaceExtendsGenerator;
-import org.jisel.generators.codegen.InterfaceMethodsGenerator;
 import org.jisel.generators.codegen.SealedInterfacePermitsGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -22,7 +22,7 @@ import java.util.Set;
  * Generates content of the final class generated for the provided large interface
  * ... ...
  */
-public sealed abstract class SealedAbstractContentGenerator implements StringGenerator permits FinalClassContentGenerator, ReportContentGenerator, InterfaceContentGenerator {
+public abstract sealed class AbstractSealedContentGenerator implements StringGenerator permits FinalClassSealedContentGenerator, ReportSealedContentGenerator, InterfaceSealedContentGenerator {
 
     protected final CodeGenerator javaxGeneratedGenerator;
     protected final ExtendsGenerator extendsGenerator;
@@ -32,7 +32,7 @@ public sealed abstract class SealedAbstractContentGenerator implements StringGen
     /**
      *
      */
-    protected SealedAbstractContentGenerator() {
+    protected AbstractSealedContentGenerator() {
         this.javaxGeneratedGenerator = new JavaxGeneratedGenerator();
         this.extendsGenerator = new InterfaceExtendsGenerator();
         this.permitsGenerator = new SealedInterfacePermitsGenerator();

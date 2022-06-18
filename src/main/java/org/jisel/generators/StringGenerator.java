@@ -24,6 +24,8 @@ package org.jisel.generators;
 import org.jisel.annotations.AddTo;
 import org.jisel.annotations.SealFor;
 import org.jisel.annotations.TopLevel;
+import org.jisel.annotations.UnSeal;
+import org.jisel.annotations.Detach;
 
 import javax.lang.model.element.Element;
 import java.util.List;
@@ -59,6 +61,10 @@ public interface StringGenerator {
      * "Sealed"
      */
     String SEALED_PREFIX = "Sealed";
+    /**
+     * "UnSealed"
+     */
+    String UNSEALED = "UnSealed";
     /**
      * "package"
      */
@@ -237,7 +243,7 @@ public interface StringGenerator {
      */
     String ORG_JISEL_DETACH = "org.jisel.annotations.Detach";
     /**
-     * Fully qualified name of the {@link SealForProfile.Detachs} annotation
+     * Fully qualified name of the {@link Detach.Detachs} annotation
      */
     String ORG_JISEL_DETACHS = "org.jisel.annotations.Detach.Detachs";
     /**

@@ -28,7 +28,7 @@ import org.jisel.annotations.SealFor;
 import org.jisel.annotations.TopLevel;
 import org.jisel.annotations.UnSeal;
 import org.jisel.generators.filegen.InterfaceSourceFileGenerator;
-import org.jisel.generators.filegen.SealedAbstractSourceFileGenerator;
+import org.jisel.generators.filegen.AbstractSealedSourceFileGenerator;
 import org.jisel.handlers.AddToHandler;
 import org.jisel.handlers.JiselAnnotationHandler;
 import org.jisel.handlers.SealForHandler;
@@ -85,7 +85,7 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
 
     private final JiselAnnotationHandler unSealHandler;
 
-    private final SealedAbstractSourceFileGenerator interfaceSourceFileGenerator;
+    private final AbstractSealedSourceFileGenerator interfaceSourceFileGenerator;
 
     /**
      * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForHandler}, {@link AddToHandler},

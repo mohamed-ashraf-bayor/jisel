@@ -36,7 +36,7 @@ import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
  * ...
  * In this specific case, though a Map is received as sealedInterfacesToGenerateMap param, ONLY A SINGLE ENTRY IS EXPECTED AS CONTENT.
  */
-public final class InterfaceContentGenerator extends SealedAbstractContentGenerator {
+public final class InterfaceSealedContentGenerator extends AbstractSealedContentGenerator {
 
     @Override
     public String generateContent(ProcessingEnvironment processingEnvironment,
