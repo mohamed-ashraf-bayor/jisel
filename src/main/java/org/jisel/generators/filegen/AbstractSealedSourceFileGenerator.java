@@ -3,9 +3,9 @@ package org.jisel.generators.filegen;
 
 import org.jisel.generators.StringGenerator;
 import org.jisel.generators.contentgen.AbstractSealedContentGenerator;
-import org.jisel.generators.contentgen.FinalClassSealedContentGenerator;
-import org.jisel.generators.contentgen.InterfaceSealedContentGenerator;
-import org.jisel.generators.contentgen.ReportSealedContentGenerator;
+import org.jisel.generators.contentgen.FinalClassContentGenerator;
+import org.jisel.generators.contentgen.InterfaceContentGenerator;
+import org.jisel.generators.contentgen.ReportContentGenerator;
 
 import javax.annotation.processing.FilerException;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -24,13 +24,13 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements String
     protected final AbstractSealedContentGenerator reportContentGenerator;
 
     /**
-     * SealedInterfaceSourceFileGenerator constructor. Creates needed instances of {@link InterfaceSealedContentGenerator},
-     * {@link FinalClassSealedContentGenerator} and {@link ReportSealedContentGenerator}
+     * SealedInterfaceSourceFileGenerator constructor. Creates needed instances of {@link InterfaceContentGenerator},
+     * {@link FinalClassContentGenerator} and {@link ReportContentGenerator}
      */
     protected AbstractSealedSourceFileGenerator() {
-        this.interfaceContentGenerator = new InterfaceSealedContentGenerator();
-        this.finalClassContentGenerator = new FinalClassSealedContentGenerator();
-        this.reportContentGenerator = new ReportSealedContentGenerator();
+        this.interfaceContentGenerator = new InterfaceContentGenerator();
+        this.finalClassContentGenerator = new FinalClassContentGenerator();
+        this.reportContentGenerator = new ReportContentGenerator();
     }
 
     /**

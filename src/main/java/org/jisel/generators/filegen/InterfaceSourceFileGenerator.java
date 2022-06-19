@@ -65,8 +65,8 @@ public final class InterfaceSourceFileGenerator extends AbstractSealedSourceFile
                 var profile = mapEntry.getKey();
                 var generatedSealedInterfaceName = sealedInterfaceNameConvention(profile, largeInterfaceElement);
                 var generatedUnSealedInterfaceName = generatedSealedInterfaceName.substring(SEALED_PREFIX.length());
-                // 3rd arg is a Map made of only 1 Map.Entry instance <String, Set<Element>
                 generatedFiles.add(
+                        // 3rd arg is a Map made of only 1 Map.Entry instance <String, Set<Element>
                         createSealedInterfaceSourceFile(processingEnvironment, largeInterfaceElement, Map.ofEntries(mapEntry),
                                 sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement), generatedSealedInterfaceName)
                 );

@@ -15,11 +15,13 @@ public final class InterfaceExtendsGenerator implements ExtendsGenerator {
                                                                        StringBuilder sealedInterfaceContent,
                                                                        Map<String, List<String>> permitsMap,
                                                                        String processedProfile,
-                                                                       Element largeInterfaceElement) {
+                                                                       Element largeInterfaceElement,
+                                                                       boolean unSeal) {
         Optional.ofNullable(permitsMap).ifPresent(nonNullPermitsMap -> {
             var parentList = nonNullPermitsMap.entrySet().stream()
                     .filter(permitsMapEntry -> permitsMapEntry.getValue().contains(processedProfile))
-                    .map(permitsMapEntry -> sealedInterfaceNameConvention(permitsMapEntry.getKey(), largeInterfaceElement))
+                    .map(permitsMapEntry -> unSeal ? unSealedInterfaceNameConvention(permitsMapEntry.getKey(), largeInterfaceElement)
+                            : sealedInterfaceNameConvention(permitsMapEntry.getKey(), largeInterfaceElement))
                     .toList();
             if (!parentList.isEmpty()) {
                 generateCode(sealedInterfaceContent, parentList);

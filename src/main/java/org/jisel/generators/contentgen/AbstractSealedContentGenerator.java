@@ -12,9 +12,15 @@ import org.jisel.generators.codegen.SealedInterfacePermitsGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
 
 // TODO jdoc
 
@@ -22,7 +28,9 @@ import java.util.Set;
  * Generates content of the final class generated for the provided large interface
  * ... ...
  */
-public abstract sealed class AbstractSealedContentGenerator implements StringGenerator permits FinalClassSealedContentGenerator, ReportSealedContentGenerator, InterfaceSealedContentGenerator {
+public abstract sealed class AbstractSealedContentGenerator
+        implements StringGenerator
+        permits FinalClassContentGenerator, ReportContentGenerator, InterfaceContentGenerator {
 
     protected final CodeGenerator javaxGeneratedGenerator;
     protected final ExtendsGenerator extendsGenerator;
@@ -55,4 +63,58 @@ public abstract sealed class AbstractSealedContentGenerator implements StringGen
                                            boolean unSeal,
                                            Map<String, Set<Element>> sealedInterfacesToGenerateMap,
                                            Map<String, List<String>> sealedInterfacesPermitsMap);
+
+    protected String generateSealedInterfacesReport(Element largeInterfaceElement,
+                                                    Map<String, Set<Element>> sealedInterfacesToGenerateMap,
+                                                    Map<String, List<String>> sealedInterfacesPermitsMap) {
+        var reportContent = new StringBuilder();
+        reportContent.append(format("%s%n", JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER));
+        sealedInterfacesToGenerateMap.entrySet().forEach(entrySet -> {
+            var sealedInterfaceName = sealedInterfaceNameConvention(entrySet.getKey(), largeInterfaceElement);
+            reportContent.append(format("\t%s%n", sealedInterfaceName));
+            var sealedInterfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(entrySet.getKey()));
+            if (sealedInterfaceChildrenOpt.isPresent() && !sealedInterfaceChildrenOpt.get().isEmpty()) {
+                reportContent.append(format("\t - %s%n", JISEL_REPORT_CHILDREN_HEADER));
+                if (!sealedInterfaceChildrenOpt.get().isEmpty()) {
+                    reportContent.append(format(
+                            "\t\t%s%n",
+                            sealedInterfaceChildrenOpt.get().stream()
+                                    .map(childName -> sealedInterfaceNameConvention(childName, largeInterfaceElement))
+                                    .collect(joining(format("%n\t\t")))
+                    ));
+                }
+            }
+        });
+        reportContent.append(NEW_LINE);
+        return reportContent.toString();
+    }
+
+    protected String generateUnSealedInterfacesReport(Element largeInterfaceElement,
+                                                      Map<String, Set<Element>> sealedInterfacesToGenerateMap,
+                                                      Map<String, List<String>> sealedInterfacesPermitsMap) {
+        var reportContent = new StringBuilder();
+        reportContent.append(format("%s%n", JISEL_REPORT_CREATED_UNSEALED_INTERFACES_HEADER));
+        sealedInterfacesToGenerateMap.entrySet().forEach(entrySet -> {
+            var interfaceName = unSealedInterfaceNameConvention(entrySet.getKey(), largeInterfaceElement);
+            reportContent.append(format("\t%s%n", interfaceName));
+            var interfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(entrySet.getKey()));
+            if (interfaceChildrenOpt.isPresent() && !interfaceChildrenOpt.get().isEmpty()) {
+                var childrenListOutput = interfaceChildrenOpt.get().stream()
+                        .filter(childName -> !childName.startsWith(UNDERSCORE) && !childName.endsWith(FINAL_CLASS_SUFFIX))
+                        .filter(childName -> !childName.contains(DOT))
+                        .toList();
+                if (!childrenListOutput.isEmpty()) {
+                    reportContent.append(format("\t - %s%n", JISEL_REPORT_CHILDREN_HEADER));
+                    reportContent.append(format(
+                            "\t\t%s%n",
+                            childrenListOutput.stream()
+                                    .map(childName -> unSealedInterfaceNameConvention(childName, largeInterfaceElement))
+                                    .collect(joining(format("%n\t\t")))
+                    ));
+                }
+            }
+        });
+        reportContent.append(NEW_LINE);
+        return reportContent.toString();
+    }
 }

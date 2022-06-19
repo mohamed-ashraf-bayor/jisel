@@ -52,7 +52,7 @@ import static java.util.stream.Collectors.joining;
  * &#9;&#9;&#9;SealedWorkerSociable<br>
  * &#9;&#9;&#9;SealedStudentSociable<br>
  */
-public final class ReportSealedContentGenerator extends AbstractSealedContentGenerator {
+public final class ReportContentGenerator extends AbstractSealedContentGenerator {
 
     @Override
     public String generateContent(ProcessingEnvironment processingEnvironment,
@@ -66,23 +66,10 @@ public final class ReportSealedContentGenerator extends AbstractSealedContentGen
                 ? packageNameOpt.get() + DOT + largeInterfaceElement.getSimpleName().toString()
                 : largeInterfaceElement.getSimpleName().toString();
         reportContent.append(format("%s%n", qualifiedName));
-        reportContent.append(format("%s%n", JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER));
-        sealedInterfacesToGenerateMap.entrySet().forEach(entrySet -> {
-            var sealedInterfaceName = sealedInterfaceNameConvention(entrySet.getKey(), largeInterfaceElement);
-            reportContent.append(format("\t%s%n", sealedInterfaceName));
-            var sealedInterfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(entrySet.getKey()));
-            if (sealedInterfaceChildrenOpt.isPresent() && !sealedInterfaceChildrenOpt.get().isEmpty()) {
-                reportContent.append(format("\t - %s%n", JISEL_REPORT_CHILDREN_HEADER));
-                if (!sealedInterfaceChildrenOpt.get().isEmpty()) {
-                    reportContent.append(format(
-                            "\t\t%s%n",
-                            sealedInterfaceChildrenOpt.get().stream()
-                                    .map(childName -> sealedInterfaceNameConvention(childName, largeInterfaceElement))
-                                    .collect(joining(format("%n\t\t")))
-                    ));
-                }
-            }
-        });
+        reportContent.append(generateSealedInterfacesReport(largeInterfaceElement, sealedInterfacesToGenerateMap, sealedInterfacesPermitsMap));
+        if (unSeal) {
+            reportContent.append(generateUnSealedInterfacesReport(largeInterfaceElement, sealedInterfacesToGenerateMap, sealedInterfacesPermitsMap));
+        }
         return reportContent.toString();
     }
 }

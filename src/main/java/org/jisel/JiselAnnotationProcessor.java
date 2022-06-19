@@ -27,8 +27,8 @@ import org.jisel.annotations.Detach;
 import org.jisel.annotations.SealFor;
 import org.jisel.annotations.TopLevel;
 import org.jisel.annotations.UnSeal;
-import org.jisel.generators.filegen.InterfaceSourceFileGenerator;
 import org.jisel.generators.filegen.AbstractSealedSourceFileGenerator;
+import org.jisel.generators.filegen.InterfaceSourceFileGenerator;
 import org.jisel.handlers.AddToHandler;
 import org.jisel.handlers.JiselAnnotationHandler;
 import org.jisel.handlers.SealForHandler;
@@ -124,7 +124,7 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
                     Map.of(ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements, ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements),
                     sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
 
-            processUnSealAnnotatedElements(processingEnv, unSealHandler, allAnnotatedUnSealElements, unSealValueByLargeInterface);
+            processUnSealAnnotatedElements(processingEnv, unSealHandler, allAnnotatedUnSealElements, unSealValueByLargeInterface, sealedInterfacesToGenerateByLargeInterface);
 
             // TODO process detach
 

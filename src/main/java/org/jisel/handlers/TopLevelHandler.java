@@ -50,8 +50,6 @@ public final class TopLevelHandler implements JiselAnnotationHandler {
                 .filter(element -> ElementKind.INTERFACE.equals(element.getEnclosingElement().getKind()))
                 .collect(groupingBy(Element::getEnclosingElement, toSet()))
                 .forEach((largeInterfaceElement, annotatedMethodsSet) -> {
-                    // TODO remv change
-                    System.out.println(">>>>>>>>>>>>> " + annotatedMethodsSet.stream().map(element -> element.getAnnotationMirrors()).toList());
                     // top parent sealed interfaces to be generated
                     sealedInterfacesToGenerateByLargeInterface.put(
                             largeInterfaceElement,

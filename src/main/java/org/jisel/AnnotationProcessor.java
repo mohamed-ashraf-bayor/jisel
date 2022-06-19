@@ -43,6 +43,8 @@ import static org.jisel.generators.StringGenerator.SEAL_FOR;
 import static org.jisel.generators.StringGenerator.STATUS_REPORT_TITLE;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL_REPORT_MSG;
+import static org.jisel.generators.StringGenerator.UNSEALED;
+import static org.jisel.generators.StringGenerator.UNSEAL_REPORT_MSG;
 import static org.jisel.generators.StringGenerator.WHITESPACE;
 
 // TODO jdoc entire clss
@@ -99,7 +101,8 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
     default void processUnSealAnnotatedElements(ProcessingEnvironment processingEnv,
                                                 JiselAnnotationHandler unSealHandler,
                                                 Set<Element> allAnnotatedUnSealElements,
-                                                Map<Element, Boolean> unSealValueByLargeInterface) {
+                                                Map<Element, Boolean> unSealValueByLargeInterface,
+                                                Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         var unSealStatusReport = unSealHandler.handleAnnotatedElements(
                 processingEnv,
                 unmodifiableSet(allAnnotatedUnSealElements),
@@ -107,6 +110,8 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
                 Map.of()
         );
         unSealStatusReport.forEach(((element, unSealValueString) -> unSealValueByLargeInterface.put(element, Boolean.valueOf(unSealValueString))));
+        // report any interfaces tagged with @UnSeal but not containing methods taaged with @TopLevel
+        displayStatusReport(extractUnSealedInterfacesWithNoTopLevel(unSealStatusReport, sealedInterfacesToGenerateByLargeInterface), UNSEALED);
     }
 
     default void processAddToAnnotatedElements(ProcessingEnvironment processingEnv,
@@ -130,6 +135,14 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         sealForStatusReport.replaceAll((key, value) -> TOP_LEVEL_REPORT_MSG);
         return sealForStatusReport;
     }
+
+    private Map<Element, String> extractUnSealedInterfacesWithNoTopLevel(Map<Element, String> unSealStatusReport,
+                                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
+        sealedInterfacesToGenerateByLargeInterface.keySet().forEach(unSealStatusReport::remove);
+        unSealStatusReport.replaceAll((key, value) -> UNSEAL_REPORT_MSG);
+        return unSealStatusReport;
+    }
+
 
     private void displayStatusReport(Map<Element, String> statusReport, String... annotationsNames) {
         if (!statusReport.values().stream().collect(joining()).isBlank()) {

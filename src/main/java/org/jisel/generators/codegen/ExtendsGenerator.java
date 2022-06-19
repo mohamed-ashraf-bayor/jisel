@@ -34,7 +34,8 @@ public sealed interface ExtendsGenerator extends CodeGenerator permits Interface
             StringBuilder sealedInterfaceContent,
             Map<String, List<String>> permitsMap,
             String processedProfile,
-            Element largeInterfaceElement
+            Element largeInterfaceElement,
+            boolean unSeal
     );
 
     @Override

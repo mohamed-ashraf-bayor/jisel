@@ -82,6 +82,10 @@ public interface StringGenerator {
      */
     String DOT_CLASS = ".class";
     /**
+     * "public interface"
+     */
+    String PUBLIC_INTERFACE = "public interface";
+    /**
      * "public sealed interface"
      */
     String PUBLIC_SEALED_INTERFACE = "public sealed interface";
@@ -145,6 +149,10 @@ public interface StringGenerator {
      * "\""
      */
     String ESCAPED_DOUBLE_QUOTES = "\"";
+    /**
+     * "\""
+     */
+    String NEW_LINE = "\n";
     /**
      * "FinalClass"
      */
@@ -289,6 +297,11 @@ public interface StringGenerator {
     String TOP_LEVEL_REPORT_MSG = "@TopLevel annotation not found. Check your mappings.";
 
     /**
+     * Message displayed during compilation when &#64;TopLevel is not found within the provided large interface
+     */
+    String UNSEAL_REPORT_MSG = "@UnSeal annotation applied on interfaces not making use of @TopLevel. Check your mappings.";
+
+    /**
      * "Report.txt"
      */
     String JISEL_REPORT_SUFFIX = "Report.txt";
@@ -297,6 +310,11 @@ public interface StringGenerator {
      * Header displayed above the list of the generated sealed interfaces, in the Jisel Report file
      */
     String JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER = "Created sealed interfaces:";
+
+    /**
+     * Header displayed above the list of the generated sealed interfaces, in the Jisel Report file
+     */
+    String JISEL_REPORT_CREATED_UNSEALED_INTERFACES_HEADER = "Created unsealed interfaces:";
 
     /**
      * Header displayed above the list of the sub-types of the generated sealed interfaces, in the Jisel Report file
@@ -342,6 +360,18 @@ public interface StringGenerator {
                 removeCommaSeparator(profile),
                 nameSuffix
         );
+    }
+
+    /**
+     * Constructs a string based on the provided profile and a large interface {@link Element} instance, according to the naming convention:<br>
+     * <b>&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
+     *
+     * @param profile          name of the profile
+     * @param interfaceElement {@link Element} instance of the large interface to be segregated
+     * @return a string following Jisel sealed interface naming convention
+     */
+    default String unSealedInterfaceNameConvention(String profile, Element interfaceElement) {
+        return sealedInterfaceNameConvention(profile, interfaceElement).substring(SEALED_PREFIX.length());
     }
 
     /**

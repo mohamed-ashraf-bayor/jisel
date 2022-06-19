@@ -36,7 +36,7 @@ import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
  * ...
  * In this specific case, though a Map is received as sealedInterfacesToGenerateMap param, ONLY A SINGLE ENTRY IS EXPECTED AS CONTENT.
  */
-public final class InterfaceSealedContentGenerator extends AbstractSealedContentGenerator {
+public final class InterfaceContentGenerator extends AbstractSealedContentGenerator {
 
     @Override
     public String generateContent(ProcessingEnvironment processingEnvironment,
@@ -44,31 +44,36 @@ public final class InterfaceSealedContentGenerator extends AbstractSealedContent
                                   boolean unSeal,
                                   Map<String, Set<Element>> sealedInterfacesToGenerateMap,
                                   Map<String, List<String>> sealedInterfacesPermitsMap) {
-        // TODO FAIRE LA MAGIE DES IF ICI AVEC LA VALR DE UNSEAL
-        var sealedInterfaceContent = new StringBuilder();
+        var interfaceContent = new StringBuilder();
         // package name
-        generatePackageName(largeInterfaceElement).ifPresent(name -> sealedInterfaceContent.append(format("%s %s;%n%n", PACKAGE, name)));
+        generatePackageName(largeInterfaceElement).ifPresent(packageName -> interfaceContent.append(format("%s %s", PACKAGE, packageName)));
+        if (unSeal) {
+            interfaceContent.append(interfaceContent.isEmpty() ? UNSEALED.toLowerCase() : DOT + UNSEALED.toLowerCase());
+        }
+        interfaceContent.append(format(";%n%n"));
         // javaxgenerated
-        javaxGeneratedGenerator.generateCode(sealedInterfaceContent, List.of());
-        // public sealed interface
-        var sealedInterfacesToGenerateMapEntry = (Map.Entry<String, Set<Element>>) sealedInterfacesToGenerateMap.entrySet().toArray()[0]; // only 1 entry expected within the map
-        var profile = sealedInterfacesToGenerateMapEntry.getKey();
-        sealedInterfaceContent.append(format(
+        javaxGeneratedGenerator.generateCode(interfaceContent, List.of());
+        // public (sealed) interface
+        var profile =  sealedInterfacesToGenerateMap.keySet().stream().findFirst().orElse(EMPTY_STRING); // only & always 1 entry expected (see calling mthd)
+        interfaceContent.append(format(
                 "%s %s ",
-                PUBLIC_SEALED_INTERFACE,
-                sealedInterfaceNameConvention(profile, largeInterfaceElement)
+                unSeal ? PUBLIC_INTERFACE : PUBLIC_SEALED_INTERFACE,
+                unSeal ? unSealedInterfaceNameConvention(profile, largeInterfaceElement)
+                        : sealedInterfaceNameConvention(profile, largeInterfaceElement)
         ));
         // list of extends
-        extendsGenerator.generateExtendsClauseFromPermitsMapAndProcessedProfile(processingEnvironment, sealedInterfaceContent, sealedInterfacesPermitsMap, profile, largeInterfaceElement);
+        extendsGenerator.generateExtendsClauseFromPermitsMapAndProcessedProfile(processingEnvironment, interfaceContent, sealedInterfacesPermitsMap, profile, largeInterfaceElement, unSeal);
         // list of permits
-        permitsGenerator.generatePermitsClauseFromPermitsMapAndProcessedProfile(sealedInterfaceContent, sealedInterfacesPermitsMap, profile, largeInterfaceElement);
+        if (!unSeal) {
+            permitsGenerator.generatePermitsClauseFromPermitsMapAndProcessedProfile(interfaceContent, sealedInterfacesPermitsMap, profile, largeInterfaceElement);
+        }
         // opening bracket after permits list
-        sealedInterfaceContent.append(format(" %s%n ", OPENING_CURLY_BRACE));
+        interfaceContent.append(format(" %s%n ", OPENING_CURLY_BRACE));
         // list of methods
-        methodsGenerator.generateAbstractMethodsFromElementsSet(sealedInterfaceContent, sealedInterfacesToGenerateMapEntry.getValue());
+        methodsGenerator.generateAbstractMethodsFromElementsSet(interfaceContent, sealedInterfacesToGenerateMap.get(profile));
         // closing bracket
-        sealedInterfaceContent.append(CLOSING_CURLY_BRACE);
+        interfaceContent.append(CLOSING_CURLY_BRACE);
         //
-        return removeDoubleSpaceOccurrences(sealedInterfaceContent.toString());
+        return removeDoubleSpaceOccurrences(interfaceContent.toString());
     }
 }
