@@ -43,6 +43,7 @@ import static org.jisel.generators.StringGenerator.SEAL_FOR;
 import static org.jisel.generators.StringGenerator.STATUS_REPORT_TITLE;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL_REPORT_MSG;
+import static org.jisel.generators.StringGenerator.UNSEAL;
 import static org.jisel.generators.StringGenerator.UNSEALED;
 import static org.jisel.generators.StringGenerator.UNSEAL_REPORT_MSG;
 import static org.jisel.generators.StringGenerator.WHITESPACE;
@@ -61,14 +62,17 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
                                                   RoundEnvironment roundEnv,
                                                   Map<String, Set<Element>> allAnnotatedElementsMap) {
         for (var annotation : annotations) {
-            if (annotation.getSimpleName().toString().contains(SEAL_FOR)) {
-                allAnnotatedElementsMap.get(ALL_ANNOTATED_SEALFOR_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
-            }
             if (annotation.getSimpleName().toString().contains(TOP_LEVEL)) {
                 allAnnotatedElementsMap.get(ALL_ANNOTATED_TOPLEVEL_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
+            if (annotation.getSimpleName().toString().contains(SEAL_FOR)) {
+                allAnnotatedElementsMap.get(ALL_ANNOTATED_SEALFOR_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
+            }
             if (annotation.getSimpleName().toString().contains(ADD_TO)) {
                 allAnnotatedElementsMap.get(ALL_ANNOTATED_ADDTO_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
+            }
+            if (annotation.getSimpleName().toString().contains(UNSEAL)) {
+                allAnnotatedElementsMap.get(ALL_ANNOTATED_UNSEAL_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
         }
     }

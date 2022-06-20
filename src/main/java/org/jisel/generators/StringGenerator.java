@@ -154,6 +154,18 @@ public interface StringGenerator {
      */
     String NEW_LINE = "\n";
     /**
+     * "true"
+     */
+    String TRUE = "true";
+    /**
+     * "false"
+     */
+    String FALSE = "false";
+    /**
+     * "value"
+     */
+    String VALUE = "value";
+    /**
      * "FinalClass"
      */
     String FINAL_CLASS_SUFFIX = "FinalCass";
@@ -178,6 +190,10 @@ public interface StringGenerator {
      * "TopLevel"
      */
     String TOP_LEVEL = "TopLevel";
+    /**
+     * "UnSeal"
+     */
+    String UNSEAL = "UnSeal";
     /**
      * "profile"
      */
@@ -270,7 +286,7 @@ public interface StringGenerator {
     /**
      * Default value to use for boolean returned values
      */
-    String DEFAULT_BOOLEAN_VALUE = "false";
+    String DEFAULT_BOOLEAN_VALUE = FALSE;
     /**
      * Default value to use for numeric returned values (int, long, float, double,...)
      */

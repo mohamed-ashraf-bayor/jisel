@@ -44,13 +44,19 @@ public final class UnSealHandler implements JiselAnnotationHandler {
         var statusReport = new HashMap<Element, String>();
         allAnnotatedElements.stream()
                 .filter(element -> ElementKind.INTERFACE.equals(element.getKind()))
-                .forEach(element -> statusReport.put( // stores values of UnSeal parameters (true or false) in the statusReport map
-                        element,
-                        element.getAnnotationMirrors().stream()
-                                .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_UNSEAL))
-                                .toList()
-                                .get(0).getElementValues().get("value").toString() // TODO value cnstnte
-                ));
+                .forEach(element -> {
+                            var annotationElementValues = element.getAnnotationMirrors().stream()
+                                    .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_UNSEAL))
+                                    .toList().get(0) // @UnSeal not repeatable, so only 1 occurrence will be found
+                                    .getElementValues();
+                            // stores values of UnSeal parameters (true or false) in the statusReport map
+                            statusReport.put(element, annotationElementValues.isEmpty()
+                                    ? TRUE
+                                    : annotationElementValues.entrySet().stream()
+                                    .filter(entry -> entry.getKey().toString().equals(VALUE + OPENING_PARENTHESIS + CLOSING_PARENTHESIS))
+                                    .findFirst().get().getValue().toString());
+                        }
+                );
         return statusReport;
     }
 }
