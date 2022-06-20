@@ -23,25 +23,30 @@ package org.jisel.generators.codegen;
 
 import javax.lang.model.element.Element;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
 
 /**
- * Generates the "permits" clause of a sealed interface definition, along with the list of the subtypes classes or
- * interfaces permitted by the sealed interface being generated
+ * Exposes contract to be fulfilled by a class generating the interface or class declaration section
  */
-public final class SealedInterfacePermitsGenerator implements PermitsGenerator {
+public sealed interface DeclarationGenerator extends CodeGenerator permits InterfaceDeclarationGenerator {
+
+    /**
+     * Generates the interface or class declaration section
+     *
+     * @param largeInterfaceElement {@link Element} instance of the large interface being segregated
+     * @param unSeal                indicates whether the interface declaration should include "sealed"
+     * @param interfaceContent      {@link StringBuilder} object containing the sealed interface code being generated
+     * @param profile               name of the profile whose sealed interface is being generated
+     */
+    void generateModifiersAndName(Element largeInterfaceElement, boolean unSeal, StringBuilder interfaceContent, String profile);
+
     @Override
-    public void generatePermitsClauseFromPermitsMapAndProcessedProfile(StringBuilder sealedInterfaceContent,
-                                                                       Map<String, List<String>> permitsMap,
-                                                                       String processedProfile,
-                                                                       Element largeInterfaceElement) {
-        addFinalClassToPermitsMap(permitsMap, largeInterfaceElement);
-        var permitsMapOpt = Optional.ofNullable(permitsMap);
-        if (permitsMapOpt.isPresent() && !permitsMapOpt.get().isEmpty()) {
-            Optional.ofNullable(permitsMapOpt.get().get(processedProfile)).ifPresent(
-                    childrenList -> generateCode(sealedInterfaceContent, sealedInterfaceNameConventionForList(childrenList, largeInterfaceElement))
-            );
-        }
+    default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
+        classOrInterfaceContent.append(format(
+                "%s %s",
+                params.stream().collect(joining(WHITESPACE))
+        ));
     }
 }

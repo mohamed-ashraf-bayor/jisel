@@ -23,25 +23,21 @@ package org.jisel.generators.codegen;
 
 import javax.lang.model.element.Element;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
- * Generates the "permits" clause of a sealed interface definition, along with the list of the subtypes classes or
- * interfaces permitted by the sealed interface being generated
+ * Generates the interface declaration section (modifiers + name)
  */
-public final class SealedInterfacePermitsGenerator implements PermitsGenerator {
+public final class InterfaceDeclarationGenerator implements DeclarationGenerator {
     @Override
-    public void generatePermitsClauseFromPermitsMapAndProcessedProfile(StringBuilder sealedInterfaceContent,
-                                                                       Map<String, List<String>> permitsMap,
-                                                                       String processedProfile,
-                                                                       Element largeInterfaceElement) {
-        addFinalClassToPermitsMap(permitsMap, largeInterfaceElement);
-        var permitsMapOpt = Optional.ofNullable(permitsMap);
-        if (permitsMapOpt.isPresent() && !permitsMapOpt.get().isEmpty()) {
-            Optional.ofNullable(permitsMapOpt.get().get(processedProfile)).ifPresent(
-                    childrenList -> generateCode(sealedInterfaceContent, sealedInterfaceNameConventionForList(childrenList, largeInterfaceElement))
-            );
-        }
+    public void generateModifiersAndName(Element largeInterfaceElement, boolean unSeal, StringBuilder interfaceContent, String profile) {
+        generateCode(
+                interfaceContent,
+                List.of(
+                        unSeal ? PUBLIC_INTERFACE
+                                : PUBLIC_SEALED_INTERFACE,
+                        unSeal ? unSealedInterfaceNameConvention(profile, largeInterfaceElement)
+                                : sealedInterfaceNameConvention(profile, largeInterfaceElement)
+                )
+        );
     }
 }

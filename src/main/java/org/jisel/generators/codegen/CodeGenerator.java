@@ -28,7 +28,9 @@ import java.util.List;
 /**
  * Exposes contract to be fulfilled by a class generating the code of a sealed interface
  */
-public sealed interface CodeGenerator extends StringGenerator permits JavaxGeneratedGenerator, ExtendsGenerator, PermitsGenerator, MethodsGenerator {
+public sealed interface CodeGenerator
+        extends StringGenerator
+        permits AnnotationsGenerator, DeclarationGenerator, ExtendsGenerator, MethodsGenerator, PermitsGenerator {
 
     /**
      * Generates piece of code requested, based on the parameters provided in the params object and appends it to the provided classOrInterfaceContent param

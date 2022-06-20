@@ -52,7 +52,7 @@ public final class FinalClassContentGenerator extends AbstractSealedContentGener
         // package name
         generatePackageName(largeInterfaceElement).ifPresent(name -> finalClassContent.append(format("%s %s;%n%n", PACKAGE, name)));
         // javaxgenerated
-        javaxGeneratedGenerator.generateCode(finalClassContent, List.of());
+        annotationsGenerator.generateCode(finalClassContent, List.of());
         // public final class
         finalClassContent.append(format(
                 "%s %s ",

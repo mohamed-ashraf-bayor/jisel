@@ -22,13 +22,12 @@
 package org.jisel.generators.codegen;
 
 import org.jisel.JiselAnnotationProcessor;
-import org.jisel.generators.codegen.CodeGenerator;
 
-import java.io.IOException;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Properties;
 
 import static java.lang.String.format;
 
@@ -36,37 +35,40 @@ import static java.lang.String.format;
  * Generates the {@link javax.annotation.processing.Generated} annotation section at the top of the generated interfaces or
  * classes with the attributes: value, date and comments<br>
  */
-public final class JavaxGeneratedGenerator implements CodeGenerator {
+public final class InterfaceAnnotationsGenerator implements AnnotationsGenerator {
 
     private static final String DEFAULT_APP_VERSION = "1.2.0";
 
-    private void buildGeneratedAnnotationSection(StringBuilder recordClassContent) {
-        recordClassContent.append(format("""
-                        @javax.annotation.processing.Generated(
-                            value = "%s",
-                            date = "%s",
-                            comments = "version: %s"
-                        )
-                        """,
-                JiselAnnotationProcessor.class.getName(),
-                ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                getAppVersion()
-        ));
-    }
+    private static final String JISEL_ANNOTATION_PROCESSOR_CLASSNAME = JiselAnnotationProcessor.class.getName();
 
-    private String getAppVersion() {
-        var properties = new Properties();
-        var in = this.getClass().getClassLoader().getResourceAsStream("application.properties");
-        try {
-            properties.load(in);
-        } catch (IOException e) {
-            return DEFAULT_APP_VERSION;
-        }
-        return properties.getProperty("info.app.version");
+    @Override
+    public void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent) {
+        buildJavaxGeneratedAnnotationSection(
+                classOrInterfaceContent,
+                JISEL_ANNOTATION_PROCESSOR_CLASSNAME,
+                getParamValueFromPropsFile("application.properties", "info.app.version", DEFAULT_APP_VERSION)
+        );
     }
 
     @Override
-    public void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
-        buildGeneratedAnnotationSection(classOrInterfaceContent);
+    public void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent, String annotationProcessorClassname, String appVersion) {
+        generateCode(classOrInterfaceContent, List.of(
+                format("""
+                                @javax.annotation.processing.Generated(
+                                    value = "%s",
+                                    date = "%s",
+                                    comments = "version: %s"
+                                )
+                                """,
+                        annotationProcessorClassname,
+                        ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                        appVersion
+                )
+        ));
+    }
+
+    @Override
+    public void buildExistingAnnotations(StringBuilder classOrInterfaceContent, ProcessingEnvironment processingEnvironment, Element element) {
+
     }
 }

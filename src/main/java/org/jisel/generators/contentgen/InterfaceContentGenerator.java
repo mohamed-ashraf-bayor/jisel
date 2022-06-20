@@ -44,6 +44,7 @@ public final class InterfaceContentGenerator extends AbstractSealedContentGenera
                                   boolean unSeal,
                                   Map<String, Set<Element>> sealedInterfacesToGenerateMap,
                                   Map<String, List<String>> sealedInterfacesPermitsMap) {
+        var profile =  sealedInterfacesToGenerateMap.keySet().stream().findFirst().orElse(EMPTY_STRING); // only & always 1 entry expected (see calling mthd)
         var interfaceContent = new StringBuilder();
         // package name
         generatePackageName(largeInterfaceElement).ifPresent(packageName -> interfaceContent.append(format("%s %s", PACKAGE, packageName)));
@@ -52,15 +53,9 @@ public final class InterfaceContentGenerator extends AbstractSealedContentGenera
         }
         interfaceContent.append(format(";%n%n"));
         // javaxgenerated
-        javaxGeneratedGenerator.generateCode(interfaceContent, List.of());
-        // public (sealed) interface
-        var profile =  sealedInterfacesToGenerateMap.keySet().stream().findFirst().orElse(EMPTY_STRING); // only & always 1 entry expected (see calling mthd)
-        interfaceContent.append(format(
-                "%s %s ",
-                unSeal ? PUBLIC_INTERFACE : PUBLIC_SEALED_INTERFACE,
-                unSeal ? unSealedInterfaceNameConvention(profile, largeInterfaceElement)
-                        : sealedInterfaceNameConvention(profile, largeInterfaceElement)
-        ));
+        annotationsGenerator.buildJavaxGeneratedAnnotationSection(interfaceContent);
+        // declaration: public (sealed) interface
+        declarationGenerator.generateModifiersAndName(largeInterfaceElement, unSeal, interfaceContent, profile);
         // list of extends
         extendsGenerator.generateExtendsClauseFromPermitsMapAndProcessedProfile(processingEnvironment, interfaceContent, sealedInterfacesPermitsMap, profile, largeInterfaceElement, unSeal);
         // list of permits
