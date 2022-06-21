@@ -21,6 +21,8 @@
  */
 package org.jisel.generators.codegen;
 
+import org.jisel.generators.codegen.impl.InterfaceDeclarationGenerator;
+
 import javax.lang.model.element.Element;
 import java.util.List;
 
@@ -45,7 +47,7 @@ public sealed interface DeclarationGenerator extends CodeGenerator permits Inter
     @Override
     default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
         classOrInterfaceContent.append(format(
-                "%s %s",
+                "%s",
                 params.stream().collect(joining(WHITESPACE))
         ));
     }

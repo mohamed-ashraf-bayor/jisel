@@ -25,13 +25,13 @@ import org.jisel.generators.StringGenerator;
 import org.jisel.generators.codegen.AnnotationsGenerator;
 import org.jisel.generators.codegen.DeclarationGenerator;
 import org.jisel.generators.codegen.ExtendsGenerator;
-import org.jisel.generators.codegen.InterfaceDeclarationGenerator;
-import org.jisel.generators.codegen.InterfaceExtendsGenerator;
-import org.jisel.generators.codegen.InterfaceMethodsGenerator;
-import org.jisel.generators.codegen.InterfaceAnnotationsGenerator;
 import org.jisel.generators.codegen.MethodsGenerator;
 import org.jisel.generators.codegen.PermitsGenerator;
-import org.jisel.generators.codegen.SealedInterfacePermitsGenerator;
+import org.jisel.generators.codegen.impl.InterfaceAnnotationsGenerator;
+import org.jisel.generators.codegen.impl.InterfaceDeclarationGenerator;
+import org.jisel.generators.codegen.impl.InterfaceExtendsGenerator;
+import org.jisel.generators.codegen.impl.InterfaceMethodsGenerator;
+import org.jisel.generators.codegen.impl.SealedInterfacePermitsGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;

@@ -19,12 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generators.codegen;
+package org.jisel.generators.codegen.impl;
+
+import org.jisel.generators.codegen.MethodsGenerator;
 
 import javax.lang.model.element.Element;
 import java.util.Set;
 
 import static java.lang.String.format;
+import static org.jisel.generators.codegen.AnnotationsGenerator.buildExistingAnnotations;
 
 /**
  * Generates the list of abstracts methods of a sealed interface being generated
@@ -36,14 +39,17 @@ public final class InterfaceMethodsGenerator implements MethodsGenerator {
         generateCode(
                 sealedInterfaceContent,
                 methodsSet.stream()
-                        .map(element -> format(
-                                "%s %s%s",
-                                generateReturnType(element),
-                                generateMethodNameAndParameters(element),
-                                generateThrownExceptions(element).isEmpty()
-                                        ? SEMICOLON
-                                        : format(" throws %s", generateThrownExceptions(element) + SEMICOLON)
-                        ))
+                        .map(element -> {
+                            var existingAnnotations = buildExistingAnnotations(element, NEW_LINE);
+                            var thrownExceptions = generateThrownExceptions(element);
+                            return format(
+                                    "%s%s %s%s",
+                                    existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations + NEW_LINE + TAB,
+                                    generateReturnType(element),
+                                    generateMethodNameAndParameters(element),
+                                    thrownExceptions.isEmpty() ? SEMICOLON : format(" throws %s", thrownExceptions + SEMICOLON)
+                            );
+                        })
                         .toList()
         );
     }

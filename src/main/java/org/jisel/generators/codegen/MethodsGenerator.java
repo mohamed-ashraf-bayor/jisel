@@ -21,6 +21,8 @@
  */
 package org.jisel.generators.codegen;
 
+import org.jisel.generators.codegen.impl.InterfaceMethodsGenerator;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ExecutableType;
@@ -29,6 +31,7 @@ import java.util.Set;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
+import static org.jisel.generators.codegen.AnnotationsGenerator.buildExistingAnnotations;
 
 /**
  * Exposes contract to be fulfilled by a class generating the list of abstracts methods of a sealed interface being generated.<br>
@@ -69,24 +72,34 @@ public sealed interface MethodsGenerator extends CodeGenerator permits Interface
     }
 
     /**
+     * // TODO add jdoc abt annots
      * Constructs a string containing a method name and parameters formatted as per the method signature
      *
      * @param methodElement method {@link Element} instance
      * @return a string containing a method name and parameters formatted as per the method signature
      */
     default String generateMethodNameAndParameters(Element methodElement) {
-        // TODO rewrite
-        if (((ExecutableElement) methodElement).getParameters().isEmpty()) { // checks whether the provided method Element instance has 0 args
-            return methodElement.toString();
+        var parametersList = ((ExecutableElement) methodElement).getParameters();
+        if (parametersList.isEmpty()) {
+            return methodElement.toString(); // if has no args, output as is
         }
-        int paramIdx = 0;
-        var output = methodElement.toString();
-        while (output.contains(COMMA_SEPARATOR)) {
-            output = output.replace(COMMA_SEPARATOR, WHITESPACE + PARAMETER_PREFIX + paramIdx + TEMP_PLACEHOLDER + WHITESPACE);
-            paramIdx++;
-        }
-        return output.replace(CLOSING_PARENTHESIS, WHITESPACE + PARAMETER_PREFIX + paramIdx + CLOSING_PARENTHESIS)
-                .replaceAll(TEMP_PLACEHOLDER, COMMA_SEPARATOR);
+        return format("%s(%s)",
+                methodElement.getSimpleName(),
+                parametersList.stream()
+                        .map(variableElement ->
+                        {
+                            var existingAnnotations = buildExistingAnnotations(variableElement, WHITESPACE);
+                            return format(
+                                    "%s%s %s",
+                                    existingAnnotations.isEmpty()
+                                            ? EMPTY_STRING
+                                            : existingAnnotations + WHITESPACE,
+                                    variableElement.asType().toString(),
+                                    variableElement.getSimpleName().toString()
+                            );
+                        })
+                        .collect(joining(COMMA_SEPARATOR + WHITESPACE))
+        );
     }
 
     /**

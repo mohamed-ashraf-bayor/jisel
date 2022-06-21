@@ -21,15 +21,15 @@
  */
 package org.jisel.generators.codegen;
 
-import javax.annotation.processing.ProcessingEnvironment;
+import org.jisel.generators.codegen.impl.InterfaceAnnotationsGenerator;
+
 import javax.lang.model.element.Element;
-import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
 
 import static java.util.stream.Collectors.joining;
 
 /**
+ * TODO jdoc entire clss
  * Exposes contract to be fulfilled by a class generating annotations
  */
 public sealed interface AnnotationsGenerator extends CodeGenerator permits InterfaceAnnotationsGenerator {
@@ -38,21 +38,23 @@ public sealed interface AnnotationsGenerator extends CodeGenerator permits Inter
 
     void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent, String annotationProcessorClassname, String appVersion);
 
-    void buildExistingAnnotations(StringBuilder classOrInterfaceContent, ProcessingEnvironment processingEnvironment, Element element);
+    void buildExistingAnnotations(StringBuilder classOrInterfaceContent, Element element);
+
+    /**
+     * ... exclusing all jisel annots..
+     * @param element
+     * @param separator
+     * @return
+     */
+    static String buildExistingAnnotations(Element element, String separator) {
+        return element.getAnnotationMirrors().stream()
+                .map(Object::toString)
+                .filter(annotationString -> !annotationString.contains(JISEL_ANNOTATIONS_PACKAGE))
+                .collect(joining(separator));
+    }
 
     @Override
     default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
         classOrInterfaceContent.append(params.stream().collect(joining(NEW_LINE)));
-    }
-
-    default String getParamValueFromPropsFile(String fileNameWithExt, String paramName, String defaultValue) {
-        var properties = new Properties();
-        var in = this.getClass().getClassLoader().getResourceAsStream(fileNameWithExt);
-        try {
-            properties.load(in);
-        } catch (IOException e) {
-            return defaultValue;
-        }
-        return properties.getProperty(paramName);
     }
 }

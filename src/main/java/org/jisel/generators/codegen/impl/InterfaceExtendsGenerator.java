@@ -19,7 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generators.codegen;
+package org.jisel.generators.codegen.impl;
+
+import org.jisel.generators.codegen.ExtendsGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -53,10 +55,7 @@ public final class InterfaceExtendsGenerator implements ExtendsGenerator {
                         .filter(superType -> !superType.contains(JAVA_LANG_OBJECT))
                         .toList();
                 if (largeInterfaceElement.getSimpleName().toString().equals(processedProfile) && !superInterfacesList.isEmpty()) {
-                    generateCode(
-                            sealedInterfaceContent,
-                            superInterfacesList
-                    );
+                    generateCode(sealedInterfaceContent, superInterfacesList);
                 }
             }
         });

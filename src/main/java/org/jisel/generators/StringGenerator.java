@@ -22,10 +22,10 @@
 package org.jisel.generators;
 
 import org.jisel.annotations.AddTo;
+import org.jisel.annotations.Detach;
 import org.jisel.annotations.SealFor;
 import org.jisel.annotations.TopLevel;
 import org.jisel.annotations.UnSeal;
-import org.jisel.annotations.Detach;
 
 import javax.lang.model.element.Element;
 import java.util.List;
@@ -134,14 +134,6 @@ public interface StringGenerator {
      */
     String AT_SIGN = "@";
     /**
-     * "param"
-     */
-    String PARAMETER_PREFIX = "param";
-    /**
-     * "@"
-     */
-    String TEMP_PLACEHOLDER = AT_SIGN;
-    /**
      * "_"
      */
     String UNDERSCORE = "_";
@@ -150,9 +142,13 @@ public interface StringGenerator {
      */
     String ESCAPED_DOUBLE_QUOTES = "\"";
     /**
-     * "\""
+     * "\n"
      */
-    String NEW_LINE = "\n";
+    String NEW_LINE = format("%n");
+    /**
+     * "\t"
+     */
+    String TAB = " \t";
     /**
      * "true"
      */
@@ -283,6 +279,8 @@ public interface StringGenerator {
      */
     String ORG_JISEL_TOP_LEVEL = "org.jisel.annotations.TopLevel";
 
+    String JISEL_ANNOTATIONS_PACKAGE = "org.jisel.annotations";
+
     /**
      * Default value to use for boolean returned values
      */
@@ -366,15 +364,17 @@ public interface StringGenerator {
      * @return a string following Jisel sealed interface naming convention
      */
     default String sealedInterfaceNameConvention(String profile, Element interfaceElement) {
-        var nameSuffix = removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString())
+        var nameSuffixFunc = removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString())
                 ? EMPTY_STRING
                 : interfaceElement.getSimpleName().toString();
         // any profile name starting w _ (final classes names) or containing a dot (classes annotated with @Addto) is returned as is
-        return removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeCommaSeparator(profile) : format(
+        return removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT)
+                ? removeCommaSeparator(profile)
+                : format(
                 "%s%s%s",
                 SEALED_PREFIX,
                 removeCommaSeparator(profile),
-                nameSuffix
+                nameSuffixFunc
         );
     }
 
@@ -426,17 +426,20 @@ public interface StringGenerator {
      * @return a List of string literals following Jisel sealed interface naming convention
      */
     default List<String> sealedInterfaceNameConventionForList(List<String> profiles, Element interfaceElement) {
-        final UnaryOperator<String> nameSuffix = profile ->
+        final UnaryOperator<String> nameSuffixFunc = profile ->
                 removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString())
                         ? EMPTY_STRING
                         : interfaceElement.getSimpleName().toString();
         return profiles.stream()
-                .map(profile -> removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT) ? removeCommaSeparator(profile) : format(
-                        "%s%s%s",
-                        SEALED_PREFIX,
-                        removeCommaSeparator(profile),
-                        nameSuffix.apply(profile)
-                )).toList();
+                .map(profile ->
+                        removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT)
+                                ? removeCommaSeparator(profile)
+                                : format(
+                                "%s%s%s",
+                                SEALED_PREFIX,
+                                removeCommaSeparator(profile),
+                                nameSuffixFunc.apply(profile)
+                        )).toList();
     }
 
     /**

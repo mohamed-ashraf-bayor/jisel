@@ -19,19 +19,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generators.codegen;
+package org.jisel.generators.codegen.impl;
 
 import org.jisel.JiselAnnotationProcessor;
+import org.jisel.generators.codegen.AnnotationsGenerator;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Properties;
 
 import static java.lang.String.format;
 
 /**
+ * TODO rwrte jdoc
  * Generates the {@link javax.annotation.processing.Generated} annotation section at the top of the generated interfaces or
  * classes with the attributes: value, date and comments<br>
  */
@@ -46,29 +49,44 @@ public final class InterfaceAnnotationsGenerator implements AnnotationsGenerator
         buildJavaxGeneratedAnnotationSection(
                 classOrInterfaceContent,
                 JISEL_ANNOTATION_PROCESSOR_CLASSNAME,
-                getParamValueFromPropsFile("application.properties", "info.app.version", DEFAULT_APP_VERSION)
+                getPropertyValueFromFile("application.properties", "info.app.version", DEFAULT_APP_VERSION)
         );
     }
 
     @Override
     public void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent, String annotationProcessorClassname, String appVersion) {
-        generateCode(classOrInterfaceContent, List.of(
-                format("""
-                                @javax.annotation.processing.Generated(
-                                    value = "%s",
-                                    date = "%s",
-                                    comments = "version: %s"
-                                )
-                                """,
-                        annotationProcessorClassname,
-                        ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                        appVersion
-                )
-        ));
+        generateCode(
+                classOrInterfaceContent,
+                List.of(
+                        format("""
+                                        @javax.annotation.processing.Generated(
+                                            value = "%s",
+                                            date = "%s",
+                                            comments = "version: %s"
+                                        )
+                                        """,
+                                annotationProcessorClassname,
+                                ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                                appVersion
+                        )
+                ));
     }
 
     @Override
-    public void buildExistingAnnotations(StringBuilder classOrInterfaceContent, ProcessingEnvironment processingEnvironment, Element element) {
+    public void buildExistingAnnotations(StringBuilder classOrInterfaceContent, Element element) {
+        var existingAnnotations = AnnotationsGenerator.buildExistingAnnotations(element, NEW_LINE);
+        generateCode(classOrInterfaceContent, List.of(existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations + NEW_LINE));
+    }
 
+    // TODO move to static func in utils intrfc
+    private String getPropertyValueFromFile(String fileNameWithExt, String property, String defaultValue) {
+        var properties = new Properties();
+        var in = this.getClass().getClassLoader().getResourceAsStream(fileNameWithExt);
+        try {
+            properties.load(in);
+        } catch (IOException e) {
+            return defaultValue;
+        }
+        return properties.getProperty(property);
     }
 }

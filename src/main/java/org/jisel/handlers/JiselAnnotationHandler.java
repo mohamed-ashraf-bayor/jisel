@@ -74,13 +74,12 @@ public sealed interface JiselAnnotationHandler extends StringGenerator permits S
      * For a specified class or interface annotated with &#64;{@link AddTo}, constructs a Map storing a Set of all the provided
      * profiles names (as the Map value) for each one of the large interfaces names (as the Map key) provided through &#64;AddTo.
      *
-     * @param processingEnv             {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param annotatedClassOrInterface {@link Element} instance representing the annotated class or interface
      * @return a Map storing a Set of all the provided profiles names (as the Map value) for each one of the large interfaces names (as the Map key)
      */
-    default Map<String, Set<String>> buildAddToProvidedProfilesMap(ProcessingEnvironment processingEnv, Element annotatedClassOrInterface) {
+    default Map<String, Set<String>> buildAddToProvidedProfilesMap(Element annotatedClassOrInterface) {
         var providedProfilesMap = new HashMap<String, Set<String>>();
-        var annotationRawValueAsString = processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedClassOrInterface).stream()
+        var annotationRawValueAsString = annotatedClassOrInterface.getAnnotationMirrors().stream()
                 .map(Object::toString)
                 .collect(joining(COMMA_SEPARATOR));
         // sample values for annotationRawValueAsString:

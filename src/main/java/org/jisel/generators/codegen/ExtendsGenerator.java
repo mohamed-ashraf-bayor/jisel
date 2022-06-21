@@ -22,6 +22,7 @@
 package org.jisel.generators.codegen;
 
 import org.jisel.generators.StringGenerator;
+import org.jisel.generators.codegen.impl.InterfaceExtendsGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;

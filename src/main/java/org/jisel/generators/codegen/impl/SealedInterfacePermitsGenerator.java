@@ -19,7 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generators.codegen;
+package org.jisel.generators.codegen.impl;
+
+import org.jisel.generators.codegen.PermitsGenerator;
 
 import javax.lang.model.element.Element;
 import java.util.List;
