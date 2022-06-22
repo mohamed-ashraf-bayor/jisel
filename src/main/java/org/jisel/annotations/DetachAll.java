@@ -22,12 +22,9 @@
 package org.jisel.annotations;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 
 /**
  * // TODO jdoc
@@ -35,37 +32,5 @@ import static org.jisel.generators.StringGenerator.EMPTY_STRING;
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE})
-@Repeatable(Detach.Detachs.class)
-public @interface Detach {
-
-    /**
-     * ... Jisel keyword expected: "(toplevel)"
-     * @return the profile name to detach
-     */
-    String profile(); // TODO chck if useful to make this the default annotation param (value())
-
-    String rename() default EMPTY_STRING; // USELESS IF PROFILES NOT SPECIFIED -> display as wrnng msg
-
-    /**
-     * allows specifying a list of interfaces to be extended by the detached interface
-     *
-     * @return an array of .class values
-     */
-    Class<?>[] superInterfaces() default {};
-
-    String[] applyAnnotations() default EMPTY_STRING;
-
-    /**
-     * Internal annotation allowing &#64;Detach to be repeatable
-     */
-    @Retention(RetentionPolicy.SOURCE)
-    @Target(ElementType.TYPE)
-    @interface Detachs {
-        /**
-         * array attribute allowing &#64;{@link Detach} to be repeatable
-         *
-         * @return array of &#64;AddTo instances
-         */
-        Detach[] value();
-    }
+public @interface DetachAll {
 }

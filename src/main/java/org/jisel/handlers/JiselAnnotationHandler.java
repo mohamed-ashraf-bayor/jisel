@@ -45,8 +45,9 @@ import static java.util.stream.Stream.concat;
 /**
  * Exposes contract to fulfill by any class handling all elements annotated with Jisel annotations
  */
-public sealed interface JiselAnnotationHandler extends StringGenerator permits SealForHandler, AddToHandler, TopLevelHandler,
-        UnSealHandler, AnnotationInfoCollectionHandler, ParentChildInheritanceHandler {
+public sealed interface JiselAnnotationHandler
+        extends StringGenerator
+        permits SealForHandler, AddToHandler, TopLevelHandler, UnSealHandler, DetachHandler, AnnotationInfoCollectionHandler, ParentChildInheritanceHandler {
 
     /**
      * Reads values of all attributes provided through the use of Jisel annotations and populates the provided Map arguments

@@ -39,6 +39,7 @@ import static java.util.stream.Collectors.joining;
 import static org.jisel.generators.StringGenerator.ADD_TO;
 import static org.jisel.generators.StringGenerator.AT_SIGN;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.DETACH;
 import static org.jisel.generators.StringGenerator.SEAL_FOR;
 import static org.jisel.generators.StringGenerator.STATUS_REPORT_TITLE;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL;
@@ -55,6 +56,7 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
     String ALL_ANNOTATED_TOPLEVEL_ELEMENTS = "allAnnotatedTopLevelElements";
     String ALL_ANNOTATED_ADDTO_ELEMENTS = "allAnnotatedAddToElements";
     String ALL_ANNOTATED_UNSEAL_ELEMENTS = "allAnnotatedUnSealElements";
+    String ALL_ANNOTATED_DETACH_ELEMENTS = "allAnnotatedDetachElements";
 
     void notifyReportDisplay(String reportText);
 
@@ -62,6 +64,7 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
                                                   RoundEnvironment roundEnv,
                                                   Map<String, Set<Element>> allAnnotatedElementsMap) {
         for (var annotation : annotations) {
+            // TODO create a func and reuse: think of a consumer ?
             if (annotation.getSimpleName().toString().contains(TOP_LEVEL)) {
                 allAnnotatedElementsMap.get(ALL_ANNOTATED_TOPLEVEL_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
@@ -73,6 +76,9 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
             }
             if (annotation.getSimpleName().toString().contains(UNSEAL)) {
                 allAnnotatedElementsMap.get(ALL_ANNOTATED_UNSEAL_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
+            }
+            if (annotation.getSimpleName().toString().contains(DETACH)) {
+                allAnnotatedElementsMap.get(ALL_ANNOTATED_DETACH_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
         }
     }
@@ -90,7 +96,6 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
                 sealedInterfacesToGenerateByLargeInterface,
                 Map.of()
         );
-
         // process all interface methods annotated with @SealFor
         var sealForStatusReport = sealForHandler.handleAnnotatedElements(
                 processingEnv,
@@ -98,7 +103,6 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
                 sealedInterfacesToGenerateByLargeInterface,
                 sealedInterfacesPermitsByLargeInterface
         );
-
         displayStatusReport(extractLargeInterfacesWithNoTopLevel(sealForStatusReport, topLevelStatusReport), SEAL_FOR, TOP_LEVEL);
     }
 
@@ -116,6 +120,23 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         unSealStatusReport.forEach(((element, unSealValueString) -> unSealValueByLargeInterface.put(element, Boolean.valueOf(unSealValueString))));
         // report any interfaces tagged with @UnSeal but not containing methods taaged with @TopLevel
         displayStatusReport(extractUnSealedInterfacesWithNoTopLevel(unSealStatusReport, sealedInterfacesToGenerateByLargeInterface), UNSEALED);
+    }
+
+    default void processDetachAnnotatedElements(ProcessingEnvironment processingEnv,
+                                                JiselAnnotationHandler detachHandler,
+                                                Set<Element> allAnnotatedDetachElements,
+                                                Map<Element, Map<String, Set<Element>>> detachedInterfacesToGenerateByLargeInterface,
+                                                Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
+        var detachStatusReport = detachHandler.handleAnnotatedElements(
+                processingEnv,
+                unmodifiableSet(allAnnotatedDetachElements),
+                detachedInterfacesToGenerateByLargeInterface,
+                Map.of()
+        );
+        // TODO
+//        detachStatusReport.forEach(((element, unSealValueString) -> unSealValueByLargeInterface.put(element, Boolean.valueOf(unSealValueString))));
+//        // report any interfaces tagged with @UnSeal but not containing methods taaged with @TopLevel
+//        displayStatusReport(extractUnSealedInterfacesWithNoTopLevel(detachStatusReport, sealedInterfacesToGenerateByLargeInterface), UNSEALED);
     }
 
     default void processAddToAnnotatedElements(ProcessingEnvironment processingEnv,

@@ -191,6 +191,10 @@ public interface StringGenerator {
      */
     String UNSEAL = "UnSeal";
     /**
+     * "Detach"
+     */
+    String DETACH = "Detach";
+    /**
      * "profile"
      */
     String PROFILE = "profile";

@@ -32,7 +32,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
 /**
- * //TODO add classic interf generation parts
+ * //TODO add classic interf generation parts in jdoc
  * Generates a Report file listing all generated sealed interfaces for the provided large interfaces.<br>
  * Sample report:<br>
  * com.bayor.jisel.annotation.client.hierarchicalinheritance.Sociable<br>

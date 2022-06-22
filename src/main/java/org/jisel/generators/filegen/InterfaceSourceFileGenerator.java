@@ -36,7 +36,7 @@ import java.util.Set;
 public final class InterfaceSourceFileGenerator extends AbstractSealedSourceFileGenerator {
 
     /**
-     * // TODO Creates source files...
+     * // TODO jdoc: Creates source files...
      *
      * @param processingEnvironment                      {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.

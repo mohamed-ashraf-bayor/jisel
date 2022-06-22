@@ -30,6 +30,7 @@ import org.jisel.annotations.UnSeal;
 import org.jisel.generators.filegen.AbstractSealedSourceFileGenerator;
 import org.jisel.generators.filegen.InterfaceSourceFileGenerator;
 import org.jisel.handlers.AddToHandler;
+import org.jisel.handlers.DetachHandler;
 import org.jisel.handlers.JiselAnnotationHandler;
 import org.jisel.handlers.SealForHandler;
 import org.jisel.handlers.TopLevelHandler;
@@ -85,6 +86,8 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
 
     private final JiselAnnotationHandler unSealHandler;
 
+    private final JiselAnnotationHandler detachHandler;
+
     private final AbstractSealedSourceFileGenerator interfaceSourceFileGenerator;
 
     /**
@@ -96,6 +99,7 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
         this.addToHandler = new AddToHandler();
         this.topLevelHandler = new TopLevelHandler();
         this.unSealHandler = new UnSealHandler();
+        this.detachHandler = new DetachHandler();
         this.interfaceSourceFileGenerator = new InterfaceSourceFileGenerator();
     }
 
@@ -106,16 +110,23 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
         var allAnnotatedTopLevelElements = new HashSet<Element>();
         var allAnnotatedAddToElements = new HashSet<Element>();
         var allAnnotatedUnSealElements = new HashSet<Element>();
+        var allAnnotatedDetachElements = new HashSet<Element>();
         var sealedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Set<Element>>>();
         var sealedInterfacesPermitsByLargeInterface = new HashMap<Element, Map<String, List<String>>>();
         var unSealValueByLargeInterface = new HashMap<Element, Boolean>();
+        var detachedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Set<Element>>>();
 
-        populateAllAnnotatedElementsSets(annotations, roundEnv, Map.of(
-                ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements,
-                ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements,
-                ALL_ANNOTATED_ADDTO_ELEMENTS, allAnnotatedAddToElements,
-                ALL_ANNOTATED_UNSEAL_ELEMENTS, allAnnotatedUnSealElements
-        ));
+        populateAllAnnotatedElementsSets(
+                annotations,
+                roundEnv,
+                Map.of(
+                        ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements,
+                        ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements,
+                        ALL_ANNOTATED_ADDTO_ELEMENTS, allAnnotatedAddToElements,
+                        ALL_ANNOTATED_UNSEAL_ELEMENTS, allAnnotatedUnSealElements,
+                        ALL_ANNOTATED_DETACH_ELEMENTS, allAnnotatedDetachElements
+                )
+        );
 
         // continue execution only if at least 1 element has been annotated with @TopLevel
         if (!allAnnotatedTopLevelElements.isEmpty()) {
@@ -126,7 +137,7 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
 
             processUnSealAnnotatedElements(processingEnv, unSealHandler, allAnnotatedUnSealElements, unSealValueByLargeInterface, sealedInterfacesToGenerateByLargeInterface);
 
-            // TODO process detach
+            processDetachAnnotatedElements(processingEnv, detachHandler, allAnnotatedDetachElements, detachedInterfacesToGenerateByLargeInterface, sealedInterfacesToGenerateByLargeInterface);
 
             processAddToAnnotatedElements(processingEnv, addToHandler, allAnnotatedAddToElements,
                     sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
