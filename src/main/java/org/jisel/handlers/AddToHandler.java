@@ -46,7 +46,8 @@ public final class AddToHandler implements JiselAnnotationHandler {
     public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
                                                         Set<Element> allAnnotatedElements,
                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                                        Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
         var annotatedClassesAndInterfaces = allAnnotatedElements.stream()
                 .filter(element -> !element.getClass().isEnum())
                 .filter(element -> ElementKind.CLASS.equals(element.getKind())
@@ -73,9 +74,9 @@ public final class AddToHandler implements JiselAnnotationHandler {
         }
         var profileFound = false;
         var providedLargeInterfaceTypeNotFound = false;
-        for (var mapEntrySet : addToProfileProvidedProfilesMap.entrySet()) {
-            var providedLargeInterfaceQualifiedName = mapEntrySet.getKey();
-            var providedProfilesForProvidedLargeInterface = mapEntrySet.getValue();
+        for (var mapEntry : addToProfileProvidedProfilesMap.entrySet()) {
+            var providedLargeInterfaceQualifiedName = mapEntry.getKey();
+            var providedProfilesForProvidedLargeInterface = mapEntry.getValue();
             // 1st check if the provided superinterf type exists
             var providedLargeInterfaceTypeOpt = Optional.ofNullable(processingEnv.getElementUtils().getTypeElement(providedLargeInterfaceQualifiedName));
             if (providedLargeInterfaceTypeOpt.isPresent()) {

@@ -23,6 +23,7 @@ package org.jisel.generators;
 
 import org.jisel.annotations.AddTo;
 import org.jisel.annotations.Detach;
+import org.jisel.annotations.DetachAll;
 import org.jisel.annotations.SealFor;
 import org.jisel.annotations.TopLevel;
 import org.jisel.annotations.UnSeal;
@@ -39,6 +40,7 @@ import static java.util.stream.Collectors.joining;
 /**
  * A bunch of String literals and commonly used string handling functions
  */
+// TODO split and reorg this intref
 public interface StringGenerator {
 
     /**
@@ -199,13 +201,17 @@ public interface StringGenerator {
      */
     String PROFILE = "profile";
     /**
-     * Regex expression to read the string value of the "profile" attribute
-     */
-    String PROFILE_ATTRIBUTE_REGEX = "profile=\"([^\"]*)\"";
-    /**
      * "profiles"
      */
     String PROFILES = "profiles";
+    /**
+     * Regex expression to read any attribute value provided within ""
+     */
+    String ANNOTATION_STRING_VALUE_REGEX = "\"([^\"]*)\"";
+    /**
+     * Regex expression to read any attribute value provided within {}
+     */
+    String ANNOTATION_ARRAY_VALUE_REGEX = "\\{(.*?)\\}";
     /**
      * "largeInterface"
      */
@@ -213,27 +219,34 @@ public interface StringGenerator {
     /**
      * Regex expression to read the string value of the "largeInterface" attribute
      */
-    String LARGE_INTERFACE_ATTRIBUTE_REGEX = "largeInterface=\"([^\"]*)\"";
-    /**
-     * Regex expression to read any attribute value provided within ""
-     */
-    String ANNOTATION_VALUES_REGEX = "\"([^\"]*)\"";
+    String LARGE_INTERFACE_ATTRIBUTE_REGEX = "largeInterface=" + ANNOTATION_STRING_VALUE_REGEX;
     /**
      * Regex expression to read attributes information provided using the {@link AddTo} annotation.<br>
      * Sample value to be parsed by the regex: @org.jisel.annotations.AddTo(profiles={"ActiveWorker"}, largeInterface=Sociable.class)
      */
     String ADD_TO_REGEX = "AddTo\\((.*?)\\)";
-    // TODO chck if can b rused w new annots
-//    /**
-//     * Regex expression to read attributes information provided using the {@link AddToProfile} annotation.<br>
-//     * Sample value to be parsed by the regex: @org.jisel.annotations.AddToProfile(profile="ActiveWorker", largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
-//     */
-//    String ADD_TO_PROFILE_REGEX = "AddToProfile\\((.*?)\\)";
-//    /**
-//     * Regex expression to read attributes information provided using the {@link AddToProfiles} annotation.<br>
-//     * Sample value to be parsed by the regex: @org.jisel.annotations.AddToProfiles(profiles={"Student", "Worker"}, largeInterface="com.bayor.jisel.annotation.client.data.Sociable")
-//     */
-//    String ADD_TO_PROFILES_REGEX = "AddToProfiles\\((.*?)\\)";
+
+    /**
+     * Regex expression to read attributes information provided using the {@link Detach} annotation.<br>
+     * Sample value to be parsed by the regex: @org.jisel.annotations.Detach(profile="(toplevel)", superInterfaces={com.bayor.Sociable.class, com.bayor.Processor.class}, ...)
+     */
+    String DETACH_REGEX = "Detach\\((.*?)\\)";
+
+    String DETACH_PROFILE = "profile";
+    String DETACH_RENAME = "rename";
+    String DETACH_SUPERINTERFACES = "superInterfaces";
+    String DETACH_FIRSTSUPERINTERFACEGENERICS = "firstSuperInterfaceGenerics";
+    String DETACH_SECONDSUPERINTERFACEGENERICS = "secondSuperInterfaceGenerics";
+    String DETACH_THIRDSUPERINTERFACEGENERICS = "thirdSuperInterfaceGenerics";
+    String DETACH_APPLYANNOTATIONS = "applyAnnotations";
+    
+    String DETACH_PROFILE_REGEX = "profile=" + ANNOTATION_STRING_VALUE_REGEX;
+    String DETACH_RENAME_REGEX = "rename=" + ANNOTATION_STRING_VALUE_REGEX;
+    String DETACH_SUPERINTERFACES_REGEX = "superInterfaces=" + ANNOTATION_ARRAY_VALUE_REGEX;
+    String DETACH_FIRSTSUPERINTERFACEGENERICS_REGEX = "firstSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+    String DETACH_SECONDSUPERINTERFACEGENERICS_REGEX = "secondSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+    String DETACH_THIRDSUPERINTERFACEGENERICS_REGEX = "thirdSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+    String DETACH_APPLYANNOTATIONS_REGEX = "applyAnnotations=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
     /**
      * Title of the text report displayed in the logs during compilation.<br>
@@ -266,6 +279,10 @@ public interface StringGenerator {
      * Fully qualified name of the {@link Detach} annotation
      */
     String ORG_JISEL_DETACH = "org.jisel.annotations.Detach";
+    /**
+     * Fully qualified name of the {@link DetachAll} annotation
+     */
+    String ORG_JISEL_DETACHALL = "org.jisel.annotations.DetachAll";
     /**
      * Fully qualified name of the {@link Detach.Detachs} annotation
      */
@@ -338,6 +355,14 @@ public interface StringGenerator {
      * Header displayed above the list of the sub-types of the generated sealed interfaces, in the Jisel Report file
      */
     String JISEL_REPORT_CHILDREN_HEADER = "Children:";
+
+    // TODO updt all jdocs
+
+    String JISEL_KEYWORD_ALL = "(all)";
+
+    String JISEL_KEYWORD_TOPLEVEL = "(toplevel)";
+
+    String JISEL_KEYWORD_TOPLEVEL_TRANSFORMED = "_toplevel_";
 
     /**
      * Removes all commas from the provided string

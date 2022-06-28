@@ -21,7 +21,7 @@
  */
 package org.jisel.handlers;
 
-import org.jisel.annotations.UnSeal;
+import org.jisel.annotations.Detach;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -31,8 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.stream.Collectors.toMap;
+
 /**
- * Handles all elements annotated with &#64;{@link UnSeal}
+ * Handles all elements annotated with &#64;{@link Detach}
  */
 public final class DetachHandler implements JiselAnnotationHandler {
 
@@ -40,23 +42,29 @@ public final class DetachHandler implements JiselAnnotationHandler {
     public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
                                                         Set<Element> allAnnotatedElements,
                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                                        Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
-//        allAnnotatedElements.stream()
-//                .filter(element -> ElementKind.INTERFACE.equals(element.getKind()))
-//                .forEach(element -> {
-//                            var annotationElementValues = element.getAnnotationMirrors().stream()
-//                                    .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_UNSEAL))
-//                                    .toList().get(0) // @UnSeal not repeatable, so only 1 occurrence will be found
-//                                    .getElementValues();
-//                            // stores values of UnSeal parameters (true or false) in the statusReport map
-//                            statusReport.put(element, annotationElementValues.isEmpty()
-//                                    ? TRUE
-//                                    : annotationElementValues.entrySet().stream()
-//                                    .filter(entry -> entry.getKey().toString().equals(VALUE + OPENING_PARENTHESIS + CLOSING_PARENTHESIS))
-//                                    .findFirst().get().getValue().toString());
-//                        }
-//                );
+        allAnnotatedElements.stream()
+                .filter(element -> ElementKind.INTERFACE.equals(element.getKind()))
+                .forEach(element -> {
+                    // handle @DetachAll annotation
+                    handleDetachAllAnnotation(detachedInterfacesToGenerateByLargeInterface, element);
+                    // handle @Detach.Detachs and @Detach annotations
+                    var detachsAnnotationMirrorOpt = element.getAnnotationMirrors().stream()
+                            .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_DETACHS))
+                            .findFirst();
+                    // detachsAnnotationMirrorOpt sample value:
+                    // Optional[@org.jisel.annotations.Detach.Detachs({@org.jisel.annotations.Detach(profile="(toplevel)" ...), @org.jisel.annotations.Detach(profile="PRo1") ...})]
+                    detachsAnnotationMirrorOpt.ifPresentOrElse(
+                            // consumer processing case of Detachs
+                            detachsAnnotationMirror -> handleMultipleDetachAnnotations(detachedInterfacesToGenerateByLargeInterface, element, detachsAnnotationMirror),
+                            // runnable processing case of a single @Detach was used
+                            () -> handleSingleDetachAnnotation(detachedInterfacesToGenerateByLargeInterface, element, processingEnv)
+                    );
+                });
+        System.out.println(" ###### detachedInterfacesToGenerateByLargeInterface: " + detachedInterfacesToGenerateByLargeInterface);
+        // TODO ADD METHDS ELMNTS SET
         return statusReport;
     }
 }

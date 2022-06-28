@@ -26,6 +26,7 @@ import org.jisel.annotations.SealFor;
 import org.jisel.generators.StringGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +38,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -52,24 +54,55 @@ public sealed interface JiselAnnotationHandler
     /**
      * Reads values of all attributes provided through the use of Jisel annotations and populates the provided Map arguments
      *
-     * @param processingEnv                              {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param allAnnotatedElements                       {@link Set} of {@link Element} instances representing all classes annotated with Jisel annotations
-     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
-     *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
-     *                                                   The Element instances represent each one of the abstract methods to be
-     *                                                   added to the generated sealed interface corresponding to a profile.
-     * @param sealedInterfacesPermitsByLargeInterface    Map containing information about the subtypes permitted by each one of the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
-     *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a Map of profile name as the key and a List of profiles names as the value.
+     * @param processingEnv                                {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
+     * @param allAnnotatedElements                         {@link Set} of {@link Element} instances representing all classes annotated with Jisel annotations
+     * @param sealedInterfacesToGenerateByLargeInterface   Map containing information about the sealed interfaces to be generated.
+     *                                                     To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                     each one of the large interfaces to be segregated, while the associated value is
+     *                                                     a Map of profile name as the key and a Set of Element instances as the value.
+     *                                                     The Element instances represent each one of the abstract methods to be
+     *                                                     added to the generated sealed interface corresponding to a profile.
+     * @param sealedInterfacesPermitsByLargeInterface      Map containing information about the subtypes permitted by each one of the sealed interfaces to be generated.
+     *                                                     To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                     each one of the large interfaces to be segregated, while the associated value is
+     *                                                     a Map of profile name as the key and a List of profiles names as the value.
+     * @param detachedInterfacesToGenerateByLargeInterface // TODO map content: Set<Element> methodsSet | String rename() | Class<?>[] superInterfaces | Class<?>[] firstSuperInterfaceGenerics | Class<?>[] secondSuperInterfaceGenerics | Class<?>[] thirdSuperInterfaceGenerics | String[] applyAnnotations
      * @return a status report as a string value for each one of the large interfaces to be segregated
      */
     Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
                                                  Set<Element> allAnnotatedElements,
                                                  Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                 Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
+                                                 Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                                 Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface);
+
+    /**
+     * For a specified large interface abstract method annotated with #64;{@link SealFor}, constructs a Set storing
+     * all the provided profiles names
+     *
+     * @param processingEnv   {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
+     * @param annotatedMethod {@link Element} instance representing the annotated method of the large interface
+     * @return a Set storing all the provided profiles names
+     */
+    default Set<String> buildSealForProvidedProfilesSet(ProcessingEnvironment processingEnv, Element annotatedMethod) {
+        var providedProfilesSet = new HashSet<String>();
+        processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedMethod).stream()
+                .flatMap(annotationMirror -> annotationMirror.getElementValues().entrySet().stream())
+                .map(entry -> entry.getValue().toString())
+                .forEach(annotationRawValueAsString -> {
+                    // sample values for annotationRawValueAsString:
+                    // single value: "profile1name"
+                    // multiple: @org.jisel.annotations.SealFor("profile2name"), @org.jisel.annotations.SealFor("profile3name"),...
+                    var matcher = Pattern.compile(ANNOTATION_STRING_VALUE_REGEX).matcher(annotationRawValueAsString);
+                    while (matcher.find()) {
+                        var profile = matcher.group(1).strip();
+                        if (profile.isBlank()) { // blank profiles ignored
+                            continue;
+                        }
+                        providedProfilesSet.add(profile);
+                    }
+                });
+        return providedProfilesSet;
+    }
 
     /**
      * For a specified class or interface annotated with &#64;{@link AddTo}, constructs a Map storing a Set of all the provided
@@ -91,12 +124,12 @@ public sealed interface JiselAnnotationHandler
             var profilesSet = new HashSet<String>();
             if (attributesWithValues.contains(PROFILES + EQUALS_SIGN)) {
                 var commaSeparatedProfiles = attributesWithValues.substring(attributesWithValues.indexOf(OPENING_CURLY_BRACE) + 1, attributesWithValues.indexOf(CLOSING_CURLY_BRACE));
-                var profilesNamesMatcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(commaSeparatedProfiles);
+                var profilesNamesMatcher = Pattern.compile(ANNOTATION_STRING_VALUE_REGEX).matcher(commaSeparatedProfiles);
                 while (profilesNamesMatcher.find()) {
                     profilesSet.add(profilesNamesMatcher.group(1).strip());
                 }
             }
-            updateProvidedProfilesMapBasedOnProfilesSet(providedProfilesMap, profilesSet, addQuotesToLargeInterfaceValue(attributesWithValues));
+            updateProvidedProfilesMapBasedOnProfilesSet(providedProfilesMap, unmodifiableSet(profilesSet), addQuotesToLargeInterfaceValue(attributesWithValues));
         }
         return providedProfilesMap;
     }
@@ -105,39 +138,91 @@ public sealed interface JiselAnnotationHandler
         var largeInterfaceAttributeMatcher = Pattern.compile(LARGE_INTERFACE_ATTRIBUTE_REGEX).matcher(attributesWithValues);
         providedProfilesMap.merge(
                 largeInterfaceAttributeMatcher.find() ? removeDotClass(largeInterfaceAttributeMatcher.group(1).strip()) : EMPTY_STRING,
-                profilesSet.isEmpty()
-                        ? new HashSet<>(Set.of(EMPTY_STRING))
-                        : profilesSet, (currentSet, newSet) -> concat(currentSet.stream(), newSet.stream()).collect(toSet())
+                profilesSet.isEmpty() ? new HashSet<>(Set.of(EMPTY_STRING)) : profilesSet,
+                (currentSet, newSet) -> concat(currentSet.stream(), newSet.stream()).collect(toSet())
         );
     }
 
-    /**
-     * For a specified large interface abstract method annotated with #64;{@link SealFor}, constructs a Set storing
-     * all the provided profiles names
-     *
-     * @param processingEnv   {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param annotatedMethod {@link Element} instance representing the annotated method of the large interface
-     * @return a Set storing all the provided profiles names
-     */
-    default Set<String> buildSealForProvidedProfilesSet(ProcessingEnvironment processingEnv, Element annotatedMethod) {
-        var providedProfilesSet = new HashSet<String>();
-        processingEnv.getElementUtils().getAllAnnotationMirrors(annotatedMethod).stream()
-                .flatMap(annotationMirror -> annotationMirror.getElementValues().entrySet().stream())
-                .map(entry -> entry.getValue().toString())
-                .forEach(annotationRawValueAsString -> {
-                    // sample values for annotationRawValueAsString:
-                    // single value: "profile1name"
-                    // multiple: @org.jisel.annotations.SealFor("profile2name"), @org.jisel.annotations.SealFor("profile3name"),...
-                    var matcher = Pattern.compile(ANNOTATION_VALUES_REGEX).matcher(annotationRawValueAsString);
-                    while (matcher.find()) {
-                        var profile = matcher.group(1).strip();
-                        if (profile.isBlank()) { // blank profiles ignored
-                            continue;
-                        }
-                        providedProfilesSet.add(profile);
-                    }
+    default void handleDetachAllAnnotation(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
+                                           Element largeInterfaceElement) {
+        largeInterfaceElement.getAnnotationMirrors().stream()
+                .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_DETACHALL))
+                .findFirst() // sample value: Optional[@org.jisel.annotations.DetachAll]
+                .ifPresent(annotationMirror ->
+                        updateDetachedInterfacesToGenerate(detachedInterfacesToGenerateByLargeInterface, largeInterfaceElement, Map.of(JISEL_KEYWORD_ALL, Map.of()))
+                );
+    }
+
+    default void handleSingleDetachAnnotation(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
+                                              Element largeInterfaceElement,
+                                              ProcessingEnvironment processingEnv) {
+        largeInterfaceElement.getAnnotationMirrors().stream()
+                .filter(annotationMirror -> !annotationMirror.toString().contains(ORG_JISEL_DETACHALL))
+                .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_DETACH))
+                .findFirst()
+                // sample value: Optional[@org.jisel.annotations.Detach(profile="(toplevel)", superInterfaces={com.bayor.jisel.annotation.client.hierarchical.Sociable.class}, applyAnnotations={"@Deprecated"}, rename="newName")]
+                .ifPresent(annotationMirror -> {
+                    var attributesMap = processingEnv.getElementUtils().getElementValuesWithDefaults(annotationMirror)
+                            // ElementValues sample:
+                            // {profile()="(toplevel)", superInterfaces()={com.bayor.Sociable.class}, applyAnnotations()={"@Deprecated"}, rename()="newName", firstSuperInterfaceGenerics()={}, ...
+                            .entrySet().stream()
+                            .collect(toMap(
+                                    entry -> entry.getKey().toString().substring(0, entry.getKey().toString().indexOf(OPENING_PARENTHESIS)),
+                                    entry -> (Object) entry.getValue().toString()
+                            ));
+                    updateDetachedInterfacesToGenerate(detachedInterfacesToGenerateByLargeInterface, largeInterfaceElement, Map.of(attributesMap.get(PROFILE).toString(), attributesMap));
                 });
-        return providedProfilesSet;
+    }
+
+    default void handleMultipleDetachAnnotations(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
+                                                 Element largeInterfaceElement,
+                                                 AnnotationMirror detachsAnnotationMirror) {
+        var detachsAnnotationRawContentString = detachsAnnotationMirror.getElementValues().entrySet().stream()
+                .filter(entry -> entry.getKey().toString().equals(VALUE + OPENING_PARENTHESIS + CLOSING_PARENTHESIS))
+                .toList().get(0).getValue().getValue().toString();
+        // detachsAnnotationRawContentString sample value:
+        // @org.jisel.annotations.Detach(profile="(toplevel)", superInterfaces={com.bayor.Sociable.class, com.bayor.Processor.class}, applyAnnotations={"@Deprecated", @Annot2}, rename="newName"),@org.jisel.annotations.Detach(profile="PRo1", ...)
+        var detachMatcher = Pattern.compile(DETACH_REGEX).matcher(detachsAnnotationRawContentString.replace(JISEL_KEYWORD_TOPLEVEL, JISEL_KEYWORD_TOPLEVEL_TRANSFORMED));
+        while (detachMatcher.find()) {
+            var detachAnnotationRawContent = detachMatcher.group(1).strip();
+            // detachAnnotationRawContent sample value:
+            // profile="_toplevel_", superInterfaces={com.bayor.Sociable.class,...}, applyAnnotations={"@Deprecated",...}, rename="newName"
+            String profile = extractDetachAttributeValue(detachAnnotationRawContent, DETACH_PROFILE_REGEX);
+            updateDetachedInterfacesToGenerate(
+                    detachedInterfacesToGenerateByLargeInterface,
+                    largeInterfaceElement,
+                    Map.of(profile,
+                            Map.of(
+                                    DETACH_PROFILE, profile,
+                                    DETACH_RENAME, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_RENAME_REGEX),
+                                    DETACH_SUPERINTERFACES, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_SUPERINTERFACES_REGEX),
+                                    DETACH_FIRSTSUPERINTERFACEGENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_FIRSTSUPERINTERFACEGENERICS_REGEX),
+                                    DETACH_SECONDSUPERINTERFACEGENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_SECONDSUPERINTERFACEGENERICS_REGEX),
+                                    DETACH_THIRDSUPERINTERFACEGENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_THIRDSUPERINTERFACEGENERICS_REGEX),
+                                    DETACH_APPLYANNOTATIONS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_APPLYANNOTATIONS_REGEX)
+                            )
+                    )
+            );
+        }
+    }
+
+    private String extractDetachAttributeValue(String detachAnnotationRawContentString, String detachAttribRegex) {
+        var matcher = Pattern.compile(detachAttribRegex).matcher(detachAnnotationRawContentString);
+        if (matcher.find()) {
+            return matcher.group(1).strip();
+        }
+        return EMPTY_STRING;
+    }
+
+    private Map<String, Map<String, Object>> updateDetachedInterfacesToGenerate(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
+                                                                                Element largeInterfaceElement,
+                                                                                Map<String, Map<String, Object>> detachedInterfacesToGenerate) {
+        return detachedInterfacesToGenerateByLargeInterface.merge(
+                largeInterfaceElement,
+                detachedInterfacesToGenerate,
+                (currentMap, newMap) -> concat(currentMap.entrySet().stream(), newMap.entrySet().stream())
+                        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue))
+        );
     }
 }
 
@@ -230,7 +315,8 @@ sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler 
     default Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
                                                          Set<Element> allAnnotatedElements,
                                                          Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                                         Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
         populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByLargeInterface);
         return Map.of();
     }
@@ -320,7 +406,8 @@ sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler pe
     default Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
                                                          Set<Element> allAnnotatedElements,
                                                          Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                                         Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
         buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
         return Map.of();
     }

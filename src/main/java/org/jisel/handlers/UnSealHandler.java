@@ -40,7 +40,8 @@ public final class UnSealHandler implements JiselAnnotationHandler {
     public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
                                                         Set<Element> allAnnotatedElements,
                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                                        Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
         allAnnotatedElements.stream()
                 .filter(element -> ElementKind.INTERFACE.equals(element.getKind()))
@@ -50,11 +51,13 @@ public final class UnSealHandler implements JiselAnnotationHandler {
                                     .toList().get(0) // @UnSeal not repeatable, so only 1 occurrence will be found
                                     .getElementValues();
                             // stores values of UnSeal parameters (true or false) in the statusReport map
-                            statusReport.put(element, annotationElementValues.isEmpty()
-                                    ? TRUE
-                                    : annotationElementValues.entrySet().stream()
-                                    .filter(entry -> entry.getKey().toString().equals(VALUE + OPENING_PARENTHESIS + CLOSING_PARENTHESIS))
-                                    .findFirst().get().getValue().toString());
+                            statusReport.put(element,
+                                    annotationElementValues.isEmpty()
+                                            ? TRUE
+                                            : annotationElementValues.entrySet().stream()
+                                            .filter(entry -> entry.getKey().toString().equals(VALUE + OPENING_PARENTHESIS + CLOSING_PARENTHESIS))
+                                            .findFirst().get().getValue().toString()
+                            );
                         }
                 );
         return statusReport;

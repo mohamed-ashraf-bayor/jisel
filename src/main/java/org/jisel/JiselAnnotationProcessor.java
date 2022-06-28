@@ -57,9 +57,11 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.jisel.generators.StringGenerator.FILE_GENERATION_ERROR;
 import static org.jisel.generators.StringGenerator.FILE_GENERATION_SUCCESS;
+import static org.jisel.generators.StringGenerator.NEW_LINE;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_ADD_TO;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_ADD_TOS;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACH;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACHALL;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACHS;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_SEAL_FOR;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_SEAL_FORS;
@@ -71,7 +73,7 @@ import static org.jisel.generators.StringGenerator.ORG_JISEL_UNSEAL;
  * &#64;{@link AddTo}, &#64;{@link TopLevel}, &#64;{@link UnSeal} and &#64;{@link Detach}<br>
  */
 @SupportedAnnotationTypes({ORG_JISEL_TOP_LEVEL, ORG_JISEL_ADD_TO, ORG_JISEL_SEAL_FOR, ORG_JISEL_SEAL_FORS, ORG_JISEL_ADD_TOS,
-        ORG_JISEL_UNSEAL, ORG_JISEL_DETACH, ORG_JISEL_DETACHS})
+        ORG_JISEL_UNSEAL, ORG_JISEL_DETACH, ORG_JISEL_DETACHALL, ORG_JISEL_DETACHS})
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
 public final class JiselAnnotationProcessor extends AbstractProcessor implements AnnotationProcessor {
@@ -111,17 +113,18 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
         var allAnnotatedAddToElements = new HashSet<Element>();
         var allAnnotatedUnSealElements = new HashSet<Element>();
         var allAnnotatedDetachElements = new HashSet<Element>();
+
         var sealedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Set<Element>>>();
         var sealedInterfacesPermitsByLargeInterface = new HashMap<Element, Map<String, List<String>>>();
         var unSealValueByLargeInterface = new HashMap<Element, Boolean>();
-        var detachedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Set<Element>>>();
+        var detachedInterfacesToGenerateByLargeInterface = new HashMap<Element, Map<String, Map<String, Object>>>();
 
         populateAllAnnotatedElementsSets(
                 annotations,
                 roundEnv,
                 Map.of(
-                        ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements,
                         ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements,
+                        ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements,
                         ALL_ANNOTATED_ADDTO_ELEMENTS, allAnnotatedAddToElements,
                         ALL_ANNOTATED_UNSEAL_ELEMENTS, allAnnotatedUnSealElements,
                         ALL_ANNOTATED_DETACH_ELEMENTS, allAnnotatedDetachElements
@@ -131,16 +134,39 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
         // continue execution only if at least 1 element has been annotated with @TopLevel
         if (!allAnnotatedTopLevelElements.isEmpty()) {
 
-            processTopLevelAndSealForAnnotatedElements(processingEnv, topLevelHandler, sealForHandler,
+            processTopLevelAndSealForAnnotatedElements(
+                    processingEnv,
+                    topLevelHandler,
+                    sealForHandler,
                     Map.of(ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements, ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements),
-                    sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+                    sealedInterfacesToGenerateByLargeInterface,
+                    sealedInterfacesPermitsByLargeInterface
+            );
 
-            processUnSealAnnotatedElements(processingEnv, unSealHandler, allAnnotatedUnSealElements, unSealValueByLargeInterface, sealedInterfacesToGenerateByLargeInterface);
+            processUnSealAnnotatedElements(
+                    processingEnv,
+                    unSealHandler,
+                    allAnnotatedUnSealElements,
+                    unSealValueByLargeInterface,
+                    sealedInterfacesToGenerateByLargeInterface
+            );
 
-            processDetachAnnotatedElements(processingEnv, detachHandler, allAnnotatedDetachElements, detachedInterfacesToGenerateByLargeInterface, sealedInterfacesToGenerateByLargeInterface);
+            processDetachAnnotatedElements(
+                    processingEnv,
+                    detachHandler,
+                    allAnnotatedDetachElements,
+                    sealedInterfacesToGenerateByLargeInterface,
+                    sealedInterfacesPermitsByLargeInterface,
+                    detachedInterfacesToGenerateByLargeInterface
+            );
 
-            processAddToAnnotatedElements(processingEnv, addToHandler, allAnnotatedAddToElements,
-                    sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+            processAddToAnnotatedElements(
+                    processingEnv,
+                    addToHandler,
+                    allAnnotatedAddToElements,
+                    sealedInterfacesToGenerateByLargeInterface,
+                    sealedInterfacesPermitsByLargeInterface
+            );
 
             try {
                 var generatedFiles = interfaceSourceFileGenerator.createSourceFiles(
@@ -150,7 +176,7 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
                         unSealValueByLargeInterface
                 );
                 if (!generatedFiles.isEmpty()) {
-                    log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining(format("%n")))));
+                    log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining(NEW_LINE))));
                 }
             } catch (IOException e) {
                 log.log(Level.SEVERE, FILE_GENERATION_ERROR, e);

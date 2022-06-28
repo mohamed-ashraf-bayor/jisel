@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  * (<b>&#60;LargeInterfaceSimpleName&#62;</b> is the simplename of the large interface being segregated).<br><br>
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.TYPE})
 public @interface UnSeal {
 
     /**

@@ -60,7 +60,8 @@ public final class SealForHandler implements JiselAnnotationHandler {
     public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
                                                         Set<Element> allAnnotatedElements,
                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                                        Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
         var allAnnotatedElementsToProcess = allAnnotatedElements.stream()
                 .filter(element -> ElementKind.METHOD.equals(element.getKind()))
