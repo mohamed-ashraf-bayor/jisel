@@ -40,6 +40,7 @@ import static org.jisel.generators.StringGenerator.ADD_TO;
 import static org.jisel.generators.StringGenerator.AT_SIGN;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
 import static org.jisel.generators.StringGenerator.DETACH;
+import static org.jisel.generators.StringGenerator.DETACH_ALL;
 import static org.jisel.generators.StringGenerator.SEAL_FOR;
 import static org.jisel.generators.StringGenerator.STATUS_REPORT_TITLE;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL;
@@ -137,10 +138,7 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
                 unmodifiableMap(sealedInterfacesPermitsByLargeInterface),
                 detachedInterfacesToGenerateByLargeInterface
         );
-        // TODO
-//        detachStatusReport.forEach(((element, unSealValueString) -> unSealValueByLargeInterface.put(element, Boolean.valueOf(unSealValueString))));
-        // report any interfaces tagged with @Detach but not containing methods tagged with @TopLevel
-        //displayStatusReport(extractDetachedInterfacesWithNoTopLevel(detachStatusReport, sealedInterfacesToGenerateByLargeInterface), DETACH);
+        displayStatusReport(detachStatusReport, DETACH, DETACH_ALL);
     }
 
     default void processAddToAnnotatedElements(ProcessingEnvironment processingEnv,

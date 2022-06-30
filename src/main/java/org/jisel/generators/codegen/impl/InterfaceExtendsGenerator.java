@@ -29,6 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.jisel.generators.StringGenerator.JAVA_LANG_OBJECT;
+import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
+import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConvention;
+
 /**
  * Generates the "extends" clause of a sealed interface definition, along with the list of the parent interfaces
  */

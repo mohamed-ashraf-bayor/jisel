@@ -19,9 +19,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.handlers;
+package org.jisel.handlers.impl;
 
-import org.jisel.annotations.UnSeal;
+import org.jisel.annotations.TopLevel;
+import org.jisel.handlers.JiselAnnotationHandler;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -31,10 +32,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toSet;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
+
 /**
- * Handles all elements annotated with &#64;{@link UnSeal}
+ * Handles all elements annotated with &#64;{@link TopLevel}
  */
-public final class UnSealHandler implements JiselAnnotationHandler {
+public final class TopLevelHandler implements JiselAnnotationHandler {
 
     @Override
     public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
@@ -44,22 +49,18 @@ public final class UnSealHandler implements JiselAnnotationHandler {
                                                         Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
         allAnnotatedElements.stream()
-                .filter(element -> ElementKind.INTERFACE.equals(element.getKind()))
-                .forEach(element -> {
-                            var annotationElementValues = element.getAnnotationMirrors().stream()
-                                    .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_UNSEAL))
-                                    .toList().get(0) // @UnSeal not repeatable, so only 1 occurrence will be found
-                                    .getElementValues();
-                            // stores values of UnSeal parameters (true or false) in the statusReport map
-                            statusReport.put(element,
-                                    annotationElementValues.isEmpty()
-                                            ? TRUE
-                                            : annotationElementValues.entrySet().stream()
-                                            .filter(entry -> entry.getKey().toString().equals(VALUE + OPENING_PARENTHESIS + CLOSING_PARENTHESIS))
-                                            .findFirst().get().getValue().toString()
-                            );
-                        }
-                );
+                .filter(element -> ElementKind.METHOD.equals(element.getKind()))
+                .filter(element -> ElementKind.INTERFACE.equals(element.getEnclosingElement().getKind()))
+                .collect(groupingBy(Element::getEnclosingElement, toSet()))
+                .forEach((largeInterfaceElement, annotatedMethodsSet) -> {
+                    // top parent sealed interfaces to be generated
+                    sealedInterfacesToGenerateByLargeInterface.put(
+                            largeInterfaceElement,
+                            new HashMap<>(Map.of(largeInterfaceElement.getSimpleName().toString(), annotatedMethodsSet))
+                    );
+                    // fill the status rep with the large interfaces processed, no description needed
+                    statusReport.put(largeInterfaceElement, EMPTY_STRING);
+                });
         return statusReport;
     }
 }

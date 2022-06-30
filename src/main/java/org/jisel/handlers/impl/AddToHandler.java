@@ -19,9 +19,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.handlers;
+package org.jisel.handlers.impl;
 
 import org.jisel.annotations.AddTo;
+import org.jisel.handlers.JiselAnnotationHandler;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -36,6 +37,8 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
+import static org.jisel.generators.StringGenerator.ADD_TO_REPORT_MSG;
+import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
 
 /**
  * Handles all elements annotated with &#64;{@link AddTo}
@@ -57,7 +60,12 @@ public final class AddToHandler implements JiselAnnotationHandler {
         var statusReport = new HashMap<Element, String>();
         annotatedClassesAndInterfaces.forEach(annotatedClassOrInterface -> statusReport.put(
                 annotatedClassOrInterface,
-                processAnnotatedElement(processingEnv, annotatedClassOrInterface, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface)
+                processAnnotatedElement(
+                        processingEnv,
+                        annotatedClassOrInterface,
+                        sealedInterfacesToGenerateByLargeInterface,
+                        sealedInterfacesPermitsByLargeInterface
+                )
         ));
         return statusReport;
     }
@@ -120,7 +128,8 @@ public final class AddToHandler implements JiselAnnotationHandler {
                 if (profile.equals(providedLargeInterfaceElement.getSimpleName().toString())) {
                     continue;
                 }
-                if (sealedInterfaceNameConvention(providedProfile, providedLargeInterfaceElement).equals(sealedInterfaceNameConvention(profile, providedLargeInterfaceElement))) {
+                if (sealedInterfaceNameConvention(providedProfile, providedLargeInterfaceElement)
+                        .equals(sealedInterfaceNameConvention(profile, providedLargeInterfaceElement))) {
                     sealedInterfacesPermitsByLargeInterface.get(providedLargeInterfaceElement).merge(
                             providedProfile,
                             asList(annotatedClassOrInterface.toString()),

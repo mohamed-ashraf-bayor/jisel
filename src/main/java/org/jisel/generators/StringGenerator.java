@@ -32,9 +32,11 @@ import javax.lang.model.element.Element;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -180,46 +182,62 @@ public interface StringGenerator {
      * "SealFor"
      */
     String SEAL_FOR = "SealFor";
+
     /**
      * "AddTo"
      */
     String ADD_TO = "AddTo";
+
     /**
      * "TopLevel"
      */
     String TOP_LEVEL = "TopLevel";
+
     /**
      * "UnSeal"
      */
     String UNSEAL = "UnSeal";
+
     /**
      * "Detach"
      */
     String DETACH = "Detach";
+
+    /**
+     * "Detach"
+     */
+    String DETACH_ALL = "DetachAll";
+
     /**
      * "profile"
      */
     String PROFILE = "profile";
+
     /**
      * "profiles"
      */
     String PROFILES = "profiles";
+
     /**
      * Regex expression to read any attribute value provided within ""
      */
     String ANNOTATION_STRING_VALUE_REGEX = "\"([^\"]*)\"";
+
     /**
      * Regex expression to read any attribute value provided within {}
      */
     String ANNOTATION_ARRAY_VALUE_REGEX = "\\{(.*?)\\}";
+
     /**
      * "largeInterface"
      */
     String LARGE_INTERFACE = "largeInterface";
+
     /**
      * Regex expression to read the string value of the "largeInterface" attribute
      */
     String LARGE_INTERFACE_ATTRIBUTE_REGEX = "largeInterface=" + ANNOTATION_STRING_VALUE_REGEX;
+
     /**
      * Regex expression to read attributes information provided using the {@link AddTo} annotation.<br>
      * Sample value to be parsed by the regex: @org.jisel.annotations.AddTo(profiles={"ActiveWorker"}, largeInterface=Sociable.class)
@@ -239,7 +257,8 @@ public interface StringGenerator {
     String DETACH_SECONDSUPERINTERFACEGENERICS = "secondSuperInterfaceGenerics";
     String DETACH_THIRDSUPERINTERFACEGENERICS = "thirdSuperInterfaceGenerics";
     String DETACH_APPLYANNOTATIONS = "applyAnnotations";
-    
+    String DETACH_METHODS = "methods";
+
     String DETACH_PROFILE_REGEX = "profile=" + ANNOTATION_STRING_VALUE_REGEX;
     String DETACH_RENAME_REGEX = "rename=" + ANNOTATION_STRING_VALUE_REGEX;
     String DETACH_SUPERINTERFACES_REGEX = "superInterfaces=" + ANNOTATION_ARRAY_VALUE_REGEX;
@@ -258,6 +277,7 @@ public interface StringGenerator {
      * Displayed only when a "severe" error occurred while a sealed interface file was being generated
      */
     String FILE_GENERATION_ERROR = "Error generating sealed interfaces";
+
     /**
      * Displayed as a header while listing the successfully generated files
      */
@@ -267,22 +287,27 @@ public interface StringGenerator {
      * Fully qualified name of the {@link SealFor} annotation
      */
     String ORG_JISEL_SEAL_FOR = "org.jisel.annotations.SealFor";
+
     /**
      * Fully qualified name of the {@link SealFor.SealFors} annotation
      */
     String ORG_JISEL_SEAL_FORS = "org.jisel.annotations.SealFor.SealFors";
+
     /**
      * Fully qualified name of the {@link UnSeal} annotation
      */
     String ORG_JISEL_UNSEAL = "org.jisel.annotations.UnSeal";
+
     /**
      * Fully qualified name of the {@link Detach} annotation
      */
     String ORG_JISEL_DETACH = "org.jisel.annotations.Detach";
+
     /**
      * Fully qualified name of the {@link DetachAll} annotation
      */
     String ORG_JISEL_DETACHALL = "org.jisel.annotations.DetachAll";
+
     /**
      * Fully qualified name of the {@link Detach.Detachs} annotation
      */
@@ -291,10 +316,12 @@ public interface StringGenerator {
      * Fully qualified name of the {@link AddTo} annotation
      */
     String ORG_JISEL_ADD_TO = "org.jisel.annotations.AddTo";
+
     /**
      * Fully qualified name of the {@link AddTo.AddTos} annotation
      */
     String ORG_JISEL_ADD_TOS = "org.jisel.annotations.AddTo.AddTos";
+
     /**
      * Fully qualified name of the {@link TopLevel} annotation
      */
@@ -306,10 +333,12 @@ public interface StringGenerator {
      * Default value to use for boolean returned values
      */
     String DEFAULT_BOOLEAN_VALUE = FALSE;
+
     /**
      * Default value to use for numeric returned values (int, long, float, double,...)
      */
     String DEFAULT_NUMBER_VALUE = "0";
+
     /**
      * Default value to use for Object returned values
      */
@@ -325,16 +354,27 @@ public interface StringGenerator {
      */
     String ADD_TO_REPORT_MSG = "1 or many provided profiles are not found in the provided parent interfaces. " +
             "Check your profiles and/or parent interfaces names. " +
-            "Also check the use of @TopLevel in the provided large interfaces.";
-    /**
-     * Message displayed during compilation when &#64;TopLevel is not found within the provided large interface
-     */
-    String TOP_LEVEL_REPORT_MSG = "@TopLevel annotation not found. Check your mappings.";
+            "Also check the use of @TopLevel in the provided large interfaces. ";
 
     /**
      * Message displayed during compilation when &#64;TopLevel is not found within the provided large interface
      */
-    String UNSEAL_REPORT_MSG = "@UnSeal annotation applied on interfaces not making use of @TopLevel. Check your mappings.";
+    String TOP_LEVEL_REPORT_MSG = "@TopLevel annotation not found. Check your mappings. ";
+
+    /**
+     * Message displayed during compilation when there might be an issue with &#64;TopLevel and/or &#64;SealFor mappings
+     */
+    String TOP_LEVEL_AND_SEAL_FOR_REPORT_MSG = "Check your @TopLevel and/or @SealFor mappings. ";
+
+    /**
+     * Message displayed during compilation when &#64;TopLevel is not found within the provided large interface
+     */
+    String UNSEAL_REPORT_MSG = "@UnSeal annotation applied on interfaces not making use of @TopLevel. Check your mappings. ";
+
+    /**
+     * Message displayed during compilation when the provided profiles to detach are not found in the large interface &#64;SealFor mappings
+     */
+    String DETACH_REPORT_MSG = "1 or many provided profiles are not found in the @SealFor mappings. ";
 
     /**
      * "Report.txt"
@@ -358,11 +398,11 @@ public interface StringGenerator {
 
     // TODO updt all jdocs
 
-    String JISEL_KEYWORD_ALL = "(all)";
+    String JISEL_KEYWORD_ALL = "(all)"; // internal use only
 
-    String JISEL_KEYWORD_TOPLEVEL = "(toplevel)";
+    String JISEL_KEYWORD_TOPLEVEL = "(toplevel)"; // make public. can be used by user
 
-    String JISEL_KEYWORD_TOPLEVEL_TRANSFORMED = "_toplevel_";
+    String JISEL_KEYWORD_TOPLEVEL_TRANSFORMED = "_toplevel_"; // internal use only
 
     /**
      * Removes all commas from the provided string
@@ -392,7 +432,7 @@ public interface StringGenerator {
      * @param interfaceElement {@link Element} instance of the large interface to be segregated
      * @return a string following Jisel sealed interface naming convention
      */
-    default String sealedInterfaceNameConvention(String profile, Element interfaceElement) {
+    static String sealedInterfaceNameConvention(String profile, Element interfaceElement) {
         var nameSuffixFunc = removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString())
                 ? EMPTY_STRING
                 : interfaceElement.getSimpleName().toString();
@@ -415,7 +455,7 @@ public interface StringGenerator {
      * @param interfaceElement {@link Element} instance of the large interface to be segregated
      * @return a string following Jisel sealed interface naming convention
      */
-    default String unSealedInterfaceNameConvention(String profile, Element interfaceElement) {
+    static String unSealedInterfaceNameConvention(String profile, Element interfaceElement) {
         return sealedInterfaceNameConvention(profile, interfaceElement).substring(SEALED_PREFIX.length());
     }
 
@@ -426,7 +466,7 @@ public interface StringGenerator {
      * @param qualifiedName qualified name of the class or interface
      * @return qualified name of the class without the latest occurrence of ".class"
      */
-    default String removeDotClass(String qualifiedName) {
+    static String removeDotClass(String qualifiedName) {
         return qualifiedName.contains(DOT_CLASS)
                 ? qualifiedName.substring(0, qualifiedName.lastIndexOf(DOT_CLASS))
                 : qualifiedName;
@@ -440,7 +480,7 @@ public interface StringGenerator {
      *                                         ex: largeInterface=com.bayor.Drivable.class
      * @return string containing the largeInterface attribute value with
      */
-    default String addQuotesToLargeInterfaceValue(String largeInterfaceAttributeRawString) {
+    static String addQuotesToLargeInterfaceValue(String largeInterfaceAttributeRawString) {
         return largeInterfaceAttributeRawString
                 .replace(LARGE_INTERFACE + EQUALS_SIGN, LARGE_INTERFACE + EQUALS_SIGN + ESCAPED_DOUBLE_QUOTES)
                 .replace(DOT_CLASS, ESCAPED_DOUBLE_QUOTES);
@@ -454,8 +494,8 @@ public interface StringGenerator {
      * @param interfaceElement {@link Element} instance of the large interface to be segregated
      * @return a List of string literals following Jisel sealed interface naming convention
      */
-    default List<String> sealedInterfaceNameConventionForList(List<String> profiles, Element interfaceElement) {
-        final UnaryOperator<String> nameSuffixFunc = profile ->
+    static List<String> sealedInterfaceNameConventionForList(List<String> profiles, Element interfaceElement) {
+        UnaryOperator<String> nameSuffixFunc = profile ->
                 removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString())
                         ? EMPTY_STRING
                         : interfaceElement.getSimpleName().toString();
@@ -468,7 +508,8 @@ public interface StringGenerator {
                                 SEALED_PREFIX,
                                 removeCommaSeparator(profile),
                                 nameSuffixFunc.apply(profile)
-                        )).toList();
+                        ))
+                .toList();
     }
 
     /**
@@ -477,9 +518,31 @@ public interface StringGenerator {
      * @param largeInterfaceElement {@link Element} instance of the large interface to be segregated
      * @return the package name if any
      */
-    default Optional<String> generatePackageName(Element largeInterfaceElement) {
+    static Optional<String> generatePackageName(Element largeInterfaceElement) {
         var qualifiedClassName = largeInterfaceElement.toString();
         int lastDot = qualifiedClassName.lastIndexOf(DOT);
         return lastDot > 0 ? Optional.of(qualifiedClassName.substring(0, lastDot)) : Optional.empty();
+    }
+
+    /**
+     * TODO jdoc...
+     *
+     * @param attributeValueAsString
+     * @return
+     */
+    static String annotationAttributeValueWithoutQuotes(String attributeValueAsString) {
+        var matcher = Pattern.compile(ANNOTATION_STRING_VALUE_REGEX).matcher(attributeValueAsString);
+        return matcher.find() ? matcher.group(1) : attributeValueAsString;
+    }
+
+    /**
+     * // TODO jdoc...
+     *
+     * @param profile
+     * @return
+     */
+    static boolean isJiselKeyword(String profile) {
+        var keywordsArray = new String[]{JISEL_KEYWORD_ALL, JISEL_KEYWORD_TOPLEVEL, JISEL_KEYWORD_TOPLEVEL_TRANSFORMED};
+        return stream(keywordsArray).anyMatch(keyword -> keyword.equals(profile));
     }
 }

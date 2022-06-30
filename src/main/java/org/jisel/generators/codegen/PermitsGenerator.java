@@ -32,6 +32,12 @@ import java.util.Map;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
+import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.DOT;
+import static org.jisel.generators.StringGenerator.FINAL_CLASS_SUFFIX;
+import static org.jisel.generators.StringGenerator.PERMITS;
+import static org.jisel.generators.StringGenerator.UNDERSCORE;
+import static org.jisel.generators.StringGenerator.WHITESPACE;
 
 /**
  * Exposes contract to be fulfilled by a class generating the "permits" clause of a sealed interface definition, along with

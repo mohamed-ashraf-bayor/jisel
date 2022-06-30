@@ -27,6 +27,13 @@ import javax.lang.model.element.Element;
 import java.util.Set;
 
 import static java.lang.String.format;
+import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
+import static org.jisel.generators.StringGenerator.NEW_LINE;
+import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
+import static org.jisel.generators.StringGenerator.SEMICOLON;
+import static org.jisel.generators.StringGenerator.TAB;
+import static org.jisel.generators.StringGenerator.WHITESPACE;
 import static org.jisel.generators.codegen.AnnotationsGenerator.buildExistingAnnotations;
 
 /**

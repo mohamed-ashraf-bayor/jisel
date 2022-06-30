@@ -31,6 +31,12 @@ import java.util.Map;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
+import static org.jisel.generators.StringGenerator.CLASS;
+import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.EXTENDS;
+import static org.jisel.generators.StringGenerator.IMPLEMENTS;
+import static org.jisel.generators.StringGenerator.INTERFACE;
+import static org.jisel.generators.StringGenerator.WHITESPACE;
 
 /**
  * Exposes contract to be fulfilled by a class generating the "extends" clause of a sealed interface definition, along with

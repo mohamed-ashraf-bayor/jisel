@@ -19,17 +19,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generators.contentgen;
+package org.jisel.generators.contentgen.impl;
+
+import org.jisel.generators.contentgen.AbstractSealedContentGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
+import static org.jisel.generators.StringGenerator.DOT;
+import static org.jisel.generators.StringGenerator.generatePackageName;
 
 /**
  * //TODO add classic interf generation parts in jdoc

@@ -23,32 +23,73 @@ package org.jisel.handlers;
 
 import org.jisel.annotations.AddTo;
 import org.jisel.annotations.SealFor;
-import org.jisel.generators.StringGenerator;
+import org.jisel.handlers.impl.AddToHandler;
+import org.jisel.handlers.impl.DetachHandler;
+import org.jisel.handlers.impl.SealForHandler;
+import org.jisel.handlers.impl.TopLevelHandler;
+import org.jisel.handlers.impl.UnSealHandler;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
+import static org.jisel.generators.StringGenerator.ADD_TO_REGEX;
+import static org.jisel.generators.StringGenerator.ANNOTATION_STRING_VALUE_REGEX;
+import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
+import static org.jisel.generators.StringGenerator.CLOSING_PARENTHESIS;
+import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.DETACH_APPLYANNOTATIONS;
+import static org.jisel.generators.StringGenerator.DETACH_APPLYANNOTATIONS_REGEX;
+import static org.jisel.generators.StringGenerator.DETACH_FIRSTSUPERINTERFACEGENERICS;
+import static org.jisel.generators.StringGenerator.DETACH_FIRSTSUPERINTERFACEGENERICS_REGEX;
+import static org.jisel.generators.StringGenerator.DETACH_PROFILE;
+import static org.jisel.generators.StringGenerator.DETACH_PROFILE_REGEX;
+import static org.jisel.generators.StringGenerator.DETACH_REGEX;
+import static org.jisel.generators.StringGenerator.DETACH_RENAME;
+import static org.jisel.generators.StringGenerator.DETACH_RENAME_REGEX;
+import static org.jisel.generators.StringGenerator.DETACH_REPORT_MSG;
+import static org.jisel.generators.StringGenerator.DETACH_SECONDSUPERINTERFACEGENERICS;
+import static org.jisel.generators.StringGenerator.DETACH_SECONDSUPERINTERFACEGENERICS_REGEX;
+import static org.jisel.generators.StringGenerator.DETACH_SUPERINTERFACES;
+import static org.jisel.generators.StringGenerator.DETACH_SUPERINTERFACES_REGEX;
+import static org.jisel.generators.StringGenerator.DETACH_THIRDSUPERINTERFACEGENERICS;
+import static org.jisel.generators.StringGenerator.DETACH_THIRDSUPERINTERFACEGENERICS_REGEX;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
+import static org.jisel.generators.StringGenerator.EQUALS_SIGN;
+import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_ALL;
+import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL;
+import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_TRANSFORMED;
+import static org.jisel.generators.StringGenerator.LARGE_INTERFACE_ATTRIBUTE_REGEX;
+import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
+import static org.jisel.generators.StringGenerator.OPENING_PARENTHESIS;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACH;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACHALL;
+import static org.jisel.generators.StringGenerator.PROFILE;
+import static org.jisel.generators.StringGenerator.PROFILES;
+import static org.jisel.generators.StringGenerator.TOP_LEVEL_AND_SEAL_FOR_REPORT_MSG;
+import static org.jisel.generators.StringGenerator.VALUE;
+import static org.jisel.generators.StringGenerator.addQuotesToLargeInterfaceValue;
+import static org.jisel.generators.StringGenerator.annotationAttributeValueWithoutQuotes;
+import static org.jisel.generators.StringGenerator.isJiselKeyword;
+import static org.jisel.generators.StringGenerator.removeDotClass;
 
 /**
  * Exposes contract to fulfill by any class handling all elements annotated with Jisel annotations
  */
 public sealed interface JiselAnnotationHandler
-        extends StringGenerator
         permits SealForHandler, AddToHandler, TopLevelHandler, UnSealHandler, DetachHandler, AnnotationInfoCollectionHandler, ParentChildInheritanceHandler {
 
     /**
@@ -143,40 +184,86 @@ public sealed interface JiselAnnotationHandler
         );
     }
 
-    default void handleDetachAllAnnotation(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
-                                           Element largeInterfaceElement) {
+    /**
+     * // TODO jdoc...
+     *
+     * @param detachedInterfacesToGenerateByLargeInterface
+     * @param largeInterfaceElement
+     */
+    default String handleDetachAllAnnotation(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
+                                             Element largeInterfaceElement,
+                                             Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
+        if (!sealedInterfacesToGenerateByLargeInterface.containsKey(largeInterfaceElement)
+                || sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).isEmpty()) {
+            return TOP_LEVEL_AND_SEAL_FOR_REPORT_MSG;
+        }
         largeInterfaceElement.getAnnotationMirrors().stream()
                 .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_DETACHALL))
                 .findFirst() // sample value: Optional[@org.jisel.annotations.DetachAll]
                 .ifPresent(annotationMirror ->
-                        updateDetachedInterfacesToGenerate(detachedInterfacesToGenerateByLargeInterface, largeInterfaceElement, Map.of(JISEL_KEYWORD_ALL, Map.of()))
+                        updateDetachedInterfacesToGenerateByLargeInterface(
+                                detachedInterfacesToGenerateByLargeInterface,
+                                largeInterfaceElement,
+                                Map.of(JISEL_KEYWORD_ALL, Map.of())
+                        )
                 );
+        return EMPTY_STRING;
     }
 
-    default void handleSingleDetachAnnotation(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
-                                              Element largeInterfaceElement,
-                                              ProcessingEnvironment processingEnv) {
-        largeInterfaceElement.getAnnotationMirrors().stream()
+    /**
+     * // TODO jdoc...
+     *
+     * @param detachedInterfacesToGenerateByLargeInterface
+     * @param largeInterfaceElement
+     * @param processingEnv
+     * @param sealedInterfacesToGenerateByLargeInterface
+     */
+    default String handleSingleDetachAnnotation(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
+                                                Element largeInterfaceElement,
+                                                ProcessingEnvironment processingEnv,
+                                                Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
+        var detachAnnotationMirrorOpt = largeInterfaceElement.getAnnotationMirrors().stream()
                 .filter(annotationMirror -> !annotationMirror.toString().contains(ORG_JISEL_DETACHALL))
                 .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_DETACH))
-                .findFirst()
-                // sample value: Optional[@org.jisel.annotations.Detach(profile="(toplevel)", superInterfaces={com.bayor.jisel.annotation.client.hierarchical.Sociable.class}, applyAnnotations={"@Deprecated"}, rename="newName")]
-                .ifPresent(annotationMirror -> {
-                    var attributesMap = processingEnv.getElementUtils().getElementValuesWithDefaults(annotationMirror)
-                            // ElementValues sample:
-                            // {profile()="(toplevel)", superInterfaces()={com.bayor.Sociable.class}, applyAnnotations()={"@Deprecated"}, rename()="newName", firstSuperInterfaceGenerics()={}, ...
-                            .entrySet().stream()
-                            .collect(toMap(
-                                    entry -> entry.getKey().toString().substring(0, entry.getKey().toString().indexOf(OPENING_PARENTHESIS)),
-                                    entry -> (Object) entry.getValue().toString()
-                            ));
-                    updateDetachedInterfacesToGenerate(detachedInterfacesToGenerateByLargeInterface, largeInterfaceElement, Map.of(attributesMap.get(PROFILE).toString(), attributesMap));
-                });
+                .findFirst();
+        // sample value: Optional[@org.jisel.annotations.Detach(profile="(toplevel)", superInterfaces={com.bayor.jisel.annotation.client.hierarchical.Sociable.class}, applyAnnotations={"@Deprecated"}, rename="newName")]
+        if (detachAnnotationMirrorOpt.isPresent()) {
+            var attributesMap = processingEnv.getElementUtils().getElementValuesWithDefaults(detachAnnotationMirrorOpt.get())
+                    // ElementValues sample:
+                    // {profile()="(toplevel)", superInterfaces()={com.bayor.Sociable.class}, applyAnnotations()={"@Deprecated"}, rename()="newName", firstSuperInterfaceGenerics()={}, ...
+                    .entrySet().stream()
+                    .collect(toMap( // mutable map
+                            entry -> entry.getKey().toString().substring(0, entry.getKey().toString().indexOf(OPENING_PARENTHESIS)),
+                            entry -> (Object) annotationAttributeValueWithoutQuotes(entry.getValue().toString())
+                    ));
+            if (!sealedInterfacesToGenerateByLargeInterface.containsKey(largeInterfaceElement)) {
+                return TOP_LEVEL_AND_SEAL_FOR_REPORT_MSG;
+            }
+            var profile = attributesMap.get(PROFILE).toString();
+            if (!isJiselKeyword(profile) && !sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).containsKey(profile)) {
+                return DETACH_REPORT_MSG;
+            }
+            updateDetachedInterfacesToGenerateByLargeInterface(
+                    detachedInterfacesToGenerateByLargeInterface,
+                    largeInterfaceElement,
+                    Map.of(profile, attributesMap)
+            );
+        }
+        return EMPTY_STRING;
     }
 
-    default void handleMultipleDetachAnnotations(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
-                                                 Element largeInterfaceElement,
-                                                 AnnotationMirror detachsAnnotationMirror) {
+    /**
+     * // TODO jdoc...
+     *
+     * @param detachedInterfacesToGenerateByLargeInterface
+     * @param largeInterfaceElement
+     * @param detachsAnnotationMirror
+     * @param sealedInterfacesToGenerateByLargeInterface
+     */
+    default String handleMultipleDetachAnnotations(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
+                                                   Element largeInterfaceElement,
+                                                   AnnotationMirror detachsAnnotationMirror,
+                                                   Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         var detachsAnnotationRawContentString = detachsAnnotationMirror.getElementValues().entrySet().stream()
                 .filter(entry -> entry.getKey().toString().equals(VALUE + OPENING_PARENTHESIS + CLOSING_PARENTHESIS))
                 .toList().get(0).getValue().getValue().toString();
@@ -188,11 +275,16 @@ public sealed interface JiselAnnotationHandler
             // detachAnnotationRawContent sample value:
             // profile="_toplevel_", superInterfaces={com.bayor.Sociable.class,...}, applyAnnotations={"@Deprecated",...}, rename="newName"
             String profile = extractDetachAttributeValue(detachAnnotationRawContent, DETACH_PROFILE_REGEX);
-            updateDetachedInterfacesToGenerate(
+            if (!sealedInterfacesToGenerateByLargeInterface.containsKey(largeInterfaceElement)) {
+                return TOP_LEVEL_AND_SEAL_FOR_REPORT_MSG;
+            }
+            if (!isJiselKeyword(profile) && !sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).containsKey(profile)) {
+                return DETACH_REPORT_MSG;
+            }
+            updateDetachedInterfacesToGenerateByLargeInterface(
                     detachedInterfacesToGenerateByLargeInterface,
                     largeInterfaceElement,
-                    Map.of(profile,
-                            Map.of(
+                    Map.of(profile, new HashMap<>(Map.of(
                                     DETACH_PROFILE, profile,
                                     DETACH_RENAME, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_RENAME_REGEX),
                                     DETACH_SUPERINTERFACES, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_SUPERINTERFACES_REGEX),
@@ -200,10 +292,11 @@ public sealed interface JiselAnnotationHandler
                                     DETACH_SECONDSUPERINTERFACEGENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_SECONDSUPERINTERFACEGENERICS_REGEX),
                                     DETACH_THIRDSUPERINTERFACEGENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_THIRDSUPERINTERFACEGENERICS_REGEX),
                                     DETACH_APPLYANNOTATIONS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_APPLYANNOTATIONS_REGEX)
-                            )
+                            ))
                     )
             );
         }
+        return EMPTY_STRING;
     }
 
     private String extractDetachAttributeValue(String detachAnnotationRawContentString, String detachAttribRegex) {
@@ -214,9 +307,11 @@ public sealed interface JiselAnnotationHandler
         return EMPTY_STRING;
     }
 
-    private Map<String, Map<String, Object>> updateDetachedInterfacesToGenerate(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
-                                                                                Element largeInterfaceElement,
-                                                                                Map<String, Map<String, Object>> detachedInterfacesToGenerate) {
+    private Map<String, Map<String, Object>> updateDetachedInterfacesToGenerateByLargeInterface(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
+                                                                                                Element largeInterfaceElement,
+                                                                                                Map<String, Map<String, Object>> detachedInterfacesToGenerate) {
+        // when a profile name is repeated in 2 different @Detach annotations, the following merge triggers:
+        // Fatal error compiling: java.lang.IllegalStateException: Duplicate key <profilename> (attempted merging values ...)
         return detachedInterfacesToGenerateByLargeInterface.merge(
                 largeInterfaceElement,
                 detachedInterfacesToGenerate,
@@ -224,191 +319,53 @@ public sealed interface JiselAnnotationHandler
                         .collect(toMap(Map.Entry::getKey, Map.Entry::getValue))
         );
     }
-}
-
-/**
- * Exposes contract to fulfill by any class dedicated to collecting necessary information from the annotated elements,
- * in order to populate the {@link Map} containing the sealed interfaces information to be generated
- */
-sealed interface AnnotationInfoCollectionHandler extends JiselAnnotationHandler permits SealForInfoCollectionHandler {
 
     /**
-     * Populates the Map containing the sealed interfaces information to be generated
+     * // TODO jdoc
      *
-     * @param processingEnv                              {@link ProcessingEnvironment} object, needed to access low-level
-     *                                                   information regarding the used annotations
-     * @param allAnnotatedElements                       {@link Set} of {@link Element} instances representing all classes
-     *                                                   annotated with &#64;{@link AddTo} and all abstract methods annotated
-     *                                                   with &#64;{@link SealFor}
-     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
-     *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a {@link Map} of profile name as the key and a Set of {@link Element} instances as the value.
-     *                                                   The Element instances represent each one of the abstract methods to be
-     *                                                   added to the generated sealed interface corresponding to a profile.
+     * @param profile
+     * @param sealedInterfacesToGenerateByLargeInterface
+     * @param sealedInterfacesPermitsByLargeInterface
+     * @param largeInterfaceElement
+     * @return
      */
-    void populateSealedInterfacesMap(ProcessingEnvironment processingEnv,
-                                     Set<Element> allAnnotatedElements,
-                                     Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface);
-
-    /**
-     * Creates intermediate parent interfaces based on common methods of provided profiles, then stores the created intermediate
-     * parent interfaces in the Map containing the sealed interfaces information to be generated
-     *
-     * @param annotatedMethodsByProfileByLargeInterface  {@link Set} of all annotated abstract methods for a specified profile
-     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
-     *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
-     *                                                   The Element instances represent each one of the abstract methods to be
-     *                                                   added to the generated sealed interface corresponding to a profile.
-     */
-    default void createParentInterfacesBasedOnCommonMethods(Map<Element, Map<String, Set<Element>>> annotatedMethodsByProfileByLargeInterface,
-                                                            Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
-        annotatedMethodsByProfileByLargeInterface.forEach((interfaceElement, annotatedMethodsByProfile) -> {
-            var profilesList = new ArrayList<String>();
-            var methodsSetsList = new ArrayList<Set<Element>>();
-            annotatedMethodsByProfile.forEach((profileName, methodsSet) -> {
-                profilesList.add(profileName);
-                methodsSetsList.add(methodsSet);
-            });
-            var totalProfiles = profilesList.size();
-            sealedInterfacesToGenerateByLargeInterface.putIfAbsent(interfaceElement, new HashMap<>());
-            sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).putAll(annotatedMethodsByProfileByLargeInterface.get(interfaceElement));
-            for (int i = 0; i < totalProfiles - 1; i++) {
-                var allProcessedCommonMethodsByConcatenatedProfiles = concatenateProfilesBasedOnCommonMethods(profilesList.get(i), profilesList, methodsSetsList);
-                // remove all commonMethodElmnts 1 by 1 and in each profile
-                allProcessedCommonMethodsByConcatenatedProfiles.values().stream().flatMap(Collection::stream).collect(toSet()).forEach(method -> {
-                    methodsSetsList.forEach(methodsSets -> methodsSets.remove(method));
-                    annotatedMethodsByProfileByLargeInterface.get(interfaceElement).forEach((profileName, methodsSets) -> methodsSets.remove(method));
-                });
-                sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).putAll(allProcessedCommonMethodsByConcatenatedProfiles);
-            }
-        });
-    }
-
-    private Map<String, Set<Element>> concatenateProfilesBasedOnCommonMethods(String processProfileName, List<String> profilesList, List<Set<Element>> methodsSetsList) {
-        var allProcessedCommonMethodsByConcatenatedProfiles = new HashMap<String, Set<Element>>();
-        var totalProfiles = profilesList.size();
-        var processProfileIndex = profilesList.indexOf(processProfileName);
-        for (var methodElement : methodsSetsList.get(processProfileIndex)) {
-            var concatenatedProfiles = new StringBuilder(processProfileName);
-            var found = false;
-            for (int j = processProfileIndex + 1; j < totalProfiles; j++) {
-                if (methodsSetsList.get(j).contains(methodElement)) {
-                    concatenatedProfiles.append(COMMA_SEPARATOR).append(profilesList.get(j));
-                    found = true;
-                }
-            }
-            if (found) {
-                allProcessedCommonMethodsByConcatenatedProfiles.merge(
-                        concatenatedProfiles.toString(),
-                        new HashSet<>(Set.of(methodElement)),
-                        (currentSet, newSet) -> concat(currentSet.stream(), newSet.stream()).collect(toSet())
-                );
-            }
+    static Set<Element> findAllAbstractMethodsForProfile(String profile,
+                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                                         Element largeInterfaceElement) {
+        var methodsElementSet = new HashSet<Element>();
+        if (profile.equals(JISEL_KEYWORD_TOPLEVEL) || profile.equals(JISEL_KEYWORD_TOPLEVEL_TRANSFORMED)) {
+            methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(largeInterfaceElement.getSimpleName().toString()));
+        } else {
+            methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(profile));
+            addMethodsFromParentProfiles(profile, methodsElementSet, largeInterfaceElement, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
         }
-        return allProcessedCommonMethodsByConcatenatedProfiles;
+        return methodsElementSet;
     }
 
-    @Override
-    default Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
-                                                         Set<Element> allAnnotatedElements,
-                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                                         Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
-        populateSealedInterfacesMap(processingEnv, allAnnotatedElements, sealedInterfacesToGenerateByLargeInterface);
-        return Map.of();
+    /**
+     * TODO jdoc...
+     *
+     * @param processedProfile
+     * @param methodsElementSet
+     * @param largeInterfaceElement
+     * @param sealedInterfacesToGenerateByLargeInterface
+     * @param sealedInterfacesPermitsByLargeInterface
+     */
+    private static void addMethodsFromParentProfiles(String processedProfile,
+                                                     Set<Element> methodsElementSet,
+                                                     Element largeInterfaceElement,
+                                                     Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                     Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+        Function<String, Optional<Map.Entry<String, List<String>>>> findProfileAsChild = profile -> sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement).entrySet().stream()
+                .filter(mapEntry -> mapEntry.getValue().contains(profile))
+                .findFirst();
+        var profileOpt = findProfileAsChild.apply(processedProfile);
+        if (profileOpt.isPresent()) {
+            var parentProfile = profileOpt.get().getKey();
+            methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(parentProfile));
+            addMethodsFromParentProfiles(parentProfile, methodsElementSet, largeInterfaceElement, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+        }
     }
 }
 
-/**
- * Exposes contract to fulfill by any class dedicated to building parent-children relations based on information provided in
- * the Map containing the sealed interfaces information to be generated
- */
-sealed interface ParentChildInheritanceHandler extends JiselAnnotationHandler permits SealForParentChildInheritanceHandler {
-
-    /**
-     * Reads information stored in the Map containing the sealed interfaces information to be generated, and populates another Map storing subtypes of the provided profiles
-     *
-     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
-     *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
-     *                                                   The Element instances represent each one of the abstract methods to be
-     *                                                   added to the generated sealed interface corresponding to a profile.
-     * @param sealedInterfacesPermitsByLargeInterface    Map containing information about the subtypes permitted by each one of the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
-     *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a Map of profile name as the key and a List of profiles names as the value.
-     */
-    void buildInheritanceRelations(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
-
-    /**
-     * Populates a Map storing subtypes of the provided profiles
-     *
-     * @param interfaceElement                           large interface {@link Element} instance
-     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
-     *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
-     *                                                   The Element instances represent each one of the abstract methods to be
-     *                                                   added to the generated sealed interface corresponding to a profile.
-     * @param sealedInterfacesPermitsByLargeInterface    Map containing information about the subtypes permitted by each one of the sealed interfaces to be generated.
-     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
-     *                                                   each one of the large interfaces to be segregated, while the associated value is
-     *                                                   a Map of profile name as the key and a List of profiles names as the value.
-     */
-    default void buildSealedInterfacesPermitsMap(Element interfaceElement,
-                                                 Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                 Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
-        sealedInterfacesPermitsByLargeInterface.get(interfaceElement).putAll(
-                sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).keySet().stream()
-                        .filter(profiles -> profiles.contains(COMMA_SEPARATOR))
-                        .collect(toMap(profiles -> profiles, profiles -> asList(profiles.split(COMMA_SEPARATOR))))
-        );
-        // unique parent interface is present and permits all,
-        // if there are other permits already existing then the profiles in those permits lists should be removed from parent interf permits list
-        var parentInterfaceSimpleName = interfaceElement.getSimpleName().toString();
-        var allPermittedProfiles = sealedInterfacesPermitsByLargeInterface.get(interfaceElement).values().stream().flatMap(Collection::stream).collect(toSet());
-        sealedInterfacesPermitsByLargeInterface.get(interfaceElement).put(
-                parentInterfaceSimpleName,
-                new ArrayList<>( // making the constructed list mutable
-                        sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).keySet().stream()
-                                .filter(profile -> !parentInterfaceSimpleName.equals(profile))
-                                .filter(profile -> !allPermittedProfiles.contains(profile))
-                                .toList()
-                )
-        );
-        // if a profile from the List<String> is a key within the same map, then remove it from the list
-        eliminateCyclicRelationships(sealedInterfacesPermitsByLargeInterface.get(interfaceElement));
-    }
-
-    private void eliminateCyclicRelationships(Map<String, List<String>> sealedInterfacesPermits) {
-        var childProfilesListToRemoveByParentProfile = new HashMap<String, List<String>>();
-        sealedInterfacesPermits.forEach((parentProfile, childProfilesList) -> {
-            var childProfilesListToRemove = new ArrayList<String>();
-            for (var childProfile : childProfilesList) {
-                if (sealedInterfacesPermits.containsKey(childProfile)) {
-                    childProfilesListToRemove.addAll(childProfilesList);
-                    childProfilesListToRemove.retainAll(sealedInterfacesPermits.get(childProfile));
-                    break;
-                }
-            }
-            childProfilesListToRemoveByParentProfile.put(parentProfile, childProfilesListToRemove);
-        });
-        sealedInterfacesPermits.keySet().forEach(parentProfile ->
-                sealedInterfacesPermits.get(parentProfile).removeAll(childProfilesListToRemoveByParentProfile.get(parentProfile)));
-    }
-
-    @Override
-    default Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
-                                                         Set<Element> allAnnotatedElements,
-                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                                         Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
-        buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
-        return Map.of();
-    }
-}

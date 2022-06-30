@@ -21,15 +21,12 @@
  */
 package org.jisel.generators.codegen;
 
-import org.jisel.generators.StringGenerator;
-
 import java.util.List;
 
 /**
  * Exposes contract to be fulfilled by a class generating the code of a sealed interface
  */
 public sealed interface CodeGenerator
-        extends StringGenerator
         permits AnnotationsGenerator, DeclarationGenerator, ExtendsGenerator, MethodsGenerator, PermitsGenerator {
 
     /**

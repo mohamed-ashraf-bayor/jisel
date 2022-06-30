@@ -19,7 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generators.filegen;
+package org.jisel.generators.filegen.impl;
+
+import org.jisel.generators.filegen.AbstractSealedSourceFileGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
 
 /**
  * Creates the content of a sealed interface and writes it to the filesystem.<br>
@@ -58,10 +61,10 @@ public final class InterfaceSourceFileGenerator extends AbstractSealedSourceFile
                                           Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
                                           Map<Element, Boolean> unSealValueByLargeInterface) throws IOException {
         var generatedFiles = new ArrayList<String>();
-        for (var sealedInterfacesToGenerateMapEntrySet : sealedInterfacesToGenerateByLargeInterface.entrySet()) {
-            var largeInterfaceElement = sealedInterfacesToGenerateMapEntrySet.getKey();
+        for (var sealedInterfacesToGenerateMapEntry : sealedInterfacesToGenerateByLargeInterface.entrySet()) {
+            var largeInterfaceElement = sealedInterfacesToGenerateMapEntry.getKey();
             var unSeal = unSealValueByLargeInterface.getOrDefault(largeInterfaceElement, false).booleanValue();
-            for (var mapEntry : sealedInterfacesToGenerateMapEntrySet.getValue().entrySet()) {
+            for (var mapEntry : sealedInterfacesToGenerateMapEntry.getValue().entrySet()) {
                 var profile = mapEntry.getKey();
                 var generatedSealedInterfaceName = sealedInterfaceNameConvention(profile, largeInterfaceElement);
                 var generatedUnSealedInterfaceName = generatedSealedInterfaceName.substring(SEALED_PREFIX.length());

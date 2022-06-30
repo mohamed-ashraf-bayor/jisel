@@ -32,6 +32,9 @@ import org.jisel.generators.codegen.impl.InterfaceDeclarationGenerator;
 import org.jisel.generators.codegen.impl.InterfaceExtendsGenerator;
 import org.jisel.generators.codegen.impl.InterfaceMethodsGenerator;
 import org.jisel.generators.codegen.impl.SealedInterfacePermitsGenerator;
+import org.jisel.generators.contentgen.impl.FinalClassContentGenerator;
+import org.jisel.generators.contentgen.impl.InterfaceContentGenerator;
+import org.jisel.generators.contentgen.impl.ReportContentGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -42,6 +45,15 @@ import java.util.Set;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
+import static org.jisel.generators.StringGenerator.DOT;
+import static org.jisel.generators.StringGenerator.FINAL_CLASS_SUFFIX;
+import static org.jisel.generators.StringGenerator.JISEL_REPORT_CHILDREN_HEADER;
+import static org.jisel.generators.StringGenerator.JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER;
+import static org.jisel.generators.StringGenerator.JISEL_REPORT_CREATED_UNSEALED_INTERFACES_HEADER;
+import static org.jisel.generators.StringGenerator.NEW_LINE;
+import static org.jisel.generators.StringGenerator.UNDERSCORE;
+import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
+import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConvention;
 
 // TODO jdoc
 
@@ -50,7 +62,6 @@ import static java.util.stream.Collectors.joining;
  * ... ...
  */
 public abstract sealed class AbstractSealedContentGenerator
-        implements StringGenerator
         permits FinalClassContentGenerator, ReportContentGenerator, InterfaceContentGenerator {
 
     protected final AnnotationsGenerator annotationsGenerator;
@@ -60,7 +71,7 @@ public abstract sealed class AbstractSealedContentGenerator
     protected final DeclarationGenerator declarationGenerator;
 
     /**
-     *
+     * TODO jdoc...
      */
     protected AbstractSealedContentGenerator() {
         this.annotationsGenerator = new InterfaceAnnotationsGenerator();

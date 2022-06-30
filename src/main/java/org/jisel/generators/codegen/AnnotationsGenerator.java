@@ -27,6 +27,8 @@ import javax.lang.model.element.Element;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
+import static org.jisel.generators.StringGenerator.JISEL_ANNOTATIONS_PACKAGE;
+import static org.jisel.generators.StringGenerator.NEW_LINE;
 
 /**
  * TODO jdoc entire clss

@@ -26,6 +26,11 @@ import org.jisel.generators.codegen.DeclarationGenerator;
 import javax.lang.model.element.Element;
 import java.util.List;
 
+import static org.jisel.generators.StringGenerator.PUBLIC_INTERFACE;
+import static org.jisel.generators.StringGenerator.PUBLIC_SEALED_INTERFACE;
+import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
+import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConvention;
+
 /**
  * Generates the interface declaration section (modifiers + name)
  */

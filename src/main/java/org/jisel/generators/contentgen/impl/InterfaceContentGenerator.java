@@ -19,7 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generators.contentgen;
+package org.jisel.generators.contentgen.impl;
+
+import org.jisel.generators.contentgen.AbstractSealedContentGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -28,6 +30,13 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.lang.String.format;
+import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
+import static org.jisel.generators.StringGenerator.DOT;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
+import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
+import static org.jisel.generators.StringGenerator.PACKAGE;
+import static org.jisel.generators.StringGenerator.UNSEALED;
+import static org.jisel.generators.StringGenerator.generatePackageName;
 import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
 
 /**

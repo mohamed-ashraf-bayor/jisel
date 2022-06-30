@@ -19,9 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.handlers;
+package org.jisel.handlers.impl;
 
-import org.jisel.annotations.TopLevel;
+import org.jisel.annotations.SealFor;
+import org.jisel.handlers.AnnotationInfoCollectionHandler;
+import org.jisel.handlers.JiselAnnotationHandler;
+import org.jisel.handlers.ParentChildInheritanceHandler;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -31,13 +34,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 
 /**
- * Handles all elements annotated with &#64;{@link TopLevel}
+ * Handles all elements annotated with &#64;{@link SealFor}
  */
-public final class TopLevelHandler implements JiselAnnotationHandler {
+public final class SealForHandler implements JiselAnnotationHandler {
+
+    private final AnnotationInfoCollectionHandler annotationInfoCollectionHandler;
+    private final ParentChildInheritanceHandler parentChildInheritanceHandler;
+
+    /**
+     * SealForProfileHandler constructor. Instantiates needed instances of {@link SealForInfoCollectionHandler}
+     * and {@link SealForParentChildInheritanceHandler}
+     */
+    public SealForHandler() {
+        this.annotationInfoCollectionHandler = new SealForInfoCollectionHandler();
+        this.parentChildInheritanceHandler = new SealForParentChildInheritanceHandler();
+    }
 
     @Override
     public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
@@ -46,19 +61,19 @@ public final class TopLevelHandler implements JiselAnnotationHandler {
                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
                                                         Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
-        allAnnotatedElements.stream()
+        var allAnnotatedElementsToProcess = allAnnotatedElements.stream()
                 .filter(element -> ElementKind.METHOD.equals(element.getKind()))
                 .filter(element -> ElementKind.INTERFACE.equals(element.getEnclosingElement().getKind()))
-                .collect(groupingBy(Element::getEnclosingElement, toSet()))
-                .forEach((largeInterfaceElement, annotatedMethodsSet) -> {
-                    // top parent sealed interfaces to be generated
-                    sealedInterfacesToGenerateByLargeInterface.put(
-                            largeInterfaceElement,
-                            new HashMap<>(Map.of(largeInterfaceElement.getSimpleName().toString(), annotatedMethodsSet))
-                    );
-                    // fill the status rep with the large interfaces processed, no description needed
-                    statusReport.put(largeInterfaceElement, EMPTY_STRING);
-                });
+                // only where @TopLevel is used
+                .filter(element -> sealedInterfacesToGenerateByLargeInterface.containsKey(element.getEnclosingElement()))
+                // only if the same method is NOT also annotated with @TopLevel
+                .filter(element -> !sealedInterfacesToGenerateByLargeInterface.get(element.getEnclosingElement()).get(element.getEnclosingElement().getSimpleName().toString()).contains(element))
+                .collect(toSet());
+        // statusReport - only add the name of the processed large interfaces with no description
+        allAnnotatedElementsToProcess.forEach(element -> statusReport.put(element.getEnclosingElement(), EMPTY_STRING));
+        annotationInfoCollectionHandler.populateSealedInterfacesMap(processingEnv, allAnnotatedElementsToProcess, sealedInterfacesToGenerateByLargeInterface);
+        parentChildInheritanceHandler.buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
         return statusReport;
     }
 }
+

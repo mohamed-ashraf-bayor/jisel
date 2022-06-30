@@ -28,6 +28,7 @@ import java.util.List;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
+import static org.jisel.generators.StringGenerator.WHITESPACE;
 
 /**
  * Exposes contract to be fulfilled by a class generating the interface or class declaration section

@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Properties;
 
 import static java.lang.String.format;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
+import static org.jisel.generators.StringGenerator.NEW_LINE;
 
 /**
  * TODO rwrte jdoc

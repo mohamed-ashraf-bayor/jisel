@@ -24,9 +24,10 @@ package org.jisel.generators.filegen;
 
 import org.jisel.generators.StringGenerator;
 import org.jisel.generators.contentgen.AbstractSealedContentGenerator;
-import org.jisel.generators.contentgen.FinalClassContentGenerator;
-import org.jisel.generators.contentgen.InterfaceContentGenerator;
-import org.jisel.generators.contentgen.ReportContentGenerator;
+import org.jisel.generators.contentgen.impl.FinalClassContentGenerator;
+import org.jisel.generators.contentgen.impl.InterfaceContentGenerator;
+import org.jisel.generators.contentgen.impl.ReportContentGenerator;
+import org.jisel.generators.filegen.impl.InterfaceSourceFileGenerator;
 
 import javax.annotation.processing.FilerException;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -38,6 +39,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.jisel.generators.StringGenerator.generatePackageName;
+
+/**
+ * TODO jdoc...
+ */
 public abstract sealed class AbstractSealedSourceFileGenerator implements StringGenerator permits InterfaceSourceFileGenerator {
 
     protected final AbstractSealedContentGenerator interfaceContentGenerator;
@@ -55,6 +61,7 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements String
     }
 
     /**
+     * TODO jdoc...
      * @param processingEnvironment
      * @param sealedInterfacesToGenerateByLargeInterface
      * @param sealedInterfacesPermitsByLargeInterface
@@ -67,6 +74,16 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements String
                                                    Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
                                                    Map<Element, Boolean> unSealValueByLargeInterface) throws IOException;
 
+    /**
+     * TODO jdoc...
+     * @param processingEnvironment
+     * @param largeInterfaceElement
+     * @param sealedInterfacesToGenerateMap
+     * @param sealedInterfacesPermitsMap
+     * @param generatedSealedInterfaceName
+     * @return
+     * @throws IOException
+     */
     protected String createSealedInterfaceSourceFile(ProcessingEnvironment processingEnvironment,
                                                      Element largeInterfaceElement,
                                                      Map<String, Set<Element>> sealedInterfacesToGenerateMap,
@@ -86,6 +103,16 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements String
         return qualifiedName;
     }
 
+    /**
+     * TODO jdoc...
+     * @param processingEnvironment
+     * @param largeInterfaceElement
+     * @param sealedInterfacesToGenerateMap
+     * @param sealedInterfacesPermitsMap
+     * @param generatedUnSealedInterfaceName
+     * @return
+     * @throws IOException
+     */
     protected String createUnSealedInterfaceSourceFile(ProcessingEnvironment processingEnvironment,
                                                        Element largeInterfaceElement,
                                                        Map<String, Set<Element>> sealedInterfacesToGenerateMap,
@@ -107,6 +134,14 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements String
         return qualifiedName;
     }
 
+    /**
+     * TODO jdoc...
+     * @param processingEnvironment
+     * @param largeInterfaceElement
+     * @param sealedInterfacesPermitsMap
+     * @return
+     * @throws IOException
+     */
     protected String createFinalClassFile(ProcessingEnvironment processingEnvironment,
                                           Element largeInterfaceElement,
                                           Map<String, List<String>> sealedInterfacesPermitsMap) throws IOException {
@@ -126,6 +161,16 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements String
         return qualifiedName;
     }
 
+    /**
+     * TODO jdoc...
+     * @param processingEnvironment
+     * @param largeInterfaceElement
+     * @param unSeal
+     * @param sealedInterfacesToGenerateMap
+     * @param sealedInterfacesPermitsMap
+     * @return
+     * @throws IOException
+     */
     protected String createJiselReportFile(ProcessingEnvironment processingEnvironment,
                                            Element largeInterfaceElement,
                                            boolean unSeal,
