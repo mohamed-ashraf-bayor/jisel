@@ -49,7 +49,6 @@ public sealed interface ExtendsGenerator extends CodeGenerator permits Interface
      * a provided {@link Map} containing parents/subtypes information (the permits Map) and the name of the profile for which the
      * sealed interface will be generated
      *
-     * @param processingEnvironment  {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param sealedInterfaceContent {@link StringBuilder} object containing the sealed interface code being generated
      * @param permitsMap             {@link Map} containing parents/subtypes information. The Map key is the profile name whose generated
      *                               sealed interface will be a parent interface, while the value is the list of profiles names whose
@@ -57,14 +56,11 @@ public sealed interface ExtendsGenerator extends CodeGenerator permits Interface
      * @param processedProfile       name of the profile whose sealed interface is being generated
      * @param largeInterfaceElement  {@link Element} instance of the large interface being segregated
      */
-    void generateExtendsClauseFromPermitsMapAndProcessedProfile(
-            ProcessingEnvironment processingEnvironment,
-            StringBuilder sealedInterfaceContent,
-            Map<String, List<String>> permitsMap,
-            String processedProfile,
-            Element largeInterfaceElement,
-            boolean unSeal
-    );
+    void generateExtendsClauseFromPermitsMapAndProcessedProfile(StringBuilder sealedInterfaceContent,
+                                                                Map<String, List<String>> permitsMap,
+                                                                String processedProfile,
+                                                                Element largeInterfaceElement,
+                                                                boolean unSeal);
 
     @Override
     default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {

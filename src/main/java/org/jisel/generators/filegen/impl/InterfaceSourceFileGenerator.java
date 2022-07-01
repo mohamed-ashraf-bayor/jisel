@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.jisel.generators.StringGenerator.SEALED_PREFIX;
 import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
 
 /**
@@ -39,9 +41,17 @@ import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention
 public final class InterfaceSourceFileGenerator extends AbstractSealedSourceFileGenerator {
 
     /**
+     * InterfaceSourceFileGenerator constructor. Injects needed instance of {@link ProcessingEnvironment}
+     *
+     * @param processingEnvironment
+     */
+    public InterfaceSourceFileGenerator(ProcessingEnvironment processingEnvironment) {
+        super(processingEnvironment);
+    }
+
+    /**
      * // TODO jdoc: Creates source files...
      *
-     * @param processingEnvironment                      {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
      * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
      *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
@@ -56,8 +66,7 @@ public final class InterfaceSourceFileGenerator extends AbstractSealedSourceFile
      * @throws IOException if an I/O error occured
      */
     @Override
-    public List<String> createSourceFiles(ProcessingEnvironment processingEnvironment,
-                                          Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+    public List<String> createSourceFiles(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                           Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
                                           Map<Element, Boolean> unSealValueByLargeInterface) throws IOException {
         var generatedFiles = new ArrayList<String>();
@@ -70,21 +79,21 @@ public final class InterfaceSourceFileGenerator extends AbstractSealedSourceFile
                 var generatedUnSealedInterfaceName = generatedSealedInterfaceName.substring(SEALED_PREFIX.length());
                 generatedFiles.add(
                         // 3rd arg is a Map made of only 1 Map.Entry instance <String, Set<Element>
-                        createSealedInterfaceSourceFile(processingEnvironment, largeInterfaceElement, Map.ofEntries(mapEntry),
+                        createSealedInterfaceSourceFile(largeInterfaceElement, Map.ofEntries(mapEntry),
                                 sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement), generatedSealedInterfaceName)
                 );
                 if (unSeal) {
                     generatedFiles.add(
-                            createUnSealedInterfaceSourceFile(processingEnvironment, largeInterfaceElement, Map.ofEntries(mapEntry),
+                            createUnSealedInterfaceSourceFile(largeInterfaceElement, Map.ofEntries(mapEntry),
                                     sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement), generatedUnSealedInterfaceName)
                     );
                 }
             }
             generatedFiles.add(
-                    createFinalClassFile(processingEnvironment, largeInterfaceElement, sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement))
+                    createFinalClassFile(largeInterfaceElement, sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement))
             );
             generatedFiles.add(
-                    createJiselReportFile(processingEnvironment, largeInterfaceElement, unSeal, sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement),
+                    createJiselReportFile(largeInterfaceElement, unSeal, sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement),
                             sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement))
             );
         }

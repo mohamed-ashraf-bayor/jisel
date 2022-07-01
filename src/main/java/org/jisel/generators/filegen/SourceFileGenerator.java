@@ -19,32 +19,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generators.codegen.impl;
-
-import org.jisel.generators.codegen.DeclarationGenerator;
+package org.jisel.generators.filegen;
 
 import javax.lang.model.element.Element;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static org.jisel.generators.StringGenerator.PUBLIC_INTERFACE;
-import static org.jisel.generators.StringGenerator.PUBLIC_SEALED_INTERFACE;
-import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
-import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConvention;
+public sealed interface SourceFileGenerator
+        permits AbstractSealedSourceFileGenerator {
 
-/**
- * Generates the interface declaration section (modifiers + name)
- */
-public final class InterfaceDeclarationGenerator implements DeclarationGenerator {
-    @Override
-    public void generateModifiersAndName(StringBuilder interfaceContent, String profile, Element largeInterfaceElement, boolean unSeal) {
-        generateCode(
-                interfaceContent,
-                List.of(
-                        unSeal ? PUBLIC_INTERFACE
-                                : PUBLIC_SEALED_INTERFACE,
-                        unSeal ? unSealedInterfaceNameConvention(profile, largeInterfaceElement)
-                                : sealedInterfaceNameConvention(profile, largeInterfaceElement)
-                )
-        );
-    }
+    /**
+     * TODO jdoc...
+     *
+     * @param sealedInterfacesToGenerateByLargeInterface
+     * @param sealedInterfacesPermitsByLargeInterface
+     * @param unSealValueByLargeInterface
+     * @return
+     * @throws IOException
+     */
+    List<String> createSourceFiles(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                   Map<Element, Boolean> unSealValueByLargeInterface) throws IOException;
 }

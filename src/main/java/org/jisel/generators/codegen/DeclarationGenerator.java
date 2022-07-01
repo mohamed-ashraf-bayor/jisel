@@ -38,12 +38,12 @@ public sealed interface DeclarationGenerator extends CodeGenerator permits Inter
     /**
      * Generates the interface or class declaration section
      *
-     * @param largeInterfaceElement {@link Element} instance of the large interface being segregated
-     * @param unSeal                indicates whether the interface declaration should include "sealed"
      * @param interfaceContent      {@link StringBuilder} object containing the sealed interface code being generated
      * @param profile               name of the profile whose sealed interface is being generated
+     * @param largeInterfaceElement {@link Element} instance of the large interface being segregated
+     * @param unSeal                indicates whether the interface declaration should include "sealed"
      */
-    void generateModifiersAndName(Element largeInterfaceElement, boolean unSeal, StringBuilder interfaceContent, String profile);
+    void generateModifiersAndName(StringBuilder interfaceContent, String profile, Element largeInterfaceElement, boolean unSeal);
 
     @Override
     default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {

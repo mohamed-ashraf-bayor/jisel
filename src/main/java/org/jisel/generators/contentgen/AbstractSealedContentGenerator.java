@@ -21,7 +21,6 @@
  */
 package org.jisel.generators.contentgen;
 
-import org.jisel.generators.StringGenerator;
 import org.jisel.generators.codegen.AnnotationsGenerator;
 import org.jisel.generators.codegen.DeclarationGenerator;
 import org.jisel.generators.codegen.ExtendsGenerator;
@@ -62,8 +61,10 @@ import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConventi
  * ... ...
  */
 public abstract sealed class AbstractSealedContentGenerator
+        implements ContentGenerator
         permits FinalClassContentGenerator, ReportContentGenerator, InterfaceContentGenerator {
 
+    protected final ProcessingEnvironment processingEnvironment;
     protected final AnnotationsGenerator annotationsGenerator;
     protected final ExtendsGenerator extendsGenerator;
     protected final PermitsGenerator permitsGenerator;
@@ -73,30 +74,14 @@ public abstract sealed class AbstractSealedContentGenerator
     /**
      * TODO jdoc...
      */
-    protected AbstractSealedContentGenerator() {
+    protected AbstractSealedContentGenerator(ProcessingEnvironment processingEnvironment) {
+        this.processingEnvironment = processingEnvironment;
         this.annotationsGenerator = new InterfaceAnnotationsGenerator();
-        this.extendsGenerator = new InterfaceExtendsGenerator();
+        this.extendsGenerator = new InterfaceExtendsGenerator(this.processingEnvironment);
         this.permitsGenerator = new SealedInterfacePermitsGenerator();
         this.methodsGenerator = new InterfaceMethodsGenerator();
         this.declarationGenerator = new InterfaceDeclarationGenerator();
     }
-
-    /**
-     * Generates content of the final class generated for the provided large interface
-     *
-     * @param processingEnvironment         {@link ProcessingEnvironment} object, needed to access low-level information regarding the used annotations
-     * @param largeInterfaceElement         {@link Element} instance of the large interface being segregated
-     * @param unSeal                        if 'true', indicates that additionally to generating the sealed interfaces hierarchy, also generate the classic (non-sealed) interfaces hierarchy.
-     *                                      If 'false', only generate the sealed interfaces' hierarchy
-     * @param sealedInterfacesToGenerateMap {@link Map} instance containing information about the sealed interface to be generated
-     * @param sealedInterfacesPermitsMap    {@link Map} containing information about the subtypes permitted by each one of the sealed interfaces to be generated
-     * @return the requested class or interface string content
-     */
-    public abstract String generateContent(ProcessingEnvironment processingEnvironment,
-                                           Element largeInterfaceElement,
-                                           boolean unSeal,
-                                           Map<String, Set<Element>> sealedInterfacesToGenerateMap,
-                                           Map<String, List<String>> sealedInterfacesPermitsMap);
 
     protected String generateSealedInterfacesReport(Element largeInterfaceElement,
                                                     Map<String, Set<Element>> sealedInterfacesToGenerateMap,

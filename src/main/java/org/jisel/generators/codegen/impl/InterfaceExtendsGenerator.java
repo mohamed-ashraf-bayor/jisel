@@ -37,9 +37,15 @@ import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConventi
  * Generates the "extends" clause of a sealed interface definition, along with the list of the parent interfaces
  */
 public final class InterfaceExtendsGenerator implements ExtendsGenerator {
+
+    private final ProcessingEnvironment processingEnvironment;
+
+    public InterfaceExtendsGenerator(ProcessingEnvironment processingEnvironment) {
+        this.processingEnvironment = processingEnvironment;
+    }
+
     @Override
-    public void generateExtendsClauseFromPermitsMapAndProcessedProfile(ProcessingEnvironment processingEnvironment,
-                                                                       StringBuilder sealedInterfaceContent,
+    public void generateExtendsClauseFromPermitsMapAndProcessedProfile(StringBuilder sealedInterfaceContent,
                                                                        Map<String, List<String>> permitsMap,
                                                                        String processedProfile,
                                                                        Element largeInterfaceElement,

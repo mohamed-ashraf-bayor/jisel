@@ -29,9 +29,12 @@ import org.jisel.annotations.TopLevel;
 import org.jisel.annotations.UnSeal;
 import org.jisel.generators.filegen.AbstractSealedSourceFileGenerator;
 import org.jisel.generators.filegen.impl.InterfaceSourceFileGenerator;
+import org.jisel.handlers.AbstractSealedAddToHandler;
+import org.jisel.handlers.AbstractSealedDetachHandler;
+import org.jisel.handlers.AbstractSealedSealForHandler;
+import org.jisel.handlers.JiselAnnotationHandler;
 import org.jisel.handlers.impl.AddToHandler;
 import org.jisel.handlers.impl.DetachHandler;
-import org.jisel.handlers.JiselAnnotationHandler;
 import org.jisel.handlers.impl.SealForHandler;
 import org.jisel.handlers.impl.TopLevelHandler;
 import org.jisel.handlers.impl.UnSealHandler;
@@ -80,15 +83,11 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
 
     private final Logger log = Logger.getLogger(JiselAnnotationProcessor.class.getName());
 
-    private final JiselAnnotationHandler sealForHandler;
-
-    private final JiselAnnotationHandler addToHandler;
-
+    private final AbstractSealedSealForHandler sealForHandler;
+    private final AbstractSealedAddToHandler addToHandler;
     private final JiselAnnotationHandler topLevelHandler;
-
     private final JiselAnnotationHandler unSealHandler;
-
-    private final JiselAnnotationHandler detachHandler;
+    private final AbstractSealedDetachHandler detachHandler;
 
     private final AbstractSealedSourceFileGenerator interfaceSourceFileGenerator;
 
@@ -98,11 +97,11 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
      */
     public JiselAnnotationProcessor() {
         this.sealForHandler = new SealForHandler();
-        this.addToHandler = new AddToHandler();
+        this.addToHandler = new AddToHandler(processingEnv);
         this.topLevelHandler = new TopLevelHandler();
         this.unSealHandler = new UnSealHandler();
-        this.detachHandler = new DetachHandler();
-        this.interfaceSourceFileGenerator = new InterfaceSourceFileGenerator();
+        this.detachHandler = new DetachHandler(processingEnv);
+        this.interfaceSourceFileGenerator = new InterfaceSourceFileGenerator(processingEnv);
     }
 
     @Override
@@ -135,7 +134,6 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
         if (!allAnnotatedTopLevelElements.isEmpty()) {
 
             processTopLevelAndSealForAnnotatedElements(
-                    processingEnv,
                     topLevelHandler,
                     sealForHandler,
                     Map.of(ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements, ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements),
@@ -144,7 +142,6 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
             );
 
             processUnSealAnnotatedElements(
-                    processingEnv,
                     unSealHandler,
                     allAnnotatedUnSealElements,
                     unSealValueByLargeInterface,
@@ -152,7 +149,6 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
             );
 
             processDetachAnnotatedElements(
-                    processingEnv,
                     detachHandler,
                     allAnnotatedDetachElements,
                     sealedInterfacesToGenerateByLargeInterface,
@@ -161,7 +157,6 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
             );
 
             processAddToAnnotatedElements(
-                    processingEnv,
                     addToHandler,
                     allAnnotatedAddToElements,
                     sealedInterfacesToGenerateByLargeInterface,
@@ -170,7 +165,6 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
 
             try {
                 var generatedFiles = interfaceSourceFileGenerator.createSourceFiles(
-                        processingEnv,
                         sealedInterfacesToGenerateByLargeInterface,
                         sealedInterfacesPermitsByLargeInterface,
                         unSealValueByLargeInterface

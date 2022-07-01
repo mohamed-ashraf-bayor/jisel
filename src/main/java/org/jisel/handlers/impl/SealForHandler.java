@@ -22,11 +22,8 @@
 package org.jisel.handlers.impl;
 
 import org.jisel.annotations.SealFor;
-import org.jisel.handlers.AnnotationInfoCollectionHandler;
-import org.jisel.handlers.JiselAnnotationHandler;
-import org.jisel.handlers.ParentChildInheritanceHandler;
+import org.jisel.handlers.AbstractSealedSealForHandler;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import java.util.HashMap;
@@ -40,26 +37,12 @@ import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 /**
  * Handles all elements annotated with &#64;{@link SealFor}
  */
-public final class SealForHandler implements JiselAnnotationHandler {
-
-    private final AnnotationInfoCollectionHandler annotationInfoCollectionHandler;
-    private final ParentChildInheritanceHandler parentChildInheritanceHandler;
-
-    /**
-     * SealForProfileHandler constructor. Instantiates needed instances of {@link SealForInfoCollectionHandler}
-     * and {@link SealForParentChildInheritanceHandler}
-     */
-    public SealForHandler() {
-        this.annotationInfoCollectionHandler = new SealForInfoCollectionHandler();
-        this.parentChildInheritanceHandler = new SealForParentChildInheritanceHandler();
-    }
+public final class SealForHandler extends AbstractSealedSealForHandler {
 
     @Override
-    public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
-                                                        Set<Element> allAnnotatedElements,
+    public Map<Element, String> handleAnnotatedElements(Set<Element> allAnnotatedElements,
                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                                        Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
         var allAnnotatedElementsToProcess = allAnnotatedElements.stream()
                 .filter(element -> ElementKind.METHOD.equals(element.getKind()))
@@ -71,9 +54,8 @@ public final class SealForHandler implements JiselAnnotationHandler {
                 .collect(toSet());
         // statusReport - only add the name of the processed large interfaces with no description
         allAnnotatedElementsToProcess.forEach(element -> statusReport.put(element.getEnclosingElement(), EMPTY_STRING));
-        annotationInfoCollectionHandler.populateSealedInterfacesMap(processingEnv, allAnnotatedElementsToProcess, sealedInterfacesToGenerateByLargeInterface);
+        annotationInfoCollectionHandler.populateSealedInterfacesMap(allAnnotatedElementsToProcess, sealedInterfacesToGenerateByLargeInterface);
         parentChildInheritanceHandler.buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
         return statusReport;
     }
 }
-

@@ -31,7 +31,7 @@ import static org.jisel.generators.StringGenerator.JISEL_ANNOTATIONS_PACKAGE;
 import static org.jisel.generators.StringGenerator.NEW_LINE;
 
 /**
- * TODO jdoc entire clss
+ * // TODO jdoc entire clss
  * Exposes contract to be fulfilled by a class generating annotations
  */
 public sealed interface AnnotationsGenerator extends CodeGenerator permits InterfaceAnnotationsGenerator {
@@ -43,7 +43,7 @@ public sealed interface AnnotationsGenerator extends CodeGenerator permits Inter
     void buildExistingAnnotations(StringBuilder classOrInterfaceContent, Element element);
 
     /**
-     * ... exclusing all jisel annots..
+     * ... excluding all jisel annots..
      * @param element
      * @param separator
      * @return

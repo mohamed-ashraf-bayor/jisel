@@ -57,21 +57,10 @@ public sealed interface PermitsGenerator extends CodeGenerator permits SealedInt
      * @param processedProfile       name of the profile whose sealed interface is being generated
      * @param largeInterfaceElement  {@link Element} instance of the large interface being segregated
      */
-    void generatePermitsClauseFromPermitsMapAndProcessedProfile(
-            StringBuilder sealedInterfaceContent,
-            Map<String, List<String>> permitsMap,
-            String processedProfile,
-            Element largeInterfaceElement
-    );
-
-    @Override
-    default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
-        classOrInterfaceContent.append(format(
-                " %s %s ",
-                PERMITS,
-                params.stream().map(StringGenerator::removeCommaSeparator).collect(joining(COMMA_SEPARATOR + WHITESPACE))
-        ));
-    }
+    void generatePermitsClauseFromPermitsMapAndProcessedProfile(StringBuilder sealedInterfaceContent,
+                                                                Map<String, List<String>> permitsMap,
+                                                                String processedProfile,
+                                                                Element largeInterfaceElement);
 
     /**
      * Adds a generated final class to the {@link Map} containing parents/subtypes information, only for the sealed interfaces at the
@@ -93,5 +82,16 @@ public sealed interface PermitsGenerator extends CodeGenerator permits SealedInt
                 .filter(childProfileName -> !childProfileName.contains(DOT)) // also skip all qualifiedname classes added by @AddTo
                 .toList();
         childlessProfiles.forEach(childlessProfile -> permitsMap.put(childlessProfile, asList(finalClassName)));
+    }
+
+    @Override
+    default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
+        classOrInterfaceContent.append(format(
+                " %s %s ",
+                PERMITS,
+                params.stream()
+                        .map(StringGenerator::removeCommaSeparator)
+                        .collect(joining(COMMA_SEPARATOR + WHITESPACE))
+        ));
     }
 }

@@ -56,9 +56,17 @@ import static org.jisel.generators.StringGenerator.generatePackageName;
  */
 public final class ReportContentGenerator extends AbstractSealedContentGenerator {
 
+    /**
+     * TODO jdoc...
+     *
+     * @param processingEnvironment
+     */
+    public ReportContentGenerator(ProcessingEnvironment processingEnvironment) {
+        super(processingEnvironment);
+    }
+
     @Override
-    public String generateContent(ProcessingEnvironment processingEnvironment,
-                                  Element largeInterfaceElement,
+    public String generateContent(Element largeInterfaceElement,
                                   boolean unSeal,
                                   Map<String, Set<Element>> sealedInterfacesToGenerateMap,
                                   Map<String, List<String>> sealedInterfacesPermitsMap) {

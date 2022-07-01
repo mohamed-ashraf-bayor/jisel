@@ -21,37 +21,35 @@
  */
 package org.jisel.generators.codegen.impl;
 
-import org.jisel.JiselAnnotationProcessor;
 import org.jisel.generators.codegen.AnnotationsGenerator;
 
 import javax.lang.model.element.Element;
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Properties;
 
 import static java.lang.String.format;
+import static org.jisel.generators.AppInfoGenerator.APPLICATION_PROPERTIES_FILENAME;
+import static org.jisel.generators.AppInfoGenerator.DEFAULT_APP_VERSION;
+import static org.jisel.generators.AppInfoGenerator.INFO_APP_VERSION_PROPERTY_NAME;
+import static org.jisel.generators.AppInfoGenerator.JISEL_ANNOTATION_PROCESSOR_CLASSNAME;
+import static org.jisel.generators.AppInfoGenerator.getPropertyValueFromPropsFile;
 import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.NEW_LINE;
 
 /**
  * TODO rwrte jdoc
  * Generates the {@link javax.annotation.processing.Generated} annotation section at the top of the generated interfaces or
- * classes with the attributes: value, date and comments<br>
+ * classes with the attributes: value, date and comments
  */
 public final class InterfaceAnnotationsGenerator implements AnnotationsGenerator {
-
-    private static final String DEFAULT_APP_VERSION = "1.2.0";
-
-    private static final String JISEL_ANNOTATION_PROCESSOR_CLASSNAME = JiselAnnotationProcessor.class.getName();
 
     @Override
     public void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent) {
         buildJavaxGeneratedAnnotationSection(
                 classOrInterfaceContent,
                 JISEL_ANNOTATION_PROCESSOR_CLASSNAME,
-                getPropertyValueFromFile("application.properties", "info.app.version", DEFAULT_APP_VERSION)
+                getPropertyValueFromPropsFile(APPLICATION_PROPERTIES_FILENAME, INFO_APP_VERSION_PROPERTY_NAME, DEFAULT_APP_VERSION)
         );
     }
 
@@ -78,17 +76,5 @@ public final class InterfaceAnnotationsGenerator implements AnnotationsGenerator
     public void buildExistingAnnotations(StringBuilder classOrInterfaceContent, Element element) {
         var existingAnnotations = AnnotationsGenerator.buildExistingAnnotations(element, NEW_LINE);
         generateCode(classOrInterfaceContent, List.of(existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations + NEW_LINE));
-    }
-
-    // TODO move to static func in utils intrfc
-    private String getPropertyValueFromFile(String fileNameWithExt, String property, String defaultValue) {
-        var properties = new Properties();
-        var in = this.getClass().getClassLoader().getResourceAsStream(fileNameWithExt);
-        try {
-            properties.load(in);
-        } catch (IOException e) {
-            return defaultValue;
-        }
-        return properties.getProperty(property);
     }
 }

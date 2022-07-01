@@ -21,9 +21,11 @@
  */
 package org.jisel;
 
+import org.jisel.handlers.AbstractSealedAddToHandler;
+import org.jisel.handlers.AbstractSealedDetachHandler;
+import org.jisel.handlers.AbstractSealedSealForHandler;
 import org.jisel.handlers.JiselAnnotationHandler;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -83,40 +85,32 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         }
     }
 
-    default void processTopLevelAndSealForAnnotatedElements(ProcessingEnvironment processingEnv,
-                                                            JiselAnnotationHandler topLevelHandler,
-                                                            JiselAnnotationHandler sealForHandler,
+    default void processTopLevelAndSealForAnnotatedElements(JiselAnnotationHandler topLevelHandler,
+                                                            AbstractSealedSealForHandler sealForHandler,
                                                             Map<String, Set<Element>> allAnnotatedElementsMap,
                                                             Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                             Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         // process all interface methods annotated with @TopLevel
         var topLevelStatusReport = topLevelHandler.handleAnnotatedElements(
-                processingEnv,
                 unmodifiableSet(allAnnotatedElementsMap.get(ALL_ANNOTATED_TOPLEVEL_ELEMENTS)),
                 sealedInterfacesToGenerateByLargeInterface,
-                Map.of(),
                 Map.of()
         );
         // process all interface methods annotated with @SealFor
         var sealForStatusReport = sealForHandler.handleAnnotatedElements(
-                processingEnv,
                 unmodifiableSet(allAnnotatedElementsMap.get(ALL_ANNOTATED_SEALFOR_ELEMENTS)),
                 sealedInterfacesToGenerateByLargeInterface,
-                sealedInterfacesPermitsByLargeInterface,
-                Map.of()
+                sealedInterfacesPermitsByLargeInterface
         );
         displayStatusReport(extractLargeInterfacesWithNoTopLevel(sealForStatusReport, topLevelStatusReport), SEAL_FOR, TOP_LEVEL);
     }
 
-    default void processUnSealAnnotatedElements(ProcessingEnvironment processingEnv,
-                                                JiselAnnotationHandler unSealHandler,
+    default void processUnSealAnnotatedElements(JiselAnnotationHandler unSealHandler,
                                                 Set<Element> allAnnotatedUnSealElements,
                                                 Map<Element, Boolean> unSealValueByLargeInterface,
                                                 Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         var unSealStatusReport = unSealHandler.handleAnnotatedElements(
-                processingEnv,
                 unmodifiableSet(allAnnotatedUnSealElements),
-                Map.of(),
                 Map.of(),
                 Map.of()
         );
@@ -125,14 +119,12 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         displayStatusReport(extractUnSealedInterfacesWithNoTopLevel(unSealStatusReport, sealedInterfacesToGenerateByLargeInterface), UNSEAL);
     }
 
-    default void processDetachAnnotatedElements(ProcessingEnvironment processingEnv,
-                                                JiselAnnotationHandler detachHandler,
+    default void processDetachAnnotatedElements(AbstractSealedDetachHandler detachHandler,
                                                 Set<Element> allAnnotatedDetachElements,
                                                 Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                 Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
                                                 Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
-        var detachStatusReport = detachHandler.handleAnnotatedElements(
-                processingEnv,
+        var detachStatusReport = detachHandler.handleDetachAnnotatedElements(
                 unmodifiableSet(allAnnotatedDetachElements),
                 unmodifiableMap(sealedInterfacesToGenerateByLargeInterface),
                 unmodifiableMap(sealedInterfacesPermitsByLargeInterface),
@@ -141,18 +133,15 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         displayStatusReport(detachStatusReport, DETACH, DETACH_ALL);
     }
 
-    default void processAddToAnnotatedElements(ProcessingEnvironment processingEnv,
-                                               JiselAnnotationHandler addToHandler,
+    default void processAddToAnnotatedElements(AbstractSealedAddToHandler addToHandler,
                                                Set<Element> allAnnotatedAddToElements,
                                                Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         // process all child classes or interfaces annotated with @AddTo
         var addToStatusReport = addToHandler.handleAnnotatedElements(
-                processingEnv,
                 unmodifiableSet(allAnnotatedAddToElements),
                 unmodifiableMap(sealedInterfacesToGenerateByLargeInterface),
-                sealedInterfacesPermitsByLargeInterface,
-                Map.of()
+                sealedInterfacesPermitsByLargeInterface
         );
         displayStatusReport(addToStatusReport, ADD_TO);
     }

@@ -49,130 +49,162 @@ public interface StringGenerator {
      * "," comma separator
      */
     String COMMA_SEPARATOR = ",";
+
     /**
      * ";" semi-colon
      */
     String SEMICOLON = ";";
+
     /**
      * " " whitespace
      */
     String WHITESPACE = " ";
+
     /**
      * "=" equals
      */
     String EQUALS_SIGN = "=";
-    /**
-     * "Sealed"
-     */
-    String SEALED_PREFIX = "Sealed";
-    /**
-     * "UnSealed"
-     */
-    String UNSEALED = "UnSealed";
-    /**
-     * "package"
-     */
-    String PACKAGE = "package";
-    /**
-     * "interface"
-     */
-    String INTERFACE = "interface";
-    /**
-     * "class"
-     */
-    String CLASS = "class";
-    /**
-     * ".class"
-     */
-    String DOT_CLASS = ".class";
-    /**
-     * "public interface"
-     */
-    String PUBLIC_INTERFACE = "public interface";
-    /**
-     * "public sealed interface"
-     */
-    String PUBLIC_SEALED_INTERFACE = "public sealed interface";
-    /**
-     * "public final class"
-     */
-    String PUBLIC_FINAL_CLASS = "public final class";
-    /**
-     * "extends"
-     */
-    String EXTENDS = "extends";
-    /**
-     * "implements"
-     */
-    String IMPLEMENTS = "implements";
-    /**
-     * "permits"
-     */
-    String PERMITS = "permits";
+
     /**
      * "{"
      */
     String OPENING_CURLY_BRACE = "{";
+
     /**
      * "}"
      */
     String CLOSING_CURLY_BRACE = "}";
+
     /**
      * "("
      */
     String OPENING_PARENTHESIS = "(";
+
     /**
      * ")"
      */
     String CLOSING_PARENTHESIS = ")";
+
     /**
      * ""
      */
     String EMPTY_STRING = "";
+
     /**
      * "."
      */
     String DOT = ".";
+
     /**
      * "@"
      */
     String AT_SIGN = "@";
+
     /**
      * "_"
      */
     String UNDERSCORE = "_";
+
     /**
      * "\""
      */
     String ESCAPED_DOUBLE_QUOTES = "\"";
+
+    /**
+     * "Sealed"
+     */
+    String SEALED_PREFIX = "Sealed";
+
+    /**
+     * "UnSealed"
+     */
+    String UNSEALED = "UnSealed";
+
+    /**
+     * "package"
+     */
+    String PACKAGE = "package";
+
+    /**
+     * "interface"
+     */
+    String INTERFACE = "interface";
+
+    /**
+     * "class"
+     */
+    String CLASS = "class";
+
+    /**
+     * ".class"
+     */
+    String DOT_CLASS = DOT + CLASS;
+
+    /**
+     * "public interface"
+     */
+    String PUBLIC_INTERFACE = "public interface";
+
+    /**
+     * "public sealed interface"
+     */
+    String PUBLIC_SEALED_INTERFACE = "public sealed interface";
+
+    /**
+     * "public final class"
+     */
+    String PUBLIC_FINAL_CLASS = "public final class";
+
+    /**
+     * "extends"
+     */
+    String EXTENDS = "extends";
+
+    /**
+     * "implements"
+     */
+    String IMPLEMENTS = "implements";
+
+    /**
+     * "permits"
+     */
+    String PERMITS = "permits";
+
     /**
      * "\n"
      */
     String NEW_LINE = format("%n");
+
     /**
      * "\t"
      */
     String TAB = " \t";
+
     /**
      * "true"
      */
     String TRUE = "true";
+
     /**
      * "false"
      */
     String FALSE = "false";
+
     /**
      * "value"
      */
     String VALUE = "value";
+
     /**
      * "FinalClass"
      */
     String FINAL_CLASS_SUFFIX = "FinalCass";
+
     /**
      * "return"
      */
     String RETURN = "return";
+
     /**
      * "java.lang.Object"
      */
@@ -251,20 +283,33 @@ public interface StringGenerator {
     String DETACH_REGEX = "Detach\\((.*?)\\)";
 
     String DETACH_PROFILE = "profile";
+
     String DETACH_RENAME = "rename";
+
     String DETACH_SUPERINTERFACES = "superInterfaces";
+
     String DETACH_FIRSTSUPERINTERFACEGENERICS = "firstSuperInterfaceGenerics";
+
     String DETACH_SECONDSUPERINTERFACEGENERICS = "secondSuperInterfaceGenerics";
+
     String DETACH_THIRDSUPERINTERFACEGENERICS = "thirdSuperInterfaceGenerics";
+
     String DETACH_APPLYANNOTATIONS = "applyAnnotations";
+
     String DETACH_METHODS = "methods";
 
     String DETACH_PROFILE_REGEX = "profile=" + ANNOTATION_STRING_VALUE_REGEX;
+
     String DETACH_RENAME_REGEX = "rename=" + ANNOTATION_STRING_VALUE_REGEX;
+
     String DETACH_SUPERINTERFACES_REGEX = "superInterfaces=" + ANNOTATION_ARRAY_VALUE_REGEX;
+
     String DETACH_FIRSTSUPERINTERFACEGENERICS_REGEX = "firstSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+
     String DETACH_SECONDSUPERINTERFACEGENERICS_REGEX = "secondSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+
     String DETACH_THIRDSUPERINTERFACEGENERICS_REGEX = "thirdSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+
     String DETACH_APPLYANNOTATIONS_REGEX = "applyAnnotations=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
     /**
@@ -312,6 +357,7 @@ public interface StringGenerator {
      * Fully qualified name of the {@link Detach.Detachs} annotation
      */
     String ORG_JISEL_DETACHS = "org.jisel.annotations.Detach.Detachs";
+
     /**
      * Fully qualified name of the {@link AddTo} annotation
      */

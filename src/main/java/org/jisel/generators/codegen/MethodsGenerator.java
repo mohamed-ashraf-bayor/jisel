@@ -63,11 +63,6 @@ public sealed interface MethodsGenerator extends CodeGenerator permits Interface
      */
     void generateEmptyConcreteMethodsFromElementsSet(StringBuilder sealedInterfaceContent, Set<Element> methodsSet);
 
-    @Override
-    default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
-        params.forEach(methodDefinition -> classOrInterfaceContent.append(format("\t%s%n", methodDefinition)));
-    }
-
     /**
      * Returns a string representing the fully qualified name of a method return type
      *
@@ -134,5 +129,10 @@ public sealed interface MethodsGenerator extends CodeGenerator permits Interface
             case BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, CHAR -> RETURN + WHITESPACE + DEFAULT_NUMBER_VALUE;
             default -> RETURN + WHITESPACE + DEFAULT_NULL_VALUE;
         };
+    }
+
+    @Override
+    default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
+        params.forEach(methodDefinition -> classOrInterfaceContent.append(format("\t%s%n", methodDefinition)));
     }
 }

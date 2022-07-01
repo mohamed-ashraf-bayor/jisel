@@ -1,3 +1,24 @@
+/**
+ * Copyright (c) 2022 Mohamed Ashraf Bayor
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package org.jisel.handlers;
 
 import org.jisel.handlers.impl.SealForParentChildInheritanceHandler;
@@ -20,8 +41,8 @@ import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
  * Exposes contract to fulfill by any class dedicated to building parent-children relations based on information provided in
  * the Map containing the sealed interfaces information to be generated
  */
-public sealed interface ParentChildInheritanceHandler
-        extends JiselAnnotationHandler
+public abstract sealed class AbstractSealedParentChildInheritanceHandler
+        implements JiselAnnotationHandler
         permits SealForParentChildInheritanceHandler {
 
     /**
@@ -38,8 +59,8 @@ public sealed interface ParentChildInheritanceHandler
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a Map of profile name as the key and a List of profiles names as the value.
      */
-    void buildInheritanceRelations(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
+    public abstract void buildInheritanceRelations(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
 
     /**
      * Populates a Map storing subtypes of the provided profiles
@@ -56,9 +77,9 @@ public sealed interface ParentChildInheritanceHandler
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a Map of profile name as the key and a List of profiles names as the value.
      */
-    default void buildSealedInterfacesPermitsMap(Element interfaceElement,
-                                                 Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                 Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+    protected void buildSealedInterfacesPermitsMap(Element interfaceElement,
+                                                   Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         sealedInterfacesPermitsByLargeInterface.get(interfaceElement).putAll(
                 sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).keySet().stream()
                         .filter(profiles -> profiles.contains(COMMA_SEPARATOR))
@@ -99,11 +120,9 @@ public sealed interface ParentChildInheritanceHandler
     }
 
     @Override
-    default Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
-                                                         Set<Element> allAnnotatedElements,
-                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                                         Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
+    public Map<Element, String> handleAnnotatedElements(Set<Element> allAnnotatedElements,
+                                                        Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         buildInheritanceRelations(sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
         return Map.of();
     }

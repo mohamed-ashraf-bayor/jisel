@@ -1,6 +1,6 @@
 package org.jisel.handlers.impl;
 
-import org.jisel.handlers.ParentChildInheritanceHandler;
+import org.jisel.handlers.AbstractSealedParentChildInheritanceHandler;
 
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
 /**
  * Builds parent-children relationships based on information provided in the Map containing the sealed interfaces information to be generated
  */
-public final class SealForParentChildInheritanceHandler implements ParentChildInheritanceHandler {
+public final class SealForParentChildInheritanceHandler extends AbstractSealedParentChildInheritanceHandler {
     @Override
     public void buildInheritanceRelations(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                           Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {

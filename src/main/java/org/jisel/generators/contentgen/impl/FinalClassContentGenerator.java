@@ -52,9 +52,17 @@ import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
  */
 public final class FinalClassContentGenerator extends AbstractSealedContentGenerator {
 
+    /**
+     * TODO jdoc...
+     *
+     * @param processingEnvironment
+     */
+    public FinalClassContentGenerator(ProcessingEnvironment processingEnvironment) {
+        super(processingEnvironment);
+    }
+
     @Override
-    public String generateContent(ProcessingEnvironment processingEnvironment,
-                                  Element largeInterfaceElement,
+    public String generateContent(Element largeInterfaceElement,
                                   boolean unSeal,
                                   Map<String, Set<Element>> sealedInterfacesToGenerateMap,
                                   Map<String, List<String>> sealedInterfacesPermitsMap) {
@@ -72,7 +80,6 @@ public final class FinalClassContentGenerator extends AbstractSealedContentGener
         ));
         // list of implements
         extendsGenerator.generateExtendsClauseFromPermitsMapAndProcessedProfile(
-                processingEnvironment,
                 finalClassContent,
                 sealedInterfacesPermitsMap,
                 finalClassName,

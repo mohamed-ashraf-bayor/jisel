@@ -1,8 +1,7 @@
 package org.jisel.handlers.impl;
 
-import org.jisel.handlers.AnnotationInfoCollectionHandler;
+import org.jisel.handlers.AbstractSealedAnnotationInfoCollectionHandler;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,11 +16,11 @@ import static java.util.stream.Stream.concat;
  * Collects necessary information from the annotated elements, in order to populate the Map containing the sealed
  * interfaces information to be generated
  */
-public final class SealForInfoCollectionHandler implements AnnotationInfoCollectionHandler {
+public final class SealForAnnotationInfoCollectionHandler
+        extends AbstractSealedAnnotationInfoCollectionHandler {
 
     @Override
-    public void populateSealedInterfacesMap(ProcessingEnvironment processingEnv,
-                                            Set<Element> allAnnotatedElements,
+    public void populateSealedInterfacesMap(Set<Element> allAnnotatedElements,
                                             Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         var annotatedMethodsByInterface = allAnnotatedElements.stream()
                 .collect(groupingBy(Element::getEnclosingElement, toSet()));
@@ -30,7 +29,7 @@ public final class SealForInfoCollectionHandler implements AnnotationInfoCollect
                 (interfaceElement, annotatedMethodsElements) -> annotatedMethodsElements.forEach(
                         annotatedMethod -> extractProfilesAndPopulateMaps(
                                 interfaceElement,
-                                buildSealForProvidedProfilesSet(processingEnv, annotatedMethod),
+                                buildSealForProvidedProfilesSet(annotatedMethod),
                                 annotatedMethod,
                                 annotatedMethodsByProfileByInterface
                         )

@@ -24,7 +24,6 @@ package org.jisel.handlers.impl;
 import org.jisel.annotations.UnSeal;
 import org.jisel.handlers.JiselAnnotationHandler;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import java.util.HashMap;
@@ -44,11 +43,9 @@ import static org.jisel.generators.StringGenerator.VALUE;
 public final class UnSealHandler implements JiselAnnotationHandler {
 
     @Override
-    public Map<Element, String> handleAnnotatedElements(ProcessingEnvironment processingEnv,
-                                                        Set<Element> allAnnotatedElements,
+    public Map<Element, String> handleAnnotatedElements(Set<Element> allAnnotatedElements,
                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                                        Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
         allAnnotatedElements.stream()
                 .filter(element -> ElementKind.INTERFACE.equals(element.getKind()))
