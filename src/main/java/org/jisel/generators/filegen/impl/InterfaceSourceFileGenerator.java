@@ -68,7 +68,8 @@ public final class InterfaceSourceFileGenerator extends AbstractSealedSourceFile
     @Override
     public List<String> createSourceFiles(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                           Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                          Map<Element, Boolean> unSealValueByLargeInterface) throws IOException {
+                                          Map<Element, Boolean> unSealValueByLargeInterface,
+                                          Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) throws IOException {
         var generatedFiles = new ArrayList<String>();
         for (var sealedInterfacesToGenerateMapEntry : sealedInterfacesToGenerateByLargeInterface.entrySet()) {
             var largeInterfaceElement = sealedInterfacesToGenerateMapEntry.getKey();
@@ -78,23 +79,47 @@ public final class InterfaceSourceFileGenerator extends AbstractSealedSourceFile
                 var generatedSealedInterfaceName = sealedInterfaceNameConvention(profile, largeInterfaceElement);
                 var generatedUnSealedInterfaceName = generatedSealedInterfaceName.substring(SEALED_PREFIX.length());
                 generatedFiles.add(
-                        // 3rd arg is a Map made of only 1 Map.Entry instance <String, Set<Element>
-                        createSealedInterfaceSourceFile(largeInterfaceElement, Map.ofEntries(mapEntry),
-                                sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement), generatedSealedInterfaceName)
+                        // 3rd arg is a Map made of only 1 instance of Map.Entry<String, Set<Element>>
+                        createSealedInterfaceSourceFile(
+                                largeInterfaceElement,
+                                mapEntry,
+                                sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement),
+                                generatedSealedInterfaceName
+                        )
                 );
                 if (unSeal) {
                     generatedFiles.add(
-                            createUnSealedInterfaceSourceFile(largeInterfaceElement, Map.ofEntries(mapEntry),
-                                    sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement), generatedUnSealedInterfaceName)
+                            createUnSealedInterfaceSourceFile(
+                                    largeInterfaceElement,
+                                    mapEntry,
+                                    sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement),
+                                    generatedUnSealedInterfaceName
+                            )
                     );
                 }
+
             }
             generatedFiles.add(
-                    createFinalClassFile(largeInterfaceElement, sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement))
+                    createFinalClassFile(
+                            largeInterfaceElement,
+                            sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement)
+                    )
+            );
+            generatedFiles.addAll(
+                    createDetachedInterfacesSourceFiles(
+                            largeInterfaceElement,
+                            detachedInterfacesToGenerateByLargeInterface,
+                            sealedInterfacesToGenerateByLargeInterface,
+                            sealedInterfacesPermitsByLargeInterface
+                    )
             );
             generatedFiles.add(
-                    createJiselReportFile(largeInterfaceElement, unSeal, sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement),
-                            sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement))
+                    createJiselReportFile(
+                            largeInterfaceElement,
+                            unSeal,
+                            sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement),
+                            sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement)
+                    )
             );
         }
         return generatedFiles;

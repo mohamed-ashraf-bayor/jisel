@@ -32,10 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.jisel.generators.StringGenerator.AT_SIGN;
 import static org.jisel.generators.StringGenerator.DETACH_METHODS;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_ALL;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACHS;
-import static org.jisel.handlers.JiselAnnotationHandler.findAllAbstractMethodsForProfile;
+import static org.jisel.generators.contentgen.SourceContentGenerator.findAllAbstractMethodsForProfile;
 
 /**
  * Handles all elements annotated with &#64;{@link Detach}
@@ -48,9 +49,9 @@ public final class DetachHandler extends AbstractSealedDetachHandler {
 
     @Override
     public Map<Element, String> handleDetachAnnotatedElements(Set<Element> allAnnotatedElements,
-                                                        Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                                        Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
+                                                              Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                              Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
+                                                              Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
         allAnnotatedElements.stream()
                 .filter(element -> ElementKind.INTERFACE.equals(element.getKind()))
@@ -96,16 +97,20 @@ public final class DetachHandler extends AbstractSealedDetachHandler {
                     if (detachedInterfacesToGenerateByLargeInterface.containsKey(largeInterfaceElement)) {
                         // for each detached interface, get the corresponding abstract methods (including the parent profiles methods)
                         detachedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).keySet().stream()
-                                .filter(detachedProfile -> !JISEL_KEYWORD_ALL.equals(detachedProfile))
-                                .forEach(detachedProfile -> detachedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(detachedProfile).put(
-                                        DETACH_METHODS,
-                                        findAllAbstractMethodsForProfile(
-                                                detachedProfile,
-                                                sealedInterfacesToGenerateByLargeInterface,
-                                                sealedInterfacesPermitsByLargeInterface,
-                                                largeInterfaceElement
+                                .filter(detachedProfileUniqueKey -> !detachedProfileUniqueKey.startsWith(JISEL_KEYWORD_ALL))
+                                .forEach(detachedProfileUniqueKey ->
+                                        detachedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(detachedProfileUniqueKey).put(
+                                                DETACH_METHODS,
+                                                findAllAbstractMethodsForProfile(
+                                                        detachedProfileUniqueKey.contains(AT_SIGN)
+                                                                ? detachedProfileUniqueKey.substring(0, detachedProfileUniqueKey.indexOf(AT_SIGN))
+                                                                : detachedProfileUniqueKey,
+                                                        sealedInterfacesToGenerateByLargeInterface,
+                                                        sealedInterfacesPermitsByLargeInterface,
+                                                        largeInterfaceElement
+                                                )
                                         )
-                                ));
+                                );
                     }
                 });
         return statusReport;

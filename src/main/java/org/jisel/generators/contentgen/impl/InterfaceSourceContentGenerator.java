@@ -21,12 +21,13 @@
  */
 package org.jisel.generators.contentgen.impl;
 
-import org.jisel.generators.contentgen.AbstractSealedContentGenerator;
+import org.jisel.generators.contentgen.AbstractSealedSourceContentGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.String.format;
@@ -43,25 +44,24 @@ import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
  * // TODO jdoc all
  * Generates the content of a sealed interface
  * ...
- * In this specific case, though a Map is received as sealedInterfacesToGenerateMap param, ONLY A SINGLE ENTRY IS EXPECTED AS CONTENT.
  */
-public final class InterfaceContentGenerator extends AbstractSealedContentGenerator {
+public final class InterfaceSourceContentGenerator extends AbstractSealedSourceContentGenerator {
 
     /**
      * TODO jdoc...
      *
      * @param processingEnvironment
      */
-    public InterfaceContentGenerator(ProcessingEnvironment processingEnvironment) {
+    public InterfaceSourceContentGenerator(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);
     }
 
     @Override
-    public String generateContent(Element largeInterfaceElement,
-                                  boolean unSeal,
-                                  Map<String, Set<Element>> sealedInterfacesToGenerateMap,
-                                  Map<String, List<String>> sealedInterfacesPermitsMap) {
-        var profile = sealedInterfacesToGenerateMap.keySet().stream().findFirst().orElse(EMPTY_STRING); // only & always 1 entry expected (see calling mthd)
+    public String generateSourceContent(Element largeInterfaceElement,
+                                        boolean unSeal,
+                                        Map.Entry<String, Set<Element>> sealedInterfaceToGenerate,
+                                        Map<String, List<String>> sealedInterfacesPermitsMap) {
+        var profile = sealedInterfaceToGenerate.getKey();
         var interfaceContent = new StringBuilder();
         // package name
         generatePackageName(largeInterfaceElement).ifPresent(
@@ -96,7 +96,7 @@ public final class InterfaceContentGenerator extends AbstractSealedContentGenera
         }
         interfaceContent.append(format(" %s%n ", OPENING_CURLY_BRACE)); // opening bracket after permits list
         // list of methods
-        methodsGenerator.generateAbstractMethodsFromElementsSet(interfaceContent, sealedInterfacesToGenerateMap.get(profile));
+        methodsGenerator.generateAbstractMethodsFromElementsSet(interfaceContent, sealedInterfaceToGenerate.getValue());
         // closing bracket
         interfaceContent.append(CLOSING_CURLY_BRACE);
         //

@@ -21,18 +21,6 @@
  */
 package org.jisel.generators.contentgen;
 
-import org.jisel.generators.codegen.AnnotationsGenerator;
-import org.jisel.generators.codegen.DeclarationGenerator;
-import org.jisel.generators.codegen.ExtendsGenerator;
-import org.jisel.generators.codegen.MethodsGenerator;
-import org.jisel.generators.codegen.PermitsGenerator;
-import org.jisel.generators.codegen.impl.InterfaceAnnotationsGenerator;
-import org.jisel.generators.codegen.impl.InterfaceDeclarationGenerator;
-import org.jisel.generators.codegen.impl.InterfaceExtendsGenerator;
-import org.jisel.generators.codegen.impl.InterfaceMethodsGenerator;
-import org.jisel.generators.codegen.impl.SealedInterfacePermitsGenerator;
-import org.jisel.generators.contentgen.impl.FinalClassContentGenerator;
-import org.jisel.generators.contentgen.impl.InterfaceContentGenerator;
 import org.jisel.generators.contentgen.impl.ReportContentGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -54,44 +42,38 @@ import static org.jisel.generators.StringGenerator.UNDERSCORE;
 import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
 import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConvention;
 
-// TODO jdoc
-
 /**
- * Generates content of the final class generated for the provided large interface
- * ... ...
+ * TODO jdoc...
  */
-public abstract sealed class AbstractSealedContentGenerator
-        implements ContentGenerator
-        permits FinalClassContentGenerator, ReportContentGenerator, InterfaceContentGenerator {
-
-    protected final ProcessingEnvironment processingEnvironment;
-    protected final AnnotationsGenerator annotationsGenerator;
-    protected final ExtendsGenerator extendsGenerator;
-    protected final PermitsGenerator permitsGenerator;
-    protected final MethodsGenerator methodsGenerator;
-    protected final DeclarationGenerator declarationGenerator;
+public abstract sealed class AbstractSealedReportContentGenerator
+        extends AbstractSealedSourceContentGenerator
+        permits ReportContentGenerator {
 
     /**
      * TODO jdoc...
+     *
+     * @param processingEnvironment
      */
-    protected AbstractSealedContentGenerator(ProcessingEnvironment processingEnvironment) {
-        this.processingEnvironment = processingEnvironment;
-        this.annotationsGenerator = new InterfaceAnnotationsGenerator();
-        this.extendsGenerator = new InterfaceExtendsGenerator(this.processingEnvironment);
-        this.permitsGenerator = new SealedInterfacePermitsGenerator();
-        this.methodsGenerator = new InterfaceMethodsGenerator();
-        this.declarationGenerator = new InterfaceDeclarationGenerator();
+    protected AbstractSealedReportContentGenerator(ProcessingEnvironment processingEnvironment) {
+        super(processingEnvironment);
     }
 
-    protected String generateSealedInterfacesReport(Element largeInterfaceElement,
-                                                    Map<String, Set<Element>> sealedInterfacesToGenerateMap,
-                                                    Map<String, List<String>> sealedInterfacesPermitsMap) {
+    /**
+     *
+     * @param largeInterfaceElement
+     * @param sealedInterfacesToGenerateMap
+     * @param sealedInterfacesPermitsMap
+     * @return
+     */
+    protected String generateSealedInterfacesReportContent(Element largeInterfaceElement,
+                                                           Map<String, Set<Element>> sealedInterfacesToGenerateMap,
+                                                           Map<String, List<String>> sealedInterfacesPermitsMap) {
         var reportContent = new StringBuilder();
         reportContent.append(format("%s%n", JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER));
-        sealedInterfacesToGenerateMap.entrySet().forEach(entrySet -> {
-            var sealedInterfaceName = sealedInterfaceNameConvention(entrySet.getKey(), largeInterfaceElement);
+        sealedInterfacesToGenerateMap.entrySet().forEach(mapEntry -> {
+            var sealedInterfaceName = sealedInterfaceNameConvention(mapEntry.getKey(), largeInterfaceElement);
             reportContent.append(format("\t%s%n", sealedInterfaceName));
-            var sealedInterfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(entrySet.getKey()));
+            var sealedInterfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(mapEntry.getKey()));
             if (sealedInterfaceChildrenOpt.isPresent() && !sealedInterfaceChildrenOpt.get().isEmpty()) {
                 reportContent.append(format("\t - %s%n", JISEL_REPORT_CHILDREN_HEADER));
                 if (!sealedInterfaceChildrenOpt.get().isEmpty()) {
@@ -108,15 +90,22 @@ public abstract sealed class AbstractSealedContentGenerator
         return reportContent.toString();
     }
 
-    protected String generateUnSealedInterfacesReport(Element largeInterfaceElement,
-                                                      Map<String, Set<Element>> sealedInterfacesToGenerateMap,
-                                                      Map<String, List<String>> sealedInterfacesPermitsMap) {
+    /**
+     *
+     * @param largeInterfaceElement
+     * @param sealedInterfacesToGenerateMap
+     * @param sealedInterfacesPermitsMap
+     * @return
+     */
+    protected String generateUnSealedInterfacesReportContent(Element largeInterfaceElement,
+                                                             Map<String, Set<Element>> sealedInterfacesToGenerateMap,
+                                                             Map<String, List<String>> sealedInterfacesPermitsMap) {
         var reportContent = new StringBuilder();
         reportContent.append(format("%s%n", JISEL_REPORT_CREATED_UNSEALED_INTERFACES_HEADER));
-        sealedInterfacesToGenerateMap.entrySet().forEach(entrySet -> {
-            var interfaceName = unSealedInterfaceNameConvention(entrySet.getKey(), largeInterfaceElement);
+        sealedInterfacesToGenerateMap.entrySet().forEach(mapEntry -> {
+            var interfaceName = unSealedInterfaceNameConvention(mapEntry.getKey(), largeInterfaceElement);
             reportContent.append(format("\t%s%n", interfaceName));
-            var interfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(entrySet.getKey()));
+            var interfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(mapEntry.getKey()));
             if (interfaceChildrenOpt.isPresent() && !interfaceChildrenOpt.get().isEmpty()) {
                 var childrenListOutput = interfaceChildrenOpt.get().stream()
                         .filter(childName -> !childName.startsWith(UNDERSCORE) && !childName.endsWith(FINAL_CLASS_SUFFIX))

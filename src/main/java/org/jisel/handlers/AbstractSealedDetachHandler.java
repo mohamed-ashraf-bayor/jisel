@@ -34,23 +34,24 @@ import java.util.regex.Pattern;
 
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
+import static org.jisel.generators.StringGenerator.AT_SIGN;
 import static org.jisel.generators.StringGenerator.CLOSING_PARENTHESIS;
 import static org.jisel.generators.StringGenerator.DETACH_APPLYANNOTATIONS;
 import static org.jisel.generators.StringGenerator.DETACH_APPLYANNOTATIONS_REGEX;
-import static org.jisel.generators.StringGenerator.DETACH_FIRSTSUPERINTERFACEGENERICS;
-import static org.jisel.generators.StringGenerator.DETACH_FIRSTSUPERINTERFACEGENERICS_REGEX;
+import static org.jisel.generators.StringGenerator.DETACH_FIRST_SUPERINTERFACE_GENERICS;
+import static org.jisel.generators.StringGenerator.DETACH_FIRST_SUPERINTERFACE_GENERICS_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_PROFILE;
 import static org.jisel.generators.StringGenerator.DETACH_PROFILE_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_RENAME;
 import static org.jisel.generators.StringGenerator.DETACH_RENAME_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_REPORT_MSG;
-import static org.jisel.generators.StringGenerator.DETACH_SECONDSUPERINTERFACEGENERICS;
-import static org.jisel.generators.StringGenerator.DETACH_SECONDSUPERINTERFACEGENERICS_REGEX;
+import static org.jisel.generators.StringGenerator.DETACH_SECOND_SUPERINTERFACE_GENERICS;
+import static org.jisel.generators.StringGenerator.DETACH_SECOND_SUPERINTERFACE_GENERICS_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_SUPERINTERFACES;
 import static org.jisel.generators.StringGenerator.DETACH_SUPERINTERFACES_REGEX;
-import static org.jisel.generators.StringGenerator.DETACH_THIRDSUPERINTERFACEGENERICS;
-import static org.jisel.generators.StringGenerator.DETACH_THIRDSUPERINTERFACEGENERICS_REGEX;
+import static org.jisel.generators.StringGenerator.DETACH_THIRD_SUPERINTERFACE_GENERICS;
+import static org.jisel.generators.StringGenerator.DETACH_THIRD_SUPERINTERFACE_GENERICS_REGEX;
 import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_ALL;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL;
@@ -58,7 +59,6 @@ import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_TRANSF
 import static org.jisel.generators.StringGenerator.OPENING_PARENTHESIS;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACH;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACHALL;
-import static org.jisel.generators.StringGenerator.PROFILE;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL_AND_SEAL_FOR_REPORT_MSG;
 import static org.jisel.generators.StringGenerator.VALUE;
 import static org.jisel.generators.StringGenerator.annotationAttributeValueWithoutQuotes;
@@ -135,14 +135,16 @@ public abstract sealed class AbstractSealedDetachHandler
             if (!sealedInterfacesToGenerateByLargeInterface.containsKey(largeInterfaceElement)) {
                 return TOP_LEVEL_AND_SEAL_FOR_REPORT_MSG;
             }
-            var profile = attributesMap.get(PROFILE).toString();
+            var profile = attributesMap.get(DETACH_PROFILE).toString();
+            var rename = attributesMap.get(DETACH_RENAME).toString();
+            var detachedProfileUniqueKey = profile + AT_SIGN + rename;
             if (!isJiselKeyword(profile) && !sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).containsKey(profile)) {
                 return DETACH_REPORT_MSG;
             }
             updateDetachedInterfacesToGenerateByLargeInterface(
                     detachedInterfacesToGenerateByLargeInterface,
                     largeInterfaceElement,
-                    Map.of(profile, attributesMap)
+                    Map.of(detachedProfileUniqueKey, attributesMap)
             );
         }
         return EMPTY_STRING;
@@ -162,7 +164,8 @@ public abstract sealed class AbstractSealedDetachHandler
                                                      Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         var detachsAnnotationRawContentString = detachsAnnotationMirror.getElementValues().entrySet().stream()
                 .filter(entry -> entry.getKey().toString().equals(VALUE + OPENING_PARENTHESIS + CLOSING_PARENTHESIS))
-                .toList().get(0).getValue().getValue().toString();
+                .toList()
+                .get(0).getValue().getValue().toString();
         // detachsAnnotationRawContentString sample value:
         // @org.jisel.annotations.Detach(profile="(toplevel)", superInterfaces={com.bayor.Sociable.class, com.bayor.Processor.class}, applyAnnotations={"@Deprecated", @Annot2}, rename="newName"),@org.jisel.annotations.Detach(profile="PRo1", ...)
         var detachMatcher = Pattern.compile(DETACH_REGEX).matcher(detachsAnnotationRawContentString.replace(JISEL_KEYWORD_TOPLEVEL, JISEL_KEYWORD_TOPLEVEL_TRANSFORMED));
@@ -170,7 +173,8 @@ public abstract sealed class AbstractSealedDetachHandler
             var detachAnnotationRawContent = detachMatcher.group(1).strip();
             // detachAnnotationRawContent sample value:
             // profile="_toplevel_", superInterfaces={com.bayor.Sociable.class,...}, applyAnnotations={"@Deprecated",...}, rename="newName"
-            String profile = extractDetachAttributeValue(detachAnnotationRawContent, DETACH_PROFILE_REGEX);
+            var profile = extractDetachAttributeValue(detachAnnotationRawContent, DETACH_PROFILE_REGEX);
+            var rename = extractDetachAttributeValue(detachAnnotationRawContent, DETACH_RENAME_REGEX);
             if (!sealedInterfacesToGenerateByLargeInterface.containsKey(largeInterfaceElement)) {
                 return TOP_LEVEL_AND_SEAL_FOR_REPORT_MSG;
             }
@@ -180,13 +184,14 @@ public abstract sealed class AbstractSealedDetachHandler
             updateDetachedInterfacesToGenerateByLargeInterface(
                     detachedInterfacesToGenerateByLargeInterface,
                     largeInterfaceElement,
-                    Map.of(profile, new HashMap<>(Map.of(
+                    Map.of(profile + AT_SIGN + rename, // unique map key made of <profile> + @ + <rename>
+                            new HashMap<>(Map.of(
                                     DETACH_PROFILE, profile,
-                                    DETACH_RENAME, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_RENAME_REGEX),
+                                    DETACH_RENAME, rename,
                                     DETACH_SUPERINTERFACES, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_SUPERINTERFACES_REGEX),
-                                    DETACH_FIRSTSUPERINTERFACEGENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_FIRSTSUPERINTERFACEGENERICS_REGEX),
-                                    DETACH_SECONDSUPERINTERFACEGENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_SECONDSUPERINTERFACEGENERICS_REGEX),
-                                    DETACH_THIRDSUPERINTERFACEGENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_THIRDSUPERINTERFACEGENERICS_REGEX),
+                                    DETACH_FIRST_SUPERINTERFACE_GENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_FIRST_SUPERINTERFACE_GENERICS_REGEX),
+                                    DETACH_SECOND_SUPERINTERFACE_GENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_SECOND_SUPERINTERFACE_GENERICS_REGEX),
+                                    DETACH_THIRD_SUPERINTERFACE_GENERICS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_THIRD_SUPERINTERFACE_GENERICS_REGEX),
                                     DETACH_APPLYANNOTATIONS, extractDetachAttributeValue(detachAnnotationRawContent, DETACH_APPLYANNOTATIONS_REGEX)
                             ))
                     )
@@ -206,8 +211,8 @@ public abstract sealed class AbstractSealedDetachHandler
     private Map<String, Map<String, Object>> updateDetachedInterfacesToGenerateByLargeInterface(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
                                                                                                 Element largeInterfaceElement,
                                                                                                 Map<String, Map<String, Object>> detachedInterfacesToGenerate) {
-        // when a profile name is repeated in 2 different @Detach annotations, the following merge triggers:
-        // Fatal error compiling: java.lang.IllegalStateException: Duplicate key <profilename> (attempted merging values ...)
+        // when the combination [<profile> + @ + <rename>] is repeated in 2 different @Detach annotations, the following merge triggers:
+        // Fatal error compiling: java.lang.IllegalStateException: Duplicate key [<profile> + @ + <rename>] (attempted merging values ...)
         return detachedInterfacesToGenerateByLargeInterface.merge(
                 largeInterfaceElement,
                 detachedInterfacesToGenerate,

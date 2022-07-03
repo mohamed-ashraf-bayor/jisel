@@ -24,17 +24,10 @@ package org.jisel.handlers;
 import org.jisel.handlers.impl.TopLevelHandler;
 import org.jisel.handlers.impl.UnSealHandler;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
-
-import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL;
-import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_TRANSFORMED;
 
 /**
  * Exposes contract to fulfill by any class handling all elements annotated with Jisel annotations
@@ -63,52 +56,4 @@ public sealed interface JiselAnnotationHandler
     Map<Element, String> handleAnnotatedElements(Set<Element> allAnnotatedElements,
                                                  Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                  Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface);
-
-    /**
-     * // TODO jdoc
-     *
-     * @param profile
-     * @param sealedInterfacesToGenerateByLargeInterface
-     * @param sealedInterfacesPermitsByLargeInterface
-     * @param largeInterfaceElement
-     * @return
-     */
-    static Set<Element> findAllAbstractMethodsForProfile(String profile,
-                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                                         Element largeInterfaceElement) {
-        var methodsElementSet = new HashSet<Element>();
-        if (profile.equals(JISEL_KEYWORD_TOPLEVEL) || profile.equals(JISEL_KEYWORD_TOPLEVEL_TRANSFORMED)) {
-            methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(largeInterfaceElement.getSimpleName().toString()));
-        } else {
-            methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(profile));
-            addMethodsFromParentProfiles(profile, methodsElementSet, largeInterfaceElement, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
-        }
-        return methodsElementSet;
-    }
-
-    /**
-     * TODO jdoc...
-     *
-     * @param processedProfile
-     * @param methodsElementSet
-     * @param largeInterfaceElement
-     * @param sealedInterfacesToGenerateByLargeInterface
-     * @param sealedInterfacesPermitsByLargeInterface
-     */
-    private static void addMethodsFromParentProfiles(String processedProfile,
-                                                     Set<Element> methodsElementSet,
-                                                     Element largeInterfaceElement,
-                                                     Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                     Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
-        Function<String, Optional<Map.Entry<String, List<String>>>> findProfileAsChild = profile -> sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement).entrySet().stream()
-                .filter(mapEntry -> mapEntry.getValue().contains(profile))
-                .findFirst();
-        var profileOpt = findProfileAsChild.apply(processedProfile);
-        if (profileOpt.isPresent()) {
-            var parentProfile = profileOpt.get().getKey();
-            methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(parentProfile));
-            addMethodsFromParentProfiles(parentProfile, methodsElementSet, largeInterfaceElement, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
-        }
-    }
 }

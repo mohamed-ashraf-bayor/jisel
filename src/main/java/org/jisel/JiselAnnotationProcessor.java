@@ -27,10 +27,7 @@ import org.jisel.annotations.Detach;
 import org.jisel.annotations.SealFor;
 import org.jisel.annotations.TopLevel;
 import org.jisel.annotations.UnSeal;
-import org.jisel.generators.filegen.AbstractSealedSourceFileGenerator;
 import org.jisel.generators.filegen.impl.InterfaceSourceFileGenerator;
-import org.jisel.handlers.AbstractSealedAddToHandler;
-import org.jisel.handlers.AbstractSealedDetachHandler;
 import org.jisel.handlers.AbstractSealedSealForHandler;
 import org.jisel.handlers.JiselAnnotationHandler;
 import org.jisel.handlers.impl.AddToHandler;
@@ -83,13 +80,9 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
 
     private final Logger log = Logger.getLogger(JiselAnnotationProcessor.class.getName());
 
-    private final AbstractSealedSealForHandler sealForHandler;
-    private final AbstractSealedAddToHandler addToHandler;
     private final JiselAnnotationHandler topLevelHandler;
+    private final AbstractSealedSealForHandler sealForHandler;
     private final JiselAnnotationHandler unSealHandler;
-    private final AbstractSealedDetachHandler detachHandler;
-
-    private final AbstractSealedSourceFileGenerator interfaceSourceFileGenerator;
 
     /**
      * JiselAnnotationProcessor constructor. Initializes needed instances of {@link SealForHandler}, {@link AddToHandler},
@@ -97,15 +90,16 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
      */
     public JiselAnnotationProcessor() {
         this.sealForHandler = new SealForHandler();
-        this.addToHandler = new AddToHandler(processingEnv);
         this.topLevelHandler = new TopLevelHandler();
         this.unSealHandler = new UnSealHandler();
-        this.detachHandler = new DetachHandler(processingEnv);
-        this.interfaceSourceFileGenerator = new InterfaceSourceFileGenerator(processingEnv);
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+
+        var addToHandler = new AddToHandler(processingEnv);
+        var detachHandler = new DetachHandler(processingEnv);
+        var interfaceSourceFileGenerator = new InterfaceSourceFileGenerator(processingEnv);
 
         var allAnnotatedSealForElements = new HashSet<Element>();
         var allAnnotatedTopLevelElements = new HashSet<Element>();
@@ -136,7 +130,10 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
             processTopLevelAndSealForAnnotatedElements(
                     topLevelHandler,
                     sealForHandler,
-                    Map.of(ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements, ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements),
+                    Map.of(
+                            ALL_ANNOTATED_TOPLEVEL_ELEMENTS, allAnnotatedTopLevelElements,
+                            ALL_ANNOTATED_SEALFOR_ELEMENTS, allAnnotatedSealForElements
+                    ),
                     sealedInterfacesToGenerateByLargeInterface,
                     sealedInterfacesPermitsByLargeInterface
             );
@@ -167,7 +164,8 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
                 var generatedFiles = interfaceSourceFileGenerator.createSourceFiles(
                         sealedInterfacesToGenerateByLargeInterface,
                         sealedInterfacesPermitsByLargeInterface,
-                        unSealValueByLargeInterface
+                        unSealValueByLargeInterface,
+                        detachedInterfacesToGenerateByLargeInterface
                 );
                 if (!generatedFiles.isEmpty()) {
                     log.info(() -> format("%s:%n%s", FILE_GENERATION_SUCCESS, generatedFiles.stream().collect(joining(NEW_LINE))));

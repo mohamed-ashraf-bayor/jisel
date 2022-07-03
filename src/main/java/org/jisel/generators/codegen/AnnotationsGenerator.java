@@ -34,7 +34,9 @@ import static org.jisel.generators.StringGenerator.NEW_LINE;
  * // TODO jdoc entire clss
  * Exposes contract to be fulfilled by a class generating annotations
  */
-public sealed interface AnnotationsGenerator extends CodeGenerator permits InterfaceAnnotationsGenerator {
+public sealed interface AnnotationsGenerator
+        extends CodeGenerator
+        permits InterfaceAnnotationsGenerator {
 
     void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent);
 

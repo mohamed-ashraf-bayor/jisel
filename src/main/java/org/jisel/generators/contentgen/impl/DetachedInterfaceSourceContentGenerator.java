@@ -19,32 +19,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.generators.filegen;
+package org.jisel.generators.contentgen.impl;
 
+import org.jisel.generators.contentgen.AbstractSealedDetachedInterfaceSourceContentGenerator;
+
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.lang.String.format;
+import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
+import static org.jisel.generators.StringGenerator.DOT;
+import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
+import static org.jisel.generators.StringGenerator.PACKAGE;
+import static org.jisel.generators.StringGenerator.UNSEALED;
+import static org.jisel.generators.StringGenerator.generatePackageName;
+import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
+
 /**
- * jdoc...
+ * // TODO jdoc all
+ * Generates the content of a detached interface
+ * ...
  */
-public sealed interface SourceFileGenerator
-        permits AbstractSealedSourceFileGenerator {
+public final class DetachedInterfaceSourceContentGenerator extends AbstractSealedDetachedInterfaceSourceContentGenerator {
 
     /**
-     * // TODO jdoc...
+     * TODO jdoc...
      *
-     * @param sealedInterfacesToGenerateByLargeInterface
-     * @param sealedInterfacesPermitsByLargeInterface
-     * @param unSealValueByLargeInterface
-     * @param detachedInterfacesToGenerateByLargeInterface
-     * @return
-     * @throws IOException
+     * @param processingEnvironment
      */
-    List<String> createSourceFiles(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                   Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
-                                   Map<Element, Boolean> unSealValueByLargeInterface,
-                                   Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface) throws IOException;
+    public DetachedInterfaceSourceContentGenerator(ProcessingEnvironment processingEnvironment) {
+        super(processingEnvironment);
+    }
+
+    @Override
+    public String generateDetachedInterfaceSourceContent(Map<String, Object> detachAttribs) {
+        // TODO ...
+        return null;
+    }
 }

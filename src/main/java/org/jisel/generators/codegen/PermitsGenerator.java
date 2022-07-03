@@ -43,7 +43,9 @@ import static org.jisel.generators.StringGenerator.WHITESPACE;
  * Exposes contract to be fulfilled by a class generating the "permits" clause of a sealed interface definition, along with
  * the list of the subtypes classes or interfaces permitted by the sealed interface being generated
  */
-public sealed interface PermitsGenerator extends CodeGenerator permits SealedInterfacePermitsGenerator {
+public sealed interface PermitsGenerator
+        extends CodeGenerator
+        permits SealedInterfacePermitsGenerator {
 
     /**
      * Generates the "permits" clause of a sealed interface being generated, along with the list of parent interfaces, based on

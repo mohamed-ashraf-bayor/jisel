@@ -21,25 +21,37 @@
  */
 package org.jisel.generators.contentgen;
 
+import org.jisel.generators.contentgen.impl.DetachedInterfaceSourceContentGenerator;
+
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface ContentGenerator {
+/**
+ * TODO jdoc...
+ */
+public abstract sealed class AbstractSealedDetachedInterfaceSourceContentGenerator
+        extends AbstractSealedSourceContentGenerator
+        permits DetachedInterfaceSourceContentGenerator {
 
     /**
-     * Generates content of the final class generated for the provided large interface
+     * TODO jdoc...
      *
-     * @param largeInterfaceElement         {@link Element} instance of the large interface being segregated
-     * @param unSeal                        if 'true', indicates that additionally to generating the sealed interfaces hierarchy, also generate the classic (non-sealed) interfaces hierarchy.
-     *                                      If 'false', only generate the sealed interfaces' hierarchy
-     * @param sealedInterfacesToGenerateMap {@link Map} instance containing information about the sealed interface to be generated
-     * @param sealedInterfacesPermitsMap    {@link Map} containing information about the subtypes permitted by each one of the sealed interfaces to be generated
-     * @return the requested class or interface string content
+     * @param processingEnvironment
      */
-    String generateContent(Element largeInterfaceElement,
-                           boolean unSeal,
-                           Map<String, Set<Element>> sealedInterfacesToGenerateMap,
-                           Map<String, List<String>> sealedInterfacesPermitsMap);
+    protected AbstractSealedDetachedInterfaceSourceContentGenerator(ProcessingEnvironment processingEnvironment) {
+        super(processingEnvironment);
+    }
+
+    public abstract String generateDetachedInterfaceSourceContent(Map<String, Object> detachAttribs);
+
+    @Override
+    public String generateSourceContent(Element largeInterfaceElement,
+                                        boolean unSeal,
+                                        Map.Entry<String, Set<Element>> sealedInterfaceToGenerate,
+                                        Map<String, List<String>> sealedInterfacesPermitsMap) {
+        return  null;// TODO...
+    }
 }

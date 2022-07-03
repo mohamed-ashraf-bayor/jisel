@@ -121,6 +121,11 @@ public interface StringGenerator {
     String UNSEALED = "UnSealed";
 
     /**
+     * "Detached"
+     */
+    String DETACHED = "Detached";
+
+    /**
      * "package"
      */
     String PACKAGE = "package";
@@ -241,6 +246,11 @@ public interface StringGenerator {
     String DETACH_ALL = "DetachAll";
 
     /**
+     * "all"
+     */
+    String ALL = "all";
+
+    /**
      * "profile"
      */
     String PROFILE = "profile";
@@ -282,17 +292,17 @@ public interface StringGenerator {
      */
     String DETACH_REGEX = "Detach\\((.*?)\\)";
 
-    String DETACH_PROFILE = "profile";
+    String DETACH_PROFILE = PROFILE;
 
     String DETACH_RENAME = "rename";
 
     String DETACH_SUPERINTERFACES = "superInterfaces";
 
-    String DETACH_FIRSTSUPERINTERFACEGENERICS = "firstSuperInterfaceGenerics";
+    String DETACH_FIRST_SUPERINTERFACE_GENERICS = "firstSuperInterfaceGenerics";
 
-    String DETACH_SECONDSUPERINTERFACEGENERICS = "secondSuperInterfaceGenerics";
+    String DETACH_SECOND_SUPERINTERFACE_GENERICS = "secondSuperInterfaceGenerics";
 
-    String DETACH_THIRDSUPERINTERFACEGENERICS = "thirdSuperInterfaceGenerics";
+    String DETACH_THIRD_SUPERINTERFACE_GENERICS = "thirdSuperInterfaceGenerics";
 
     String DETACH_APPLYANNOTATIONS = "applyAnnotations";
 
@@ -304,11 +314,11 @@ public interface StringGenerator {
 
     String DETACH_SUPERINTERFACES_REGEX = "superInterfaces=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
-    String DETACH_FIRSTSUPERINTERFACEGENERICS_REGEX = "firstSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+    String DETACH_FIRST_SUPERINTERFACE_GENERICS_REGEX = "firstSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
-    String DETACH_SECONDSUPERINTERFACEGENERICS_REGEX = "secondSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+    String DETACH_SECOND_SUPERINTERFACE_GENERICS_REGEX = "secondSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
-    String DETACH_THIRDSUPERINTERFACEGENERICS_REGEX = "thirdSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+    String DETACH_THIRD_SUPERINTERFACE_GENERICS_REGEX = "thirdSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
     String DETACH_APPLYANNOTATIONS_REGEX = "applyAnnotations=" + ANNOTATION_ARRAY_VALUE_REGEX;
 

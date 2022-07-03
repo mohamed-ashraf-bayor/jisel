@@ -21,7 +21,7 @@
  */
 package org.jisel.generators.contentgen.impl;
 
-import org.jisel.generators.contentgen.AbstractSealedContentGenerator;
+import org.jisel.generators.contentgen.AbstractSealedReportContentGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -54,7 +54,7 @@ import static org.jisel.generators.StringGenerator.generatePackageName;
  * &#9;&#9;&#9;SealedWorkerSociable<br>
  * &#9;&#9;&#9;SealedStudentSociable<br>
  */
-public final class ReportContentGenerator extends AbstractSealedContentGenerator {
+public final class ReportContentGenerator extends AbstractSealedReportContentGenerator {
 
     /**
      * TODO jdoc...
@@ -66,19 +66,19 @@ public final class ReportContentGenerator extends AbstractSealedContentGenerator
     }
 
     @Override
-    public String generateContent(Element largeInterfaceElement,
-                                  boolean unSeal,
-                                  Map<String, Set<Element>> sealedInterfacesToGenerateMap,
-                                  Map<String, List<String>> sealedInterfacesPermitsMap) {
+    public String generateSourceContent(Element largeInterfaceElement,
+                                        boolean unSeal,
+                                        Map.Entry<String, Set<Element>> sealedInterfaceToGenerate,
+                                        Map<String, List<String>> sealedInterfacesPermitsMap) {
         var reportContent = new StringBuilder();
         var packageNameOpt = generatePackageName(largeInterfaceElement);
         var qualifiedName = packageNameOpt.isPresent()
                 ? packageNameOpt.get() + DOT + largeInterfaceElement.getSimpleName().toString()
                 : largeInterfaceElement.getSimpleName().toString();
         reportContent.append(format("%s%n", qualifiedName));
-        reportContent.append(generateSealedInterfacesReport(largeInterfaceElement, sealedInterfacesToGenerateMap, sealedInterfacesPermitsMap));
+        reportContent.append(generateSealedInterfacesReportContent(largeInterfaceElement, sealedInterfaceToGenerate, sealedInterfacesPermitsMap));
         if (unSeal) {
-            reportContent.append(generateUnSealedInterfacesReport(largeInterfaceElement, sealedInterfacesToGenerateMap, sealedInterfacesPermitsMap));
+            reportContent.append(generateUnSealedInterfacesReportContent(largeInterfaceElement, sealedInterfaceToGenerate, sealedInterfacesPermitsMap));
         }
         return reportContent.toString();
     }
