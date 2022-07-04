@@ -16,8 +16,7 @@ import static java.util.stream.Stream.concat;
  * Collects necessary information from the annotated elements, in order to populate the Map containing the sealed
  * interfaces information to be generated
  */
-public final class SealForAnnotationInfoCollectionHandler
-        extends AbstractSealedAnnotationInfoCollectionHandler {
+public final class SealForAnnotationInfoCollectionHandler extends AbstractSealedAnnotationInfoCollectionHandler {
 
     @Override
     public void populateSealedInterfacesMap(Set<Element> allAnnotatedElements,

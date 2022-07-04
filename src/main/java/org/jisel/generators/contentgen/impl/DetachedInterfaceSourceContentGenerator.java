@@ -27,15 +27,30 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
-import static org.jisel.generators.StringGenerator.DOT;
+import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.DETACH_APPLYANNOTATIONS;
+import static org.jisel.generators.StringGenerator.DETACH_FIRST_SUPERINTERFACE_GENERICS;
+import static org.jisel.generators.StringGenerator.DETACH_METHODS;
+import static org.jisel.generators.StringGenerator.DETACH_PROFILE;
+import static org.jisel.generators.StringGenerator.DETACH_SECOND_SUPERINTERFACE_GENERICS;
+import static org.jisel.generators.StringGenerator.DETACH_SUPERINTERFACES;
+import static org.jisel.generators.StringGenerator.DETACH_THIRD_SUPERINTERFACE_GENERICS;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
+import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL;
+import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_TRANSFORMED;
+import static org.jisel.generators.StringGenerator.NEW_LINE;
 import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.PACKAGE;
-import static org.jisel.generators.StringGenerator.UNSEALED;
-import static org.jisel.generators.StringGenerator.generatePackageName;
+import static org.jisel.generators.StringGenerator.PUBLIC_INTERFACE;
+import static org.jisel.generators.StringGenerator.extractPackageName;
+import static org.jisel.generators.StringGenerator.extractSimpleName;
 import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
 
 /**
@@ -55,8 +70,68 @@ public final class DetachedInterfaceSourceContentGenerator extends AbstractSeale
     }
 
     @Override
-    public String generateDetachedInterfaceSourceContent(Map<String, Object> detachAttribs) {
-        // TODO ...
-        return null;
+    @SuppressWarnings("unchecked")
+    public String generateDetachedInterfaceSourceContent(String detachedInterfaceQualifiedName, Map<String, Object> detachAttribs, Element largeInterfaceElement) {
+        var profile = detachAttribs.get(DETACH_PROFILE).toString();
+        var superInterfacesRawValue = Optional.ofNullable(detachAttribs.get(DETACH_SUPERINTERFACES)).orElse(EMPTY_STRING).toString();
+        var firstSuperInterfaceGenericsRawValue = Optional.ofNullable(detachAttribs.get(DETACH_FIRST_SUPERINTERFACE_GENERICS)).orElse(EMPTY_STRING).toString();
+        var secondSuperInterfaceGenericsRawValue = Optional.ofNullable(detachAttribs.get(DETACH_SECOND_SUPERINTERFACE_GENERICS)).orElse(EMPTY_STRING).toString();
+        var thirdSuperInterfaceGenericsRawValue = Optional.ofNullable(detachAttribs.get(DETACH_THIRD_SUPERINTERFACE_GENERICS)).orElse(EMPTY_STRING).toString();
+        var applyAnnotationsRawValue = Optional.ofNullable(detachAttribs.get(DETACH_APPLYANNOTATIONS)).orElse(EMPTY_STRING).toString();
+        var methods = (Set<Element>) Optional.ofNullable(detachAttribs.get(DETACH_METHODS)).orElse(Set.<Element>of());
+        //
+        var interfaceContent = new StringBuilder();
+        // package name
+        extractPackageName(detachedInterfaceQualifiedName).ifPresent(
+                packageName -> interfaceContent.append(format("%s %s", PACKAGE, packageName))
+        );
+        interfaceContent.append(format(";%n%n"));
+        // javaxgenerated
+        annotationsGenerator.buildJavaxGeneratedAnnotationSection(interfaceContent);
+        interfaceContent.append(NEW_LINE);
+        // existing annotations
+        if (JISEL_KEYWORD_TOPLEVEL.equals(profile)
+                || JISEL_KEYWORD_TOPLEVEL_TRANSFORMED.equals(profile)
+                || largeInterfaceElement.getSimpleName().toString().equals(profile)) {
+            annotationsGenerator.buildExistingAnnotations(interfaceContent, largeInterfaceElement);
+        }
+        // apply provided annotations raw string values
+        if (!applyAnnotationsRawValue.isBlank()) {
+            annotationsGenerator.applyAnnotations(interfaceContent, applyAnnotationsRawValue.split(COMMA_SEPARATOR));
+            interfaceContent.append(NEW_LINE);
+        }
+        // declaration: public interface
+        interfaceContent.append(format(
+                "%s %s ",
+                PUBLIC_INTERFACE,
+                extractSimpleName(detachedInterfaceQualifiedName).orElse(EMPTY_STRING)
+        ));
+        // list of extends
+        if (!superInterfacesRawValue.isBlank()) {
+            var superInterfacesArray = superInterfacesRawValue.split(COMMA_SEPARATOR);
+            BiFunction<String[], Integer, String> elementAtIndex = (array, index) -> index < array.length ? array[index] : index.toString();
+            extendsGenerator.generateExtendsClauseFromSuperInterfacesList(
+                    interfaceContent,
+                    asList(superInterfacesArray),
+                    Map.of(
+                            elementAtIndex.apply(superInterfacesArray, 0), firstSuperInterfaceGenericsRawValue.isBlank()
+                                    ? List.of()
+                                    : asList(firstSuperInterfaceGenericsRawValue.split(COMMA_SEPARATOR)),
+                            elementAtIndex.apply(superInterfacesArray, 1), secondSuperInterfaceGenericsRawValue.isBlank()
+                                    ? List.of()
+                                    : asList(secondSuperInterfaceGenericsRawValue.split(COMMA_SEPARATOR)),
+                            elementAtIndex.apply(superInterfacesArray, 2), thirdSuperInterfaceGenericsRawValue.isBlank()
+                                    ? List.of()
+                                    : asList(thirdSuperInterfaceGenericsRawValue.split(COMMA_SEPARATOR))
+                    )
+            );
+        }
+        interfaceContent.append(format(" %s%n ", OPENING_CURLY_BRACE)); // opening bracket after permits list
+        // list of methods
+        methodsGenerator.generateAbstractMethodsFromElementsSet(interfaceContent, methods);
+        // closing bracket
+        interfaceContent.append(CLOSING_CURLY_BRACE);
+        //
+        return removeDoubleSpaceOccurrences(interfaceContent.toString());
     }
 }

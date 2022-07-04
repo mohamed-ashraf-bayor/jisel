@@ -26,9 +26,7 @@ import org.jisel.handlers.impl.SealForHandler;
 import org.jisel.handlers.impl.SealForParentChildInheritanceHandler;
 
 // TODO jdoc...
-public abstract sealed class AbstractSealedSealForHandler
-        implements JiselAnnotationHandler
-        permits SealForHandler {
+public abstract sealed class AbstractSealedSealForHandler implements JiselAnnotationHandler permits SealForHandler {
 
     protected final AbstractSealedAnnotationInfoCollectionHandler annotationInfoCollectionHandler;
     protected final AbstractSealedParentChildInheritanceHandler parentChildInheritanceHandler;

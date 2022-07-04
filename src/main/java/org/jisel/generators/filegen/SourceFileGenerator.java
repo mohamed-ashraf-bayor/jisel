@@ -30,8 +30,7 @@ import java.util.Set;
 /**
  * jdoc...
  */
-public sealed interface SourceFileGenerator
-        permits AbstractSealedSourceFileGenerator {
+public sealed interface SourceFileGenerator permits AbstractSealedSourceFileGenerator {
 
     /**
      * // TODO jdoc...

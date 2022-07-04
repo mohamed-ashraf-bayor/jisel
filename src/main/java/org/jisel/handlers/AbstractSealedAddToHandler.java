@@ -48,9 +48,7 @@ import static org.jisel.generators.StringGenerator.PROFILES;
 import static org.jisel.generators.StringGenerator.addQuotesToLargeInterfaceValue;
 import static org.jisel.generators.StringGenerator.removeDotClass;
 
-public abstract sealed class AbstractSealedAddToHandler
-        implements JiselAnnotationHandler
-        permits AddToHandler {
+public abstract sealed class AbstractSealedAddToHandler implements JiselAnnotationHandler permits AddToHandler {
 
     protected final ProcessingEnvironment processingEnvironment;
 

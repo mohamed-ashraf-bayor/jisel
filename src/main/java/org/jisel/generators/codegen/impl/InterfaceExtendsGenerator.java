@@ -21,6 +21,7 @@
  */
 package org.jisel.generators.codegen.impl;
 
+import org.jisel.generators.StringGenerator;
 import org.jisel.generators.codegen.ExtendsGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -29,12 +30,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.joining;
+import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
+import static org.jisel.generators.StringGenerator.INF_SIGN;
 import static org.jisel.generators.StringGenerator.JAVA_LANG_OBJECT;
+import static org.jisel.generators.StringGenerator.SUP_SIGN;
+import static org.jisel.generators.StringGenerator.removeDotClass;
 import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
 import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConvention;
 
 /**
- * Generates the "extends" clause of a sealed interface definition, along with the list of the parent interfaces
+ * Generates the "extends" clause of an interface declaration, along with the list of the parent interfaces
  */
 public final class InterfaceExtendsGenerator implements ExtendsGenerator {
 
@@ -69,5 +76,23 @@ public final class InterfaceExtendsGenerator implements ExtendsGenerator {
                 }
             }
         });
+    }
+
+    @Override
+    public void generateExtendsClauseFromSuperInterfacesList(StringBuilder sealedInterfaceContent,
+                                                             List<String> superInterfaces,
+                                                             Map<String, List<String>> superInterfacesGenerics) {
+        var superInterfacesWithGenericsList = superInterfaces.stream()
+                .map(supIntrf ->
+                        removeDotClass(supIntrf) + (
+                                superInterfacesGenerics.containsKey(supIntrf) && !superInterfacesGenerics.get(supIntrf).isEmpty()
+                                        ? INF_SIGN + superInterfacesGenerics.get(supIntrf).stream().map(StringGenerator::removeDotClass).collect(joining(COMMA_SEPARATOR)) + SUP_SIGN
+                                        : EMPTY_STRING
+                        )
+                )
+                .toList();
+        if (!superInterfacesWithGenericsList.isEmpty()) {
+            generateCode(sealedInterfaceContent, superInterfacesWithGenericsList);
+        }
     }
 }

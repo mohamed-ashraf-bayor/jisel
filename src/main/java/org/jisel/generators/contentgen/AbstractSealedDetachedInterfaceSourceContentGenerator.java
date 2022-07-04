@@ -32,8 +32,7 @@ import java.util.Set;
 /**
  * TODO jdoc...
  */
-public abstract sealed class AbstractSealedDetachedInterfaceSourceContentGenerator
-        extends AbstractSealedSourceContentGenerator
+public abstract sealed class AbstractSealedDetachedInterfaceSourceContentGenerator extends AbstractSealedSourceContentGenerator
         permits DetachedInterfaceSourceContentGenerator {
 
     /**
@@ -45,13 +44,15 @@ public abstract sealed class AbstractSealedDetachedInterfaceSourceContentGenerat
         super(processingEnvironment);
     }
 
-    public abstract String generateDetachedInterfaceSourceContent(Map<String, Object> detachAttribs);
+    public abstract String generateDetachedInterfaceSourceContent(String detachedInterfaceQualifiedName,
+                                                                  Map<String, Object> detachAttribs,
+                                                                  Element largeInterfaceElement);
 
     @Override
     public String generateSourceContent(Element largeInterfaceElement,
                                         boolean unSeal,
                                         Map.Entry<String, Set<Element>> sealedInterfaceToGenerate,
                                         Map<String, List<String>> sealedInterfacesPermitsMap) {
-        return  null;// TODO...
+        throw new UnsupportedOperationException("Call generateDetachedInterfaceSourceContent(Map<String, Object>) method instead");
     }
 }

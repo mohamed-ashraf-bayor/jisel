@@ -39,12 +39,14 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
 import static org.jisel.generators.StringGenerator.ALL;
 import static org.jisel.generators.StringGenerator.AT_SIGN;
 import static org.jisel.generators.StringGenerator.DETACHED;
+import static org.jisel.generators.StringGenerator.DETACH_METHODS;
 import static org.jisel.generators.StringGenerator.DETACH_PROFILE;
 import static org.jisel.generators.StringGenerator.DETACH_RENAME;
 import static org.jisel.generators.StringGenerator.DOT;
@@ -57,13 +59,12 @@ import static org.jisel.generators.StringGenerator.UNSEALED;
 import static org.jisel.generators.StringGenerator.generatePackageName;
 import static org.jisel.generators.contentgen.SourceContentGenerator.DETACHED_INTERFACE_NAME_OP;
 import static org.jisel.generators.contentgen.SourceContentGenerator.DETACHED_TOP_LEVEL_INTERFACE_NAME_FUNC;
+import static org.jisel.generators.contentgen.SourceContentGenerator.findAllAbstractMethodsForProfile;
 
 /**
  * TODO jdoc...
  */
-public abstract sealed class AbstractSealedSourceFileGenerator
-        implements SourceFileGenerator
-        permits InterfaceSourceFileGenerator {
+public abstract sealed class AbstractSealedSourceFileGenerator implements SourceFileGenerator permits InterfaceSourceFileGenerator {
 
     protected final ProcessingEnvironment processingEnvironment;
     protected final AbstractSealedSourceContentGenerator interfaceSourceContentGenerator;
@@ -109,7 +110,8 @@ public abstract sealed class AbstractSealedSourceFileGenerator
                                 largeInterfaceElement,
                                 false,
                                 sealedInterfaceToGenerate,
-                                sealedInterfacesPermitsMap)
+                                sealedInterfacesPermitsMap
+                        )
                 );
             }
         } catch (FilerException e) {
@@ -220,15 +222,32 @@ public abstract sealed class AbstractSealedSourceFileGenerator
     private List<String> createDetachedInterfacesForAllProfiles(Element largeInterfaceElement,
                                                                 Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                                 Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) throws IOException {
-        // todo rwrte...
-        return List.of(createDetachedInterfaceForProfile(largeInterfaceElement, null, true));
+        var generatedFiles = new ArrayList<String>();
+        for (var profile : sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).keySet()) {
+            createDetachedInterfaceForProfile(
+                    largeInterfaceElement,
+                    Map.of(
+                            DETACH_PROFILE, profile,
+                            DETACH_METHODS, findAllAbstractMethodsForProfile(
+                                    profile,
+                                    sealedInterfacesToGenerateByLargeInterface,
+                                    sealedInterfacesPermitsByLargeInterface,
+                                    largeInterfaceElement
+                            )
+                    ),
+                    true);
+        }
+        return generatedFiles;
     }
 
     private String createDetachedInterfaceForProfile(Element largeInterfaceElement, Map<String, Object> detachAttribs, boolean detachAll) throws IOException {
         Function<Boolean, String> allSubPackageFunc = detachAllFlag -> detachAllFlag.booleanValue() ? ALL + DOT : EMPTY_STRING;
         var packageNameOpt = generatePackageName(largeInterfaceElement);
         var detachedInterfaceSimpleName = DETACHED_TOP_LEVEL_INTERFACE_NAME_FUNC.apply(
-                DETACHED_INTERFACE_NAME_OP.apply(detachAttribs.get(DETACH_PROFILE).toString(), detachAttribs.get(DETACH_RENAME).toString()),
+                DETACHED_INTERFACE_NAME_OP.apply(
+                        detachAttribs.get(DETACH_PROFILE).toString(),
+                        Optional.ofNullable(detachAttribs.get(DETACH_RENAME)).orElse(EMPTY_STRING).toString()
+                ),
                 largeInterfaceElement
         );
         var qualifiedName = packageNameOpt.isPresent()
@@ -238,7 +257,7 @@ public abstract sealed class AbstractSealedSourceFileGenerator
             var fileObject = processingEnvironment.getFiler().createSourceFile(qualifiedName);
             try (var out = new PrintWriter(fileObject.openWriter())) {
                 out.println(
-                        detachedInterfaceSourceContentGenerator.generateDetachedInterfaceSourceContent(detachAttribs)
+                        detachedInterfaceSourceContentGenerator.generateDetachedInterfaceSourceContent(qualifiedName, detachAttribs, largeInterfaceElement)
                 );
             }
         } catch (FilerException e) {

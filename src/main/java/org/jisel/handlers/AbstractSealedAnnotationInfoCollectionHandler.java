@@ -45,9 +45,7 @@ import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
  * Exposes contract to fulfill by any class dedicated to collecting necessary information from the annotated elements,
  * in order to populate the {@link Map} containing the sealed interfaces information to be generated
  */
-public abstract sealed class AbstractSealedAnnotationInfoCollectionHandler
-        implements JiselAnnotationHandler
-        permits SealForAnnotationInfoCollectionHandler {
+public abstract sealed class AbstractSealedAnnotationInfoCollectionHandler implements JiselAnnotationHandler permits SealForAnnotationInfoCollectionHandler {
 
     /**
      * Populates the Map containing the sealed interfaces information to be generated

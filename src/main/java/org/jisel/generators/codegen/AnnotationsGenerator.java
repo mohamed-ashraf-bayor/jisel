@@ -24,9 +24,15 @@ package org.jisel.generators.codegen;
 import org.jisel.generators.codegen.impl.InterfaceAnnotationsGenerator;
 
 import javax.lang.model.element.Element;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static java.lang.String.format;
+import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
+import static org.jisel.generators.StringGenerator.BACKSLASH;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.JISEL_ANNOTATIONS_PACKAGE;
 import static org.jisel.generators.StringGenerator.NEW_LINE;
 
@@ -34,18 +40,15 @@ import static org.jisel.generators.StringGenerator.NEW_LINE;
  * // TODO jdoc entire clss
  * Exposes contract to be fulfilled by a class generating annotations
  */
-public sealed interface AnnotationsGenerator
-        extends CodeGenerator
-        permits InterfaceAnnotationsGenerator {
+public sealed interface AnnotationsGenerator extends CodeGenerator permits InterfaceAnnotationsGenerator {
 
     void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent);
-
-    void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent, String annotationProcessorClassname, String appVersion);
 
     void buildExistingAnnotations(StringBuilder classOrInterfaceContent, Element element);
 
     /**
      * ... excluding all jisel annots..
+     *
      * @param element
      * @param separator
      * @return
@@ -57,8 +60,58 @@ public sealed interface AnnotationsGenerator
                 .collect(joining(separator));
     }
 
+    /**
+     * ...
+     *
+     * @param classOrInterfaceContent
+     * @param annotationsRawStrings
+     */
+    default void applyAnnotations(StringBuilder classOrInterfaceContent, String[] annotationsRawStrings) {
+        generateCode(
+                classOrInterfaceContent,
+                stream(annotationsRawStrings).map(AnnotationsGenerator::cleanUpAppliedAnnotation).toList()
+        );
+    }
+
+    /**
+     * ...
+     *
+     * @param annotationString
+     * @return
+     */
+    static String cleanUpAppliedAnnotation(String annotationString) {
+        var withoutBackslashes = annotationString.replace(BACKSLASH, EMPTY_STRING);
+        return withoutBackslashes.substring(1, withoutBackslashes.length() - 1);
+
+    }
+
+    /**
+     * todo ...
+     *
+     * @param classOrInterfaceContent
+     * @param annotationProcessorClassname
+     * @param appVersion
+     */
+    default void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent, String annotationProcessorClassname, String appVersion) {
+        generateCode(
+                classOrInterfaceContent,
+                List.of(
+                        format("""
+                                        @javax.annotation.processing.Generated(
+                                            value = "%s",
+                                            date = "%s",
+                                            comments = "version: %s"
+                                        )
+                                        """,
+                                annotationProcessorClassname,
+                                ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                                appVersion
+                        )
+                ));
+    }
+
     @Override
     default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
-        classOrInterfaceContent.append(params.stream().collect(joining(NEW_LINE)));
+        classOrInterfaceContent.append(params.stream().map(String::strip).collect(joining(NEW_LINE)));
     }
 }

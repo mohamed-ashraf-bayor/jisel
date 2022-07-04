@@ -42,8 +42,7 @@ import javax.annotation.processing.ProcessingEnvironment;
  * Generates content of the final class generated for the provided large interface
  * ... ...
  */
-public abstract sealed class AbstractSealedSourceContentGenerator
-        implements SourceContentGenerator
+public abstract sealed class AbstractSealedSourceContentGenerator implements SourceContentGenerator
         permits FinalClassSourceContentGenerator, InterfaceSourceContentGenerator, AbstractSealedReportContentGenerator,
         AbstractSealedDetachedInterfaceSourceContentGenerator {
 

@@ -34,7 +34,7 @@ import java.util.function.Function;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_TRANSFORMED;
 
-public interface SourceContentGenerator {
+public sealed interface SourceContentGenerator permits AbstractSealedSourceContentGenerator {
 
     BinaryOperator<String> DETACHED_INTERFACE_NAME_OP = (profile, rename) -> rename.isBlank() ? profile : rename;
 
@@ -75,7 +75,7 @@ public interface SourceContentGenerator {
                                                          Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
                                                          Element largeInterfaceElement) {
         var methodsElementSet = new HashSet<Element>();
-        if (profile.equals(JISEL_KEYWORD_TOPLEVEL) || profile.equals(JISEL_KEYWORD_TOPLEVEL_TRANSFORMED)) {
+        if (JISEL_KEYWORD_TOPLEVEL.equals(profile) || JISEL_KEYWORD_TOPLEVEL_TRANSFORMED.equals(profile) || largeInterfaceElement.getSimpleName().toString().equals(profile)) {
             methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(largeInterfaceElement.getSimpleName().toString()));
         } else {
             methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(profile));

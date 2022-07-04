@@ -67,9 +67,7 @@ import static org.jisel.generators.StringGenerator.isJiselKeyword;
 /**
  * // TODO jdoc all ...
  */
-public abstract sealed class AbstractSealedDetachHandler
-        implements JiselAnnotationHandler
-        permits DetachHandler {
+public abstract sealed class AbstractSealedDetachHandler implements JiselAnnotationHandler permits DetachHandler {
 
     protected final ProcessingEnvironment processingEnvironment;
 

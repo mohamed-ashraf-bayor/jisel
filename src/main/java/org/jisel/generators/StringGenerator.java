@@ -106,9 +106,24 @@ public interface StringGenerator {
     String UNDERSCORE = "_";
 
     /**
+     * "<"
+     */
+    String INF_SIGN = "<";
+
+    /**
+     * ">"
+     */
+    String SUP_SIGN = ">";
+
+    /**
      * "\""
      */
     String ESCAPED_DOUBLE_QUOTES = "\"";
+
+    /**
+     * "\"
+     */
+    String BACKSLASH = "\\";
 
     /**
      * "Sealed"
@@ -440,12 +455,17 @@ public interface StringGenerator {
     /**
      * Header displayed above the list of the generated sealed interfaces, in the Jisel Report file
      */
-    String JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER = "Created sealed interfaces:";
+    String JISEL_REPORT_GENERATED_SEALED_INTERFACES_HEADER = "Generated sealed interfaces:";
 
     /**
-     * Header displayed above the list of the generated sealed interfaces, in the Jisel Report file
+     * Header displayed above the list of the generated unsealed interfaces, in the Jisel Report file
      */
-    String JISEL_REPORT_CREATED_UNSEALED_INTERFACES_HEADER = "Created unsealed interfaces:";
+    String JISEL_REPORT_GENERATED_UNSEALED_INTERFACES_HEADER = "Generated unsealed interfaces:";
+
+    /**
+     * Header displayed above the list of the generated detached interfaces, in the Jisel Report file
+     */
+    String JISEL_REPORT_GENERATED_DETACHED_INTERFACES_HEADER = "Generated detached interfaces:";
 
     /**
      * Header displayed above the list of the sub-types of the generated sealed interfaces, in the Jisel Report file
@@ -575,9 +595,29 @@ public interface StringGenerator {
      * @return the package name if any
      */
     static Optional<String> generatePackageName(Element largeInterfaceElement) {
-        var qualifiedClassName = largeInterfaceElement.toString();
+        return extractPackageName(largeInterfaceElement.toString());
+    }
+
+    /**
+     * // TODO ...
+     *
+     * @param qualifiedClassName
+     * @return
+     */
+    static Optional<String> extractPackageName(String qualifiedClassName) {
         int lastDot = qualifiedClassName.lastIndexOf(DOT);
         return lastDot > 0 ? Optional.of(qualifiedClassName.substring(0, lastDot)) : Optional.empty();
+    }
+
+    /**
+     * // TODO ...
+     *
+     * @param qualifiedClassName
+     * @return
+     */
+    static Optional<String> extractSimpleName(String qualifiedClassName) {
+        int lastDot = qualifiedClassName.lastIndexOf(DOT);
+        return lastDot > -1 ? Optional.of(qualifiedClassName.substring(lastDot + 1)) : Optional.empty();
     }
 
     /**

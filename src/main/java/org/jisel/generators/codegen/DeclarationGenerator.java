@@ -33,9 +33,7 @@ import static org.jisel.generators.StringGenerator.WHITESPACE;
 /**
  * Exposes contract to be fulfilled by a class generating the interface or class declaration section
  */
-public sealed interface DeclarationGenerator
-        extends CodeGenerator
-        permits InterfaceDeclarationGenerator {
+public sealed interface DeclarationGenerator extends CodeGenerator permits InterfaceDeclarationGenerator {
 
     /**
      * Generates the interface or class declaration section

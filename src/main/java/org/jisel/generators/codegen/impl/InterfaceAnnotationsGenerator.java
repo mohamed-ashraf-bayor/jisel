@@ -24,17 +24,13 @@ package org.jisel.generators.codegen.impl;
 import org.jisel.generators.codegen.AnnotationsGenerator;
 
 import javax.lang.model.element.Element;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import static java.lang.String.format;
 import static org.jisel.generators.AppInfoGenerator.APPLICATION_PROPERTIES_FILENAME;
 import static org.jisel.generators.AppInfoGenerator.DEFAULT_APP_VERSION;
 import static org.jisel.generators.AppInfoGenerator.INFO_APP_VERSION_PROPERTY_NAME;
 import static org.jisel.generators.AppInfoGenerator.JISEL_ANNOTATION_PROCESSOR_CLASSNAME;
 import static org.jisel.generators.AppInfoGenerator.getPropertyValueFromPropsFile;
-import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.NEW_LINE;
 
 /**
@@ -54,27 +50,7 @@ public final class InterfaceAnnotationsGenerator implements AnnotationsGenerator
     }
 
     @Override
-    public void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent, String annotationProcessorClassname, String appVersion) {
-        generateCode(
-                classOrInterfaceContent,
-                List.of(
-                        format("""
-                                        @javax.annotation.processing.Generated(
-                                            value = "%s",
-                                            date = "%s",
-                                            comments = "version: %s"
-                                        )
-                                        """,
-                                annotationProcessorClassname,
-                                ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                                appVersion
-                        )
-                ));
-    }
-
-    @Override
     public void buildExistingAnnotations(StringBuilder classOrInterfaceContent, Element element) {
-        var existingAnnotations = AnnotationsGenerator.buildExistingAnnotations(element, NEW_LINE);
-        generateCode(classOrInterfaceContent, List.of(existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations + NEW_LINE));
+        generateCode(classOrInterfaceContent, List.of(AnnotationsGenerator.buildExistingAnnotations(element, NEW_LINE) + NEW_LINE));
     }
 }

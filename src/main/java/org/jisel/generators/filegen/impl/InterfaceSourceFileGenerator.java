@@ -105,22 +105,24 @@ public final class InterfaceSourceFileGenerator extends AbstractSealedSourceFile
                             sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement)
                     )
             );
-            generatedFiles.addAll(
-                    createDetachedInterfacesSourceFiles(
-                            largeInterfaceElement,
-                            detachedInterfacesToGenerateByLargeInterface,
-                            sealedInterfacesToGenerateByLargeInterface,
-                            sealedInterfacesPermitsByLargeInterface
-                    )
-            );
-            generatedFiles.add(
-                    createJiselReportFile(
-                            largeInterfaceElement,
-                            unSeal,
-                            sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement),
-                            sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement)
-                    )
-            );
+            if (detachedInterfacesToGenerateByLargeInterface.containsKey(largeInterfaceElement)) {
+                generatedFiles.addAll(
+                        createDetachedInterfacesSourceFiles(
+                                largeInterfaceElement,
+                                detachedInterfacesToGenerateByLargeInterface,
+                                sealedInterfacesToGenerateByLargeInterface,
+                                sealedInterfacesPermitsByLargeInterface
+                        )
+                );
+            }
+//            generatedFiles.add(
+//                    createJiselReportFile(
+//                            largeInterfaceElement,
+//                            unSeal,
+//                            sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement),
+//                            sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement)
+//                    )
+//            );
         }
         return generatedFiles;
     }

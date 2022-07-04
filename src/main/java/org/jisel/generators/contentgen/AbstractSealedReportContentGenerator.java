@@ -35,8 +35,8 @@ import static java.util.stream.Collectors.joining;
 import static org.jisel.generators.StringGenerator.DOT;
 import static org.jisel.generators.StringGenerator.FINAL_CLASS_SUFFIX;
 import static org.jisel.generators.StringGenerator.JISEL_REPORT_CHILDREN_HEADER;
-import static org.jisel.generators.StringGenerator.JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER;
-import static org.jisel.generators.StringGenerator.JISEL_REPORT_CREATED_UNSEALED_INTERFACES_HEADER;
+import static org.jisel.generators.StringGenerator.JISEL_REPORT_GENERATED_SEALED_INTERFACES_HEADER;
+import static org.jisel.generators.StringGenerator.JISEL_REPORT_GENERATED_UNSEALED_INTERFACES_HEADER;
 import static org.jisel.generators.StringGenerator.NEW_LINE;
 import static org.jisel.generators.StringGenerator.UNDERSCORE;
 import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
@@ -45,9 +45,7 @@ import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConventi
 /**
  * TODO jdoc...
  */
-public abstract sealed class AbstractSealedReportContentGenerator
-        extends AbstractSealedSourceContentGenerator
-        permits ReportContentGenerator {
+public abstract sealed class AbstractSealedReportContentGenerator extends AbstractSealedSourceContentGenerator permits ReportContentGenerator {
 
     /**
      * TODO jdoc...
@@ -69,7 +67,7 @@ public abstract sealed class AbstractSealedReportContentGenerator
                                                            Map<String, Set<Element>> sealedInterfacesToGenerateMap,
                                                            Map<String, List<String>> sealedInterfacesPermitsMap) {
         var reportContent = new StringBuilder();
-        reportContent.append(format("%s%n", JISEL_REPORT_CREATED_SEALED_INTERFACES_HEADER));
+        reportContent.append(format("%s%n", JISEL_REPORT_GENERATED_SEALED_INTERFACES_HEADER));
         sealedInterfacesToGenerateMap.entrySet().forEach(mapEntry -> {
             var sealedInterfaceName = sealedInterfaceNameConvention(mapEntry.getKey(), largeInterfaceElement);
             reportContent.append(format("\t%s%n", sealedInterfaceName));
@@ -101,7 +99,7 @@ public abstract sealed class AbstractSealedReportContentGenerator
                                                              Map<String, Set<Element>> sealedInterfacesToGenerateMap,
                                                              Map<String, List<String>> sealedInterfacesPermitsMap) {
         var reportContent = new StringBuilder();
-        reportContent.append(format("%s%n", JISEL_REPORT_CREATED_UNSEALED_INTERFACES_HEADER));
+        reportContent.append(format("%s%n", JISEL_REPORT_GENERATED_UNSEALED_INTERFACES_HEADER));
         sealedInterfacesToGenerateMap.entrySet().forEach(mapEntry -> {
             var interfaceName = unSealedInterfaceNameConvention(mapEntry.getKey(), largeInterfaceElement);
             reportContent.append(format("\t%s%n", interfaceName));

@@ -41,9 +41,7 @@ import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
  * Exposes contract to fulfill by any class dedicated to building parent-children relations based on information provided in
  * the Map containing the sealed interfaces information to be generated
  */
-public abstract sealed class AbstractSealedParentChildInheritanceHandler
-        implements JiselAnnotationHandler
-        permits SealForParentChildInheritanceHandler {
+public abstract sealed class AbstractSealedParentChildInheritanceHandler implements JiselAnnotationHandler permits SealForParentChildInheritanceHandler {
 
     /**
      * Reads information stored in the Map containing the sealed interfaces information to be generated, and populates another Map storing subtypes of the provided profiles

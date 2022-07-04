@@ -75,10 +75,10 @@ public final class ReportContentGenerator extends AbstractSealedReportContentGen
         var qualifiedName = packageNameOpt.isPresent()
                 ? packageNameOpt.get() + DOT + largeInterfaceElement.getSimpleName().toString()
                 : largeInterfaceElement.getSimpleName().toString();
-        reportContent.append(format("%s%n", qualifiedName));
-        reportContent.append(generateSealedInterfacesReportContent(largeInterfaceElement, sealedInterfaceToGenerate, sealedInterfacesPermitsMap));
+        reportContent.append(format("%s%n%n", qualifiedName));
+        //reportContent.append(generateSealedInterfacesReportContent(largeInterfaceElement, sealedInterfaceToGenerate, sealedInterfacesPermitsMap));
         if (unSeal) {
-            reportContent.append(generateUnSealedInterfacesReportContent(largeInterfaceElement, sealedInterfaceToGenerate, sealedInterfacesPermitsMap));
+            //reportContent.append(generateUnSealedInterfacesReportContent(largeInterfaceElement, sealedInterfaceToGenerate, sealedInterfacesPermitsMap));
         }
         return reportContent.toString();
     }

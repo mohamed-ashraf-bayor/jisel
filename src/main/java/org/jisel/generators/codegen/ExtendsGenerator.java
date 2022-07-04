@@ -21,10 +21,8 @@
  */
 package org.jisel.generators.codegen;
 
-import org.jisel.generators.StringGenerator;
 import org.jisel.generators.codegen.impl.InterfaceExtendsGenerator;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import java.util.List;
 import java.util.Map;
@@ -39,15 +37,13 @@ import static org.jisel.generators.StringGenerator.INTERFACE;
 import static org.jisel.generators.StringGenerator.WHITESPACE;
 
 /**
- * Exposes contract to be fulfilled by a class generating the "extends" clause of a sealed interface definition, along with
- * the list of the parent classes or interfaces
+ * Exposes contract to be fulfilled by a class generating the "extends" clause of an interface declaration, or the "implements"
+ * clause of a class declaration, along with the list of the parent interfaces or classes
  */
-public sealed interface ExtendsGenerator
-        extends CodeGenerator
-        permits InterfaceExtendsGenerator {
+public sealed interface ExtendsGenerator extends CodeGenerator permits InterfaceExtendsGenerator {
 
     /**
-     * Generates the "extends" clause of a sealed interface being generated, along with the list of parent interfaces, based on
+     * Generates the "extends" clause of the interface being generated, along with the list of parent interfaces, based on
      * a provided {@link Map} containing parents/subtypes information (the permits Map) and the name of the profile for which the
      * sealed interface will be generated
      *
@@ -64,12 +60,25 @@ public sealed interface ExtendsGenerator
                                                                 Element largeInterfaceElement,
                                                                 boolean unSeal);
 
+    /**
+     * TODO ...
+     *
+     * @param sealedInterfaceContent
+     * @param superinterfaces
+     * @param superinterfacesGenerics
+     */
+    void generateExtendsClauseFromSuperInterfacesList(StringBuilder sealedInterfaceContent,
+                                                      List<String> superinterfaces,
+                                                      Map<String, List<String>> superinterfacesGenerics);
+
     @Override
     default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
         classOrInterfaceContent.append(format(
                 " %s %s ",
                 isInterface(classOrInterfaceContent.toString()) ? EXTENDS : IMPLEMENTS,
-                params.stream().map(StringGenerator::removeCommaSeparator).collect(joining(COMMA_SEPARATOR + WHITESPACE))
+                params.stream().collect(joining(COMMA_SEPARATOR + WHITESPACE))
+                // TODO line abv was: params.stream().map(StringGenerator::removeCommaSeparator).collect(joining(COMMA_SEPARATOR + WHITESPACE))
+                // TODO REVIEW use of comma sep in entire pjct
         ));
     }
 
