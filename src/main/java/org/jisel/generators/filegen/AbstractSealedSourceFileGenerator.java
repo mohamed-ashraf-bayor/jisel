@@ -23,6 +23,7 @@
 package org.jisel.generators.filegen;
 
 import org.jisel.generators.contentgen.AbstractSealedDetachedInterfaceSourceContentGenerator;
+import org.jisel.generators.contentgen.AbstractSealedReportContentGenerator;
 import org.jisel.generators.contentgen.AbstractSealedSourceContentGenerator;
 import org.jisel.generators.contentgen.impl.DetachedInterfaceSourceContentGenerator;
 import org.jisel.generators.contentgen.impl.FinalClassSourceContentGenerator;
@@ -53,10 +54,10 @@ import static org.jisel.generators.StringGenerator.DOT;
 import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.FINAL_CLASS_SUFFIX;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_ALL;
-import static org.jisel.generators.StringGenerator.JISEL_REPORT_SUFFIX;
 import static org.jisel.generators.StringGenerator.UNDERSCORE;
 import static org.jisel.generators.StringGenerator.UNSEALED;
 import static org.jisel.generators.StringGenerator.generatePackageName;
+import static org.jisel.generators.contentgen.AbstractSealedReportContentGenerator.REPORT_FILENAME_SUFFIX;
 import static org.jisel.generators.contentgen.SourceContentGenerator.DETACHED_INTERFACE_NAME_OP;
 import static org.jisel.generators.contentgen.SourceContentGenerator.DETACHED_TOP_LEVEL_INTERFACE_NAME_FUNC;
 import static org.jisel.generators.contentgen.SourceContentGenerator.findAllAbstractMethodsForProfile;
@@ -70,7 +71,7 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements Source
     protected final AbstractSealedSourceContentGenerator interfaceSourceContentGenerator;
     protected final AbstractSealedDetachedInterfaceSourceContentGenerator detachedInterfaceSourceContentGenerator;
     protected final AbstractSealedSourceContentGenerator finalClassSourceContentGenerator;
-    protected final AbstractSealedSourceContentGenerator reportContentGenerator;
+    protected final AbstractSealedReportContentGenerator reportContentGenerator;
 
     /**
      * InterfaceSourceFileGenerator constructor. Injects needed instance of {@link ProcessingEnvironment} and creates
@@ -224,18 +225,20 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements Source
                                                                 Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) throws IOException {
         var generatedFiles = new ArrayList<String>();
         for (var profile : sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).keySet()) {
-            createDetachedInterfaceForProfile(
-                    largeInterfaceElement,
-                    Map.of(
-                            DETACH_PROFILE, profile,
-                            DETACH_METHODS, findAllAbstractMethodsForProfile(
-                                    profile,
-                                    sealedInterfacesToGenerateByLargeInterface,
-                                    sealedInterfacesPermitsByLargeInterface,
-                                    largeInterfaceElement
-                            )
-                    ),
-                    true);
+            generatedFiles.add(
+                    createDetachedInterfaceForProfile(
+                            largeInterfaceElement,
+                            Map.of(
+                                    DETACH_PROFILE, profile,
+                                    DETACH_METHODS, findAllAbstractMethodsForProfile(
+                                            profile,
+                                            sealedInterfacesToGenerateByLargeInterface,
+                                            sealedInterfacesPermitsByLargeInterface,
+                                            largeInterfaceElement
+                                    )
+                            ),
+                            true)
+            );
         }
         return generatedFiles;
     }
@@ -271,32 +274,34 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements Source
      *
      * @param largeInterfaceElement
      * @param unSeal
-     * @param sealedInterfaceToGenerate
+     * @param sealedInterfacesToGenerate
      * @param sealedInterfacesPermitsMap
      * @return
      * @throws IOException
      */
-    protected String createJiselReportFile(Element largeInterfaceElement,
-                                           boolean unSeal,
-                                           Map.Entry<String, Set<Element>> sealedInterfaceToGenerate,
-                                           Map<String, List<String>> sealedInterfacesPermitsMap) throws IOException {
+    protected String createJiselReportFileForLargeInterface(Element largeInterfaceElement,
+                                                            boolean unSeal,
+                                                            Map<String, Set<Element>> sealedInterfacesToGenerate,
+                                                            Map<String, List<String>> sealedInterfacesPermitsMap,
+                                                            List<String> generatedDetachedInterfaces) throws IOException {
         var packageNameOpt = generatePackageName(largeInterfaceElement);
         var qualifiedName = packageNameOpt.isPresent()
-                ? packageNameOpt.get() + DOT + UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + JISEL_REPORT_SUFFIX
-                : UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + JISEL_REPORT_SUFFIX;
+                ? packageNameOpt.get() + DOT + UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + REPORT_FILENAME_SUFFIX
+                : UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + REPORT_FILENAME_SUFFIX;
         try {
             var fileObject = processingEnvironment.getFiler().createResource(
                     StandardLocation.SOURCE_OUTPUT,
                     packageNameOpt.isPresent() ? packageNameOpt.get() : EMPTY_STRING,
-                    UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + JISEL_REPORT_SUFFIX
+                    UNDERSCORE + largeInterfaceElement.getSimpleName().toString() + REPORT_FILENAME_SUFFIX
             );
             try (var out = new PrintWriter(fileObject.openWriter())) {
                 out.println(
-                        reportContentGenerator.generateSourceContent(
+                        reportContentGenerator.generateReportContent(
                                 largeInterfaceElement,
                                 unSeal,
-                                sealedInterfaceToGenerate,
-                                sealedInterfacesPermitsMap
+                                sealedInterfacesToGenerate,
+                                sealedInterfacesPermitsMap,
+                                generatedDetachedInterfaces
                         )
                 );
             }

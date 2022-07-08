@@ -66,20 +66,22 @@ public final class ReportContentGenerator extends AbstractSealedReportContentGen
     }
 
     @Override
-    public String generateSourceContent(Element largeInterfaceElement,
+    public String generateReportContent(Element largeInterfaceElement,
                                         boolean unSeal,
-                                        Map.Entry<String, Set<Element>> sealedInterfaceToGenerate,
-                                        Map<String, List<String>> sealedInterfacesPermitsMap) {
+                                        Map<String, Set<Element>> sealedInterfacesToGenerate,
+                                        Map<String, List<String>> sealedInterfacesPermitsMap,
+                                        List<String> generatedDetachedInterfaces) {
         var reportContent = new StringBuilder();
         var packageNameOpt = generatePackageName(largeInterfaceElement);
         var qualifiedName = packageNameOpt.isPresent()
                 ? packageNameOpt.get() + DOT + largeInterfaceElement.getSimpleName().toString()
                 : largeInterfaceElement.getSimpleName().toString();
         reportContent.append(format("%s%n%n", qualifiedName));
-        //reportContent.append(generateSealedInterfacesReportContent(largeInterfaceElement, sealedInterfaceToGenerate, sealedInterfacesPermitsMap));
+        reportContent.append(generateSealedInterfacesReportContent(largeInterfaceElement, sealedInterfacesToGenerate, sealedInterfacesPermitsMap));
         if (unSeal) {
-            //reportContent.append(generateUnSealedInterfacesReportContent(largeInterfaceElement, sealedInterfaceToGenerate, sealedInterfacesPermitsMap));
+            reportContent.append(generateUnSealedInterfacesReportContent(largeInterfaceElement, sealedInterfacesToGenerate, sealedInterfacesPermitsMap));
         }
+        reportContent.append(generateDetachedInterfacesReportContent(generatedDetachedInterfaces));
         return reportContent.toString();
     }
 }

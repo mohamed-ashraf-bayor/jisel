@@ -37,7 +37,7 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
-import static org.jisel.generators.StringGenerator.ADD_TO_REPORT_MSG;
+import static org.jisel.generators.StringGenerator.ADD_TO_REPORT_PROFILES_NOT_FOUND_MSG;
 import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
 
 /**
@@ -100,7 +100,7 @@ public final class AddToHandler extends AbstractSealedAddToHandler {
             }
         }
         if (!profileFound || providedLargeInterfaceTypeNotFound) {
-            statusReport.append(ADD_TO_REPORT_MSG);
+            statusReport.append(ADD_TO_REPORT_PROFILES_NOT_FOUND_MSG);
         }
         return statusReport.toString();
     }

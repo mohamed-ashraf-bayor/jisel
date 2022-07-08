@@ -77,8 +77,6 @@ public sealed interface ExtendsGenerator extends CodeGenerator permits Interface
                 " %s %s ",
                 isInterface(classOrInterfaceContent.toString()) ? EXTENDS : IMPLEMENTS,
                 params.stream().collect(joining(COMMA_SEPARATOR + WHITESPACE))
-                // TODO line abv was: params.stream().map(StringGenerator::removeCommaSeparator).collect(joining(COMMA_SEPARATOR + WHITESPACE))
-                // TODO REVIEW use of comma sep in entire pjct
         ));
     }
 

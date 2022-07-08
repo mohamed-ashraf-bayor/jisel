@@ -32,7 +32,6 @@ import java.util.Set;
 import static java.lang.String.format;
 import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.DOT;
-import static org.jisel.generators.StringGenerator.NEW_LINE;
 import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.PACKAGE;
 import static org.jisel.generators.StringGenerator.UNSEALED;
@@ -72,7 +71,6 @@ public final class InterfaceSourceContentGenerator extends AbstractSealedSourceC
         interfaceContent.append(format(";%n%n"));
         // javaxgenerated
         annotationsGenerator.buildJavaxGeneratedAnnotationSection(interfaceContent);
-        interfaceContent.append(NEW_LINE);
         // existing annotations
         if (largeInterfaceElement.getSimpleName().toString().equals(profile)) {
             annotationsGenerator.buildExistingAnnotations(interfaceContent, largeInterfaceElement);

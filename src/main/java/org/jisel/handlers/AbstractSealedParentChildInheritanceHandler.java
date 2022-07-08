@@ -23,7 +23,6 @@ package org.jisel.handlers;
 
 import org.jisel.handlers.impl.SealForParentChildInheritanceHandler;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +35,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.TMP_PLACEHOLDER;
 
 /**
  * Exposes contract to fulfill by any class dedicated to building parent-children relations based on information provided in

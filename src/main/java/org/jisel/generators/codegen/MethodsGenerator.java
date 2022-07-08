@@ -35,7 +35,6 @@ import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
 import static org.jisel.generators.StringGenerator.DEFAULT_BOOLEAN_VALUE;
 import static org.jisel.generators.StringGenerator.DEFAULT_NULL_VALUE;
 import static org.jisel.generators.StringGenerator.DEFAULT_NUMBER_VALUE;
-import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.RETURN;
 import static org.jisel.generators.StringGenerator.WHITESPACE;
 import static org.jisel.generators.codegen.AnnotationsGenerator.buildExistingAnnotations;
@@ -88,18 +87,12 @@ public sealed interface MethodsGenerator extends CodeGenerator permits Interface
         return format("%s(%s)",
                 methodElement.getSimpleName(),
                 parametersList.stream()
-                        .map(variableElement ->
-                        {
-                            var existingAnnotations = buildExistingAnnotations(variableElement, WHITESPACE);
-                            return format(
-                                    "%s%s %s",
-                                    existingAnnotations.isEmpty()
-                                            ? EMPTY_STRING
-                                            : existingAnnotations + WHITESPACE,
-                                    variableElement.asType().toString(),
-                                    variableElement.getSimpleName().toString()
-                            );
-                        })
+                        .map(variableElement -> format(
+                                "%s%s %s",
+                                buildExistingAnnotations(variableElement, WHITESPACE),
+                                variableElement.asType().toString(),
+                                variableElement.getSimpleName().toString()
+                        ))
                         .collect(joining(COMMA_SEPARATOR + WHITESPACE))
         );
     }

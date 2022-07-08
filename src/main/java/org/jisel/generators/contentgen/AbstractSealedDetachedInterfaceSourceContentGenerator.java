@@ -53,6 +53,6 @@ public abstract sealed class AbstractSealedDetachedInterfaceSourceContentGenerat
                                         boolean unSeal,
                                         Map.Entry<String, Set<Element>> sealedInterfaceToGenerate,
                                         Map<String, List<String>> sealedInterfacesPermitsMap) {
-        throw new UnsupportedOperationException("Call generateDetachedInterfaceSourceContent(Map<String, Object>) method instead");
+        throw new UnsupportedOperationException("Call generateDetachedInterfaceSourceContent(String, Map<String, Object>, Element) method instead");
     }
 }

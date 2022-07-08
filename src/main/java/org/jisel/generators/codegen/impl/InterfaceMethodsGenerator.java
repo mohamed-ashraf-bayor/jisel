@@ -47,11 +47,11 @@ public final class InterfaceMethodsGenerator implements MethodsGenerator {
                 sealedInterfaceContent,
                 methodsSet.stream()
                         .map(element -> {
-                            var existingAnnotations = buildExistingAnnotations(element, NEW_LINE);
                             var thrownExceptions = generateThrownExceptions(element);
+                            var existingAnnotations = buildExistingAnnotations(element, NEW_LINE);
                             return format(
                                     "%s%s %s%s",
-                                    existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations + NEW_LINE + TAB,
+                                    existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations + TAB,
                                     generateReturnType(element),
                                     generateMethodNameAndParameters(element),
                                     thrownExceptions.isEmpty() ? SEMICOLON : format(" throws %s", thrownExceptions + SEMICOLON)

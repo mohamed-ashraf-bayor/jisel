@@ -60,7 +60,7 @@ public @interface Detach {
 
     Class<?>[] thirdSuperInterfaceGenerics() default {};
 
-    String[] applyAnnotations() default EMPTY_STRING;
+    String applyAnnotations() default EMPTY_STRING;
 
     /**
      * Internal annotation allowing &#64;Detach to be repeatable

@@ -52,6 +52,7 @@ import static org.jisel.generators.StringGenerator.PUBLIC_INTERFACE;
 import static org.jisel.generators.StringGenerator.extractPackageName;
 import static org.jisel.generators.StringGenerator.extractSimpleName;
 import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
+import static org.jisel.generators.codegen.AnnotationsGenerator.splitApplyAnnotationsRawValue;
 
 /**
  * // TODO jdoc all
@@ -71,7 +72,9 @@ public final class DetachedInterfaceSourceContentGenerator extends AbstractSeale
 
     @Override
     @SuppressWarnings("unchecked")
-    public String generateDetachedInterfaceSourceContent(String detachedInterfaceQualifiedName, Map<String, Object> detachAttribs, Element largeInterfaceElement) {
+    public String generateDetachedInterfaceSourceContent(String detachedInterfaceQualifiedName,
+                                                         Map<String, Object> detachAttribs,
+                                                         Element largeInterfaceElement) {
         var profile = detachAttribs.get(DETACH_PROFILE).toString();
         var superInterfacesRawValue = Optional.ofNullable(detachAttribs.get(DETACH_SUPERINTERFACES)).orElse(EMPTY_STRING).toString();
         var firstSuperInterfaceGenericsRawValue = Optional.ofNullable(detachAttribs.get(DETACH_FIRST_SUPERINTERFACE_GENERICS)).orElse(EMPTY_STRING).toString();
@@ -88,7 +91,6 @@ public final class DetachedInterfaceSourceContentGenerator extends AbstractSeale
         interfaceContent.append(format(";%n%n"));
         // javaxgenerated
         annotationsGenerator.buildJavaxGeneratedAnnotationSection(interfaceContent);
-        interfaceContent.append(NEW_LINE);
         // existing annotations
         if (JISEL_KEYWORD_TOPLEVEL.equals(profile)
                 || JISEL_KEYWORD_TOPLEVEL_TRANSFORMED.equals(profile)
@@ -97,7 +99,9 @@ public final class DetachedInterfaceSourceContentGenerator extends AbstractSeale
         }
         // apply provided annotations raw string values
         if (!applyAnnotationsRawValue.isBlank()) {
-            annotationsGenerator.applyAnnotations(interfaceContent, applyAnnotationsRawValue.split(COMMA_SEPARATOR));
+            // applyAnnotationsRawValue sample value:
+            //  @Deprecated\n        @SuppressWarnings({\"unused\"})\n        @RequestMapping(value = \"/ex/foos/{fooid}/bar/{barid}\", method = GET)\n
+            annotationsGenerator.applyAnnotations(interfaceContent, splitApplyAnnotationsRawValue(applyAnnotationsRawValue));
             interfaceContent.append(NEW_LINE);
         }
         // declaration: public interface

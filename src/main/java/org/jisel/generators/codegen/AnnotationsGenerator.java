@@ -31,10 +31,11 @@ import java.util.List;
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
-import static org.jisel.generators.StringGenerator.BACKSLASH;
 import static org.jisel.generators.StringGenerator.EMPTY_STRING;
+import static org.jisel.generators.StringGenerator.ESCAPED_NEW_LINE;
 import static org.jisel.generators.StringGenerator.JISEL_ANNOTATIONS_PACKAGE;
 import static org.jisel.generators.StringGenerator.NEW_LINE;
+import static org.jisel.generators.UnescapeJavaString.unescapeJavaString;
 
 /**
  * // TODO jdoc entire clss
@@ -54,10 +55,22 @@ public sealed interface AnnotationsGenerator extends CodeGenerator permits Inter
      * @return
      */
     static String buildExistingAnnotations(Element element, String separator) {
-        return element.getAnnotationMirrors().stream()
+        String existingAnnotations = element.getAnnotationMirrors().stream()
                 .map(Object::toString)
                 .filter(annotationString -> !annotationString.contains(JISEL_ANNOTATIONS_PACKAGE))
                 .collect(joining(separator));
+        return existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations + separator;
+    }
+
+    static String[] splitApplyAnnotationsRawValue(String applyAnnotationsRawValue) {
+        var strippedApplyAnnotationsRawValue = applyAnnotationsRawValue.strip();
+        if (!applyAnnotationsRawValue.isBlank()) {
+            return stream(applyAnnotationsRawValue.split(ESCAPED_NEW_LINE))
+                    .map(String::strip)
+                    .toList()
+                    .toArray(String[]::new);
+        }
+        return new String[]{strippedApplyAnnotationsRawValue};
     }
 
     /**
@@ -69,7 +82,7 @@ public sealed interface AnnotationsGenerator extends CodeGenerator permits Inter
     default void applyAnnotations(StringBuilder classOrInterfaceContent, String[] annotationsRawStrings) {
         generateCode(
                 classOrInterfaceContent,
-                stream(annotationsRawStrings).map(AnnotationsGenerator::cleanUpAppliedAnnotation).toList()
+                stream(annotationsRawStrings).map(AnnotationsGenerator::cleanUpApplyAnnotation).toList()
         );
     }
 
@@ -79,10 +92,12 @@ public sealed interface AnnotationsGenerator extends CodeGenerator permits Inter
      * @param annotationString
      * @return
      */
-    static String cleanUpAppliedAnnotation(String annotationString) {
-        var withoutBackslashes = annotationString.replace(BACKSLASH, EMPTY_STRING);
-        return withoutBackslashes.substring(1, withoutBackslashes.length() - 1);
-
+    private static String cleanUpApplyAnnotation(String annotationString) {
+        var strippedString = annotationString.strip();
+        if (!strippedString.isBlank()) {
+            return unescapeJavaString(annotationString);
+        }
+        return strippedString;
     }
 
     /**
@@ -112,6 +127,6 @@ public sealed interface AnnotationsGenerator extends CodeGenerator permits Inter
 
     @Override
     default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
-        classOrInterfaceContent.append(params.stream().map(String::strip).collect(joining(NEW_LINE)));
+        classOrInterfaceContent.append(params.stream().collect(joining(NEW_LINE)));
     }
 }

@@ -51,6 +51,6 @@ public final class InterfaceAnnotationsGenerator implements AnnotationsGenerator
 
     @Override
     public void buildExistingAnnotations(StringBuilder classOrInterfaceContent, Element element) {
-        generateCode(classOrInterfaceContent, List.of(AnnotationsGenerator.buildExistingAnnotations(element, NEW_LINE) + NEW_LINE));
+        generateCode(classOrInterfaceContent, List.of(AnnotationsGenerator.buildExistingAnnotations(element, NEW_LINE)));
     }
 }

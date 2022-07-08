@@ -46,9 +46,9 @@ import static org.jisel.generators.StringGenerator.DETACH_ALL;
 import static org.jisel.generators.StringGenerator.SEAL_FOR;
 import static org.jisel.generators.StringGenerator.STATUS_REPORT_TITLE;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL;
-import static org.jisel.generators.StringGenerator.TOP_LEVEL_REPORT_MSG;
+import static org.jisel.generators.StringGenerator.TOP_LEVEL_REPORT_NOT_FOUND_MSG;
 import static org.jisel.generators.StringGenerator.UNSEAL;
-import static org.jisel.generators.StringGenerator.UNSEAL_REPORT_MSG;
+import static org.jisel.generators.StringGenerator.UNSEAL_REPORT_NO_TOPLEVEL_MSG;
 import static org.jisel.generators.StringGenerator.WHITESPACE;
 
 // TODO jdoc entire clss
@@ -149,14 +149,14 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
     private Map<Element, String> extractLargeInterfacesWithNoTopLevel(Map<Element, String> sealForStatusReport,
                                                                       Map<Element, String> topLevelStatusReport) {
         topLevelStatusReport.keySet().forEach(sealForStatusReport::remove);
-        sealForStatusReport.replaceAll((key, value) -> TOP_LEVEL_REPORT_MSG);
+        sealForStatusReport.replaceAll((key, value) -> TOP_LEVEL_REPORT_NOT_FOUND_MSG);
         return sealForStatusReport;
     }
 
     private Map<Element, String> extractUnSealedInterfacesWithNoTopLevel(Map<Element, String> unSealStatusReport,
                                                                          Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface) {
         sealedInterfacesToGenerateByLargeInterface.keySet().forEach(unSealStatusReport::remove);
-        unSealStatusReport.replaceAll((key, value) -> UNSEAL_REPORT_MSG);
+        unSealStatusReport.replaceAll((key, value) -> UNSEAL_REPORT_NO_TOPLEVEL_MSG);
         return unSealStatusReport;
     }
 

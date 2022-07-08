@@ -34,9 +34,6 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.jisel.generators.StringGenerator.DOT;
 import static org.jisel.generators.StringGenerator.FINAL_CLASS_SUFFIX;
-import static org.jisel.generators.StringGenerator.JISEL_REPORT_CHILDREN_HEADER;
-import static org.jisel.generators.StringGenerator.JISEL_REPORT_GENERATED_SEALED_INTERFACES_HEADER;
-import static org.jisel.generators.StringGenerator.JISEL_REPORT_GENERATED_UNSEALED_INTERFACES_HEADER;
 import static org.jisel.generators.StringGenerator.NEW_LINE;
 import static org.jisel.generators.StringGenerator.UNDERSCORE;
 import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention;
@@ -48,6 +45,40 @@ import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConventi
 public abstract sealed class AbstractSealedReportContentGenerator extends AbstractSealedSourceContentGenerator permits ReportContentGenerator {
 
     /**
+     * "Report.txt" suffix appended by the end of the generated report filename
+     */
+    public static final String REPORT_FILENAME_SUFFIX = "Report.txt";
+
+    /**
+     * Header displayed above the list of the generated sealed interfaces, in the Jisel Report file
+     */
+    private static final String GENERATED_SEALED_INTERFACES_HEADER = "Generated sealed interfaces:";
+
+    /**
+     * Header displayed above the list of the generated unsealed interfaces, in the Jisel Report file
+     */
+    private static final String GENERATED_UNSEALED_INTERFACES_HEADER = "Generated unsealed interfaces:";
+
+    /**
+     * Header displayed above the list of the generated detached interfaces, in the Jisel Report file
+     */
+    private static final String GENERATED_DETACHED_INTERFACES_HEADER = "Generated detached interfaces:";
+
+    /**
+     * Header displayed above the list of the sub-types of the generated sealed interfaces, in the Jisel Report file
+     */
+    private static final String CHILDREN_HEADER = "Children:";
+
+    private static final String GENERATED_INTERFACE_NAME_DISPLAY_FORMAT = "\t%s%n";
+
+    private static final String HEADER_TITLE_FORMAT = "%s%n";
+
+    public static final String CHILDREN_HEADER_TITLE_FORMAT = "\t - %s%n";
+    public static final String CHILD_INTERFACE_NAME_FORMAT = "\t\t%s%n";
+    public static final String CHILDREN_NAMES_SEPARATOR = "%n\t\t";
+
+
+    /**
      * TODO jdoc...
      *
      * @param processingEnvironment
@@ -57,7 +88,22 @@ public abstract sealed class AbstractSealedReportContentGenerator extends Abstra
     }
 
     /**
+     * TODO ...
      *
+     * @param largeInterfaceElement
+     * @param unSeal
+     * @param sealedInterfacesToGenerate
+     * @param sealedInterfacesPermitsMap
+     * @param generatedDetachedInterfaces
+     * @return
+     */
+    public abstract String generateReportContent(Element largeInterfaceElement,
+                                                 boolean unSeal,
+                                                 Map<String, Set<Element>> sealedInterfacesToGenerate,
+                                                 Map<String, List<String>> sealedInterfacesPermitsMap,
+                                                 List<String> generatedDetachedInterfaces);
+
+    /**
      * @param largeInterfaceElement
      * @param sealedInterfacesToGenerateMap
      * @param sealedInterfacesPermitsMap
@@ -67,19 +113,19 @@ public abstract sealed class AbstractSealedReportContentGenerator extends Abstra
                                                            Map<String, Set<Element>> sealedInterfacesToGenerateMap,
                                                            Map<String, List<String>> sealedInterfacesPermitsMap) {
         var reportContent = new StringBuilder();
-        reportContent.append(format("%s%n", JISEL_REPORT_GENERATED_SEALED_INTERFACES_HEADER));
-        sealedInterfacesToGenerateMap.entrySet().forEach(mapEntry -> {
-            var sealedInterfaceName = sealedInterfaceNameConvention(mapEntry.getKey(), largeInterfaceElement);
-            reportContent.append(format("\t%s%n", sealedInterfaceName));
-            var sealedInterfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(mapEntry.getKey()));
+        reportContent.append(format(HEADER_TITLE_FORMAT, GENERATED_SEALED_INTERFACES_HEADER));
+        sealedInterfacesToGenerateMap.keySet().forEach(profile -> {
+            var sealedInterfaceName = sealedInterfaceNameConvention(profile, largeInterfaceElement);
+            reportContent.append(format(GENERATED_INTERFACE_NAME_DISPLAY_FORMAT, sealedInterfaceName));
+            var sealedInterfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(profile));
             if (sealedInterfaceChildrenOpt.isPresent() && !sealedInterfaceChildrenOpt.get().isEmpty()) {
-                reportContent.append(format("\t - %s%n", JISEL_REPORT_CHILDREN_HEADER));
+                reportContent.append(format(CHILDREN_HEADER_TITLE_FORMAT, CHILDREN_HEADER));
                 if (!sealedInterfaceChildrenOpt.get().isEmpty()) {
                     reportContent.append(format(
-                            "\t\t%s%n",
+                            CHILD_INTERFACE_NAME_FORMAT,
                             sealedInterfaceChildrenOpt.get().stream()
                                     .map(childName -> sealedInterfaceNameConvention(childName, largeInterfaceElement))
-                                    .collect(joining(format("%n\t\t")))
+                                    .collect(joining(format(CHILDREN_NAMES_SEPARATOR)))
                     ));
                 }
             }
@@ -89,7 +135,6 @@ public abstract sealed class AbstractSealedReportContentGenerator extends Abstra
     }
 
     /**
-     *
      * @param largeInterfaceElement
      * @param sealedInterfacesToGenerateMap
      * @param sealedInterfacesPermitsMap
@@ -99,28 +144,44 @@ public abstract sealed class AbstractSealedReportContentGenerator extends Abstra
                                                              Map<String, Set<Element>> sealedInterfacesToGenerateMap,
                                                              Map<String, List<String>> sealedInterfacesPermitsMap) {
         var reportContent = new StringBuilder();
-        reportContent.append(format("%s%n", JISEL_REPORT_GENERATED_UNSEALED_INTERFACES_HEADER));
-        sealedInterfacesToGenerateMap.entrySet().forEach(mapEntry -> {
-            var interfaceName = unSealedInterfaceNameConvention(mapEntry.getKey(), largeInterfaceElement);
-            reportContent.append(format("\t%s%n", interfaceName));
-            var interfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(mapEntry.getKey()));
+        reportContent.append(format(HEADER_TITLE_FORMAT, GENERATED_UNSEALED_INTERFACES_HEADER));
+        sealedInterfacesToGenerateMap.keySet().forEach(profile -> {
+            var interfaceName = unSealedInterfaceNameConvention(profile, largeInterfaceElement);
+            reportContent.append(format(GENERATED_INTERFACE_NAME_DISPLAY_FORMAT, interfaceName));
+            var interfaceChildrenOpt = Optional.ofNullable(sealedInterfacesPermitsMap.get(profile));
             if (interfaceChildrenOpt.isPresent() && !interfaceChildrenOpt.get().isEmpty()) {
                 var childrenListOutput = interfaceChildrenOpt.get().stream()
                         .filter(childName -> !childName.startsWith(UNDERSCORE) && !childName.endsWith(FINAL_CLASS_SUFFIX))
                         .filter(childName -> !childName.contains(DOT))
                         .toList();
                 if (!childrenListOutput.isEmpty()) {
-                    reportContent.append(format("\t - %s%n", JISEL_REPORT_CHILDREN_HEADER));
+                    reportContent.append(format(CHILDREN_HEADER_TITLE_FORMAT, CHILDREN_HEADER));
                     reportContent.append(format(
-                            "\t\t%s%n",
+                            CHILD_INTERFACE_NAME_FORMAT,
                             childrenListOutput.stream()
                                     .map(childName -> unSealedInterfaceNameConvention(childName, largeInterfaceElement))
-                                    .collect(joining(format("%n\t\t")))
+                                    .collect(joining(format(CHILDREN_NAMES_SEPARATOR)))
                     ));
                 }
             }
         });
         reportContent.append(NEW_LINE);
         return reportContent.toString();
+    }
+
+    protected String generateDetachedInterfacesReportContent(List<String> generatedDetachedInterfaces) {
+        var reportContent = new StringBuilder();
+        reportContent.append(format(HEADER_TITLE_FORMAT, GENERATED_DETACHED_INTERFACES_HEADER));
+        generatedDetachedInterfaces.stream().forEach(qualifiedName -> reportContent.append(format(GENERATED_INTERFACE_NAME_DISPLAY_FORMAT, qualifiedName)));
+        reportContent.append(NEW_LINE);
+        return reportContent.toString();
+    }
+
+    @Override
+    public String generateSourceContent(Element largeInterfaceElement,
+                                        boolean unSeal,
+                                        Map.Entry<String, Set<Element>> sealedInterfaceToGenerate,
+                                        Map<String, List<String>> sealedInterfacesPermitsMap) {
+        return generateReportContent(largeInterfaceElement, unSeal, Map.ofEntries(sealedInterfaceToGenerate), sealedInterfacesPermitsMap, List.of());
     }
 }

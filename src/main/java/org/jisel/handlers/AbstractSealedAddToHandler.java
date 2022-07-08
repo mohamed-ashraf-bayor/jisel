@@ -40,12 +40,14 @@ import static org.jisel.generators.StringGenerator.ADD_TO_REGEX;
 import static org.jisel.generators.StringGenerator.ANNOTATION_STRING_VALUE_REGEX;
 import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.DOT_CLASS;
 import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.EQUALS_SIGN;
+import static org.jisel.generators.StringGenerator.DOUBLE_QUOTES;
+import static org.jisel.generators.StringGenerator.LARGE_INTERFACE;
 import static org.jisel.generators.StringGenerator.LARGE_INTERFACE_ATTRIBUTE_REGEX;
 import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.PROFILES;
-import static org.jisel.generators.StringGenerator.addQuotesToLargeInterfaceValue;
 import static org.jisel.generators.StringGenerator.removeDotClass;
 
 public abstract sealed class AbstractSealedAddToHandler implements JiselAnnotationHandler permits AddToHandler {
@@ -84,6 +86,20 @@ public abstract sealed class AbstractSealedAddToHandler implements JiselAnnotati
             updateProvidedProfilesMapBasedOnProfilesSet(providedProfilesMap, unmodifiableSet(profilesSet), addQuotesToLargeInterfaceValue(attributesWithValues));
         }
         return providedProfilesMap;
+    }
+
+    /**
+     * Adds double quotes to the largeInterface attribute value and removes the ".class" string.<br>
+     * To be called while processing largeInterface attribute values provided though &#64;{@link AddTo}
+     *
+     * @param largeInterfaceAttributeRawString the toString representation of the provided largeInterface attribute value<br>
+     *                                         ex: largeInterface=com.bayor.Drivable.class
+     * @return string containing the largeInterface attribute value with
+     */
+    protected String addQuotesToLargeInterfaceValue(String largeInterfaceAttributeRawString) {
+        return largeInterfaceAttributeRawString
+                .replace(LARGE_INTERFACE + EQUALS_SIGN, LARGE_INTERFACE + EQUALS_SIGN + DOUBLE_QUOTES)
+                .replace(DOT_CLASS, DOUBLE_QUOTES);
     }
 
     private void updateProvidedProfilesMapBasedOnProfilesSet(Map<String, Set<String>> providedProfilesMap, Set<String> profilesSet, String attributesWithValues) {

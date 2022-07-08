@@ -37,7 +37,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.FINAL_CLASS_SUFFIX;
 import static org.jisel.generators.StringGenerator.METHODS_TO_EXCLUDE;
-import static org.jisel.generators.StringGenerator.NEW_LINE;
 import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.OPENING_PARENTHESIS;
 import static org.jisel.generators.StringGenerator.PACKAGE;
@@ -73,7 +72,6 @@ public final class FinalClassSourceContentGenerator extends AbstractSealedSource
         generatePackageName(largeInterfaceElement).ifPresent(name -> finalClassContent.append(format("%s %s;%n%n", PACKAGE, name)));
         // javaxgenerated
         annotationsGenerator.buildJavaxGeneratedAnnotationSection(finalClassContent);
-        finalClassContent.append(NEW_LINE);
         // public final class
         finalClassContent.append(format(
                 "%s %s ",

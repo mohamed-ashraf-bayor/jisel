@@ -21,7 +21,6 @@
  */
 package org.jisel.generators.codegen;
 
-import org.jisel.generators.StringGenerator;
 import org.jisel.generators.codegen.impl.SealedInterfacePermitsGenerator;
 
 import javax.lang.model.element.Element;
@@ -90,7 +89,6 @@ public sealed interface PermitsGenerator extends CodeGenerator permits SealedInt
                 " %s %s ",
                 PERMITS,
                 params.stream()
-                        .map(StringGenerator::removeCommaSeparator)
                         .collect(joining(COMMA_SEPARATOR + WHITESPACE))
         ));
     }

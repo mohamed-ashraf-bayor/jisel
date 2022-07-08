@@ -32,17 +32,13 @@ import javax.lang.model.element.Element;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
-import java.util.regex.Pattern;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.joining;
 
 /**
  * A bunch of String literals and commonly used string handling functions
  */
-// TODO split and reorg this intref
 public interface StringGenerator {
 
     /**
@@ -116,14 +112,19 @@ public interface StringGenerator {
     String SUP_SIGN = ">";
 
     /**
-     * "\""
+     * Placeholder string to be later replaced with another string
      */
-    String ESCAPED_DOUBLE_QUOTES = "\"";
+    String TMP_PLACEHOLDER = UNDERSCORE + UNDERSCORE;
 
     /**
-     * "\"
+     * "\""
      */
-    String BACKSLASH = "\\";
+    String DOUBLE_QUOTES = "\"";
+
+    /**
+     * "\""
+     */
+    String ESCAPED_DOUBLE_QUOTES = "\\\"";
 
     /**
      * "Sealed"
@@ -194,6 +195,11 @@ public interface StringGenerator {
      * "\n"
      */
     String NEW_LINE = format("%n");
+
+    /**
+     * "\n"
+     */
+    String ESCAPED_NEW_LINE = "\\\\n";
 
     /**
      * "\t"
@@ -301,12 +307,6 @@ public interface StringGenerator {
      */
     String ADD_TO_REGEX = "AddTo\\((.*?)\\)";
 
-    /**
-     * Regex expression to read attributes information provided using the {@link Detach} annotation.<br>
-     * Sample value to be parsed by the regex: @org.jisel.annotations.Detach(profile="(toplevel)", superInterfaces={com.bayor.Sociable.class, com.bayor.Processor.class}, ...)
-     */
-    String DETACH_REGEX = "Detach\\((.*?)\\)";
-
     String DETACH_PROFILE = PROFILE;
 
     String DETACH_RENAME = "rename";
@@ -335,7 +335,7 @@ public interface StringGenerator {
 
     String DETACH_THIRD_SUPERINTERFACE_GENERICS_REGEX = "thirdSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
-    String DETACH_APPLYANNOTATIONS_REGEX = "applyAnnotations=" + ANNOTATION_ARRAY_VALUE_REGEX;
+    String DETACH_APPLYANNOTATIONS_REGEX = "applyAnnotations=" + ANNOTATION_STRING_VALUE_REGEX;
 
     /**
      * Title of the text report displayed in the logs during compilation.<br>
@@ -423,54 +423,29 @@ public interface StringGenerator {
     /**
      * Message displayed during compilation when 1 or many provided profiles are not found in the provided parent interfaces.
      */
-    String ADD_TO_REPORT_MSG = "1 or many provided profiles are not found in the provided parent interfaces. " +
+    String ADD_TO_REPORT_PROFILES_NOT_FOUND_MSG = "1 or many provided profiles are not found in the provided parent interfaces. " +
             "Check your profiles and/or parent interfaces names. " +
             "Also check the use of @TopLevel in the provided large interfaces. ";
 
     /**
      * Message displayed during compilation when &#64;TopLevel is not found within the provided large interface
      */
-    String TOP_LEVEL_REPORT_MSG = "@TopLevel annotation not found. Check your mappings. ";
+    String TOP_LEVEL_REPORT_NOT_FOUND_MSG = "@TopLevel annotation not found. Check your mappings. ";
 
     /**
      * Message displayed during compilation when there might be an issue with &#64;TopLevel and/or &#64;SealFor mappings
      */
-    String TOP_LEVEL_AND_SEAL_FOR_REPORT_MSG = "Check your @TopLevel and/or @SealFor mappings. ";
+    String TOP_LEVEL_AND_SEAL_FOR_REPORT_CHECK_MSG = "Check your @TopLevel and/or @SealFor mappings. ";
 
     /**
      * Message displayed during compilation when &#64;TopLevel is not found within the provided large interface
      */
-    String UNSEAL_REPORT_MSG = "@UnSeal annotation applied on interfaces not making use of @TopLevel. Check your mappings. ";
+    String UNSEAL_REPORT_NO_TOPLEVEL_MSG = "@UnSeal annotation applied on interfaces not making use of @TopLevel. Check your mappings. ";
 
     /**
      * Message displayed during compilation when the provided profiles to detach are not found in the large interface &#64;SealFor mappings
      */
-    String DETACH_REPORT_MSG = "1 or many provided profiles are not found in the @SealFor mappings. ";
-
-    /**
-     * "Report.txt"
-     */
-    String JISEL_REPORT_SUFFIX = "Report.txt";
-
-    /**
-     * Header displayed above the list of the generated sealed interfaces, in the Jisel Report file
-     */
-    String JISEL_REPORT_GENERATED_SEALED_INTERFACES_HEADER = "Generated sealed interfaces:";
-
-    /**
-     * Header displayed above the list of the generated unsealed interfaces, in the Jisel Report file
-     */
-    String JISEL_REPORT_GENERATED_UNSEALED_INTERFACES_HEADER = "Generated unsealed interfaces:";
-
-    /**
-     * Header displayed above the list of the generated detached interfaces, in the Jisel Report file
-     */
-    String JISEL_REPORT_GENERATED_DETACHED_INTERFACES_HEADER = "Generated detached interfaces:";
-
-    /**
-     * Header displayed above the list of the sub-types of the generated sealed interfaces, in the Jisel Report file
-     */
-    String JISEL_REPORT_CHILDREN_HEADER = "Children:";
+    String DETACH_REPORT_PROFILES_NOT_FOUND_MSG = "1 or many provided profiles are not found in the @SealFor mappings. ";
 
     // TODO updt all jdocs
 
@@ -479,16 +454,6 @@ public interface StringGenerator {
     String JISEL_KEYWORD_TOPLEVEL = "(toplevel)"; // make public. can be used by user
 
     String JISEL_KEYWORD_TOPLEVEL_TRANSFORMED = "_toplevel_"; // internal use only
-
-    /**
-     * Removes all commas from the provided string
-     *
-     * @param text contains commas as a string separator
-     * @return provided text with all commas removed
-     */
-    static String removeCommaSeparator(String text) {
-        return asList(text.split(COMMA_SEPARATOR)).stream().collect(joining());
-    }
 
     /**
      * Replace all double occurences of whitespace ("  ") into a single whitespace (" ")
@@ -509,16 +474,16 @@ public interface StringGenerator {
      * @return a string following Jisel sealed interface naming convention
      */
     static String sealedInterfaceNameConvention(String profile, Element interfaceElement) {
-        var nameSuffixFunc = removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString())
+        var nameSuffixFunc = profile.equals(interfaceElement.getSimpleName().toString())
                 ? EMPTY_STRING
                 : interfaceElement.getSimpleName().toString();
         // any profile name starting w _ (final classes names) or containing a dot (classes annotated with @Addto) is returned as is
-        return removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT)
-                ? removeCommaSeparator(profile)
+        return profile.startsWith(UNDERSCORE) || profile.contains(DOT)
+                ? profile
                 : format(
                 "%s%s%s",
                 SEALED_PREFIX,
-                removeCommaSeparator(profile),
+                profile,
                 nameSuffixFunc
         );
     }
@@ -536,6 +501,32 @@ public interface StringGenerator {
     }
 
     /**
+     * Constructs a string based on the provided profiles and a large interface {@link Element} instance, according to the naming convention:<br>
+     * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
+     *
+     * @param profiles         {@link List} of profiles names
+     * @param interfaceElement {@link Element} instance of the large interface to be segregated
+     * @return a List of string literals following Jisel sealed interface naming convention
+     */
+    static List<String> sealedInterfaceNameConventionForList(List<String> profiles, Element interfaceElement) {
+        UnaryOperator<String> nameSuffixFunc = profile ->
+                profile.equals(interfaceElement.getSimpleName().toString())
+                        ? EMPTY_STRING
+                        : interfaceElement.getSimpleName().toString();
+        return profiles.stream()
+                .map(profile ->
+                        profile.startsWith(UNDERSCORE) || profile.contains(DOT)
+                                ? profile
+                                : format(
+                                "%s%s%s",
+                                SEALED_PREFIX,
+                                profile,
+                                nameSuffixFunc.apply(profile)
+                        ))
+                .toList();
+    }
+
+    /**
      * Constructs a string made of the qualified name of the class without the latest occurrence of ".class". <br>
      * If the provided name doesn't end with ".class", it is returned as is
      *
@@ -546,46 +537,6 @@ public interface StringGenerator {
         return qualifiedName.contains(DOT_CLASS)
                 ? qualifiedName.substring(0, qualifiedName.lastIndexOf(DOT_CLASS))
                 : qualifiedName;
-    }
-
-    /**
-     * Adds double quotes to the largeInterface attribute value and removes the ".class" string.<br>
-     * To be called while processing largeInterface attribute values provided though &#64;{@link AddTo}
-     *
-     * @param largeInterfaceAttributeRawString the toString representation of the provided largeInterface attribute value<br>
-     *                                         ex: largeInterface=com.bayor.Drivable.class
-     * @return string containing the largeInterface attribute value with
-     */
-    static String addQuotesToLargeInterfaceValue(String largeInterfaceAttributeRawString) {
-        return largeInterfaceAttributeRawString
-                .replace(LARGE_INTERFACE + EQUALS_SIGN, LARGE_INTERFACE + EQUALS_SIGN + ESCAPED_DOUBLE_QUOTES)
-                .replace(DOT_CLASS, ESCAPED_DOUBLE_QUOTES);
-    }
-
-    /**
-     * Constructs a string based on the provided profiles and a large interface {@link Element} instance, according to the naming convention:<br>
-     * <b>Sealed&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br><br>
-     *
-     * @param profiles         {@link List} of profiles names
-     * @param interfaceElement {@link Element} instance of the large interface to be segregated
-     * @return a List of string literals following Jisel sealed interface naming convention
-     */
-    static List<String> sealedInterfaceNameConventionForList(List<String> profiles, Element interfaceElement) {
-        UnaryOperator<String> nameSuffixFunc = profile ->
-                removeCommaSeparator(profile).equals(interfaceElement.getSimpleName().toString())
-                        ? EMPTY_STRING
-                        : interfaceElement.getSimpleName().toString();
-        return profiles.stream()
-                .map(profile ->
-                        removeCommaSeparator(profile).startsWith(UNDERSCORE) || profile.contains(DOT)
-                                ? removeCommaSeparator(profile)
-                                : format(
-                                "%s%s%s",
-                                SEALED_PREFIX,
-                                removeCommaSeparator(profile),
-                                nameSuffixFunc.apply(profile)
-                        ))
-                .toList();
     }
 
     /**
@@ -621,17 +572,6 @@ public interface StringGenerator {
     }
 
     /**
-     * TODO jdoc...
-     *
-     * @param attributeValueAsString
-     * @return
-     */
-    static String annotationAttributeValueWithoutQuotes(String attributeValueAsString) {
-        var matcher = Pattern.compile(ANNOTATION_STRING_VALUE_REGEX).matcher(attributeValueAsString);
-        return matcher.find() ? matcher.group(1) : attributeValueAsString;
-    }
-
-    /**
      * // TODO jdoc...
      *
      * @param profile
@@ -640,5 +580,54 @@ public interface StringGenerator {
     static boolean isJiselKeyword(String profile) {
         var keywordsArray = new String[]{JISEL_KEYWORD_ALL, JISEL_KEYWORD_TOPLEVEL, JISEL_KEYWORD_TOPLEVEL_TRANSFORMED};
         return stream(keywordsArray).anyMatch(keyword -> keyword.equals(profile));
+    }
+
+
+    /**
+     * ...remoev trailing curly braces
+     *
+     * @param arrayRawStringValue
+     * @return
+     */
+    static String removeAnnotationArrayTrailingBraces(String arrayRawStringValue) {
+        return removeTrailingStrings(arrayRawStringValue, OPENING_CURLY_BRACE, CLOSING_CURLY_BRACE);
+    }
+
+    /**
+     * TODO jdoc...
+     *
+     * @param attributeValueAsString
+     * @return
+     */
+    static String removeAnnotationAttributeTrailingQuotes(String attributeValueAsString) {
+        return removeTrailingStrings(attributeValueAsString, DOUBLE_QUOTES, DOUBLE_QUOTES);
+    }
+
+    /**
+     * TODO jdoc...
+     *
+     * @param attributeValueAsString
+     * @return
+     */
+    static String removeAnnotationAttributeTrailingParentheses(String attributeValueAsString) {
+        return removeTrailingStrings(attributeValueAsString, OPENING_PARENTHESIS, CLOSING_PARENTHESIS);
+    }
+
+    /**
+     * TODO ...
+     *
+     * @param processString
+     * @param leftTrailingString
+     * @param rightTrailingString
+     * @return
+     */
+    static String removeTrailingStrings(String processString, String leftTrailingString, String rightTrailingString) {
+        UnaryOperator<String> removeLQuoteOp = string -> string.startsWith(leftTrailingString) ? string.substring(1) : string;
+        UnaryOperator<String> removeRQuoteOp = string -> string.endsWith(rightTrailingString) ? string.substring(0, string.strip().length() - 1) : string;
+        var strippedString = processString.strip();
+        if (!strippedString.isBlank()) {
+            return removeLQuoteOp.andThen(removeRQuoteOp).apply(strippedString);
+        }
+        return strippedString;
     }
 }

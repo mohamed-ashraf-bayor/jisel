@@ -50,7 +50,11 @@ public final class SealForHandler extends AbstractSealedSealForHandler {
                 // only where @TopLevel is used
                 .filter(element -> sealedInterfacesToGenerateByLargeInterface.containsKey(element.getEnclosingElement()))
                 // only if the same method is NOT also annotated with @TopLevel
-                .filter(element -> !sealedInterfacesToGenerateByLargeInterface.get(element.getEnclosingElement()).get(element.getEnclosingElement().getSimpleName().toString()).contains(element))
+                .filter(element ->
+                        !sealedInterfacesToGenerateByLargeInterface
+                                .get(element.getEnclosingElement())
+                                .get(element.getEnclosingElement().getSimpleName().toString())
+                                .contains(element))
                 .collect(toSet());
         // statusReport - only add the name of the processed large interfaces with no description
         allAnnotatedElementsToProcess.forEach(element -> statusReport.put(element.getEnclosingElement(), EMPTY_STRING));

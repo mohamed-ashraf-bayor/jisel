@@ -25,7 +25,6 @@ import org.jisel.annotations.AddTo;
 import org.jisel.annotations.SealFor;
 import org.jisel.handlers.impl.SealForAnnotationInfoCollectionHandler;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +39,7 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static org.jisel.generators.StringGenerator.ANNOTATION_STRING_VALUE_REGEX;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.TMP_PLACEHOLDER;
 
 /**
  * Exposes contract to fulfill by any class dedicated to collecting necessary information from the annotated elements,
