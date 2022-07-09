@@ -37,7 +37,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.stream;
 
 /**
- * A bunch of String literals and commonly used string handling functions
+ * A bunch of String literals and commonly needed string handling functions
  */
 public interface StringGenerator {
 
@@ -197,7 +197,7 @@ public interface StringGenerator {
     String NEW_LINE = format("%n");
 
     /**
-     * "\n"
+     * "\\\\n" (escaped "\n")
      */
     String ESCAPED_NEW_LINE = "\\\\n";
 
@@ -348,41 +348,6 @@ public interface StringGenerator {
     String DETACH_METHODS = "methods";
 
     /**
-     * Regex expression used to read the attribute value provided within profile="" in the @Detach annotation
-     */
-    String DETACH_PROFILE_REGEX = "profile=" + ANNOTATION_STRING_VALUE_REGEX;
-
-    /**
-     * Regex expression used to read the attribute value provided within rename="" in the @Detach annotation
-     */
-    String DETACH_RENAME_REGEX = "rename=" + ANNOTATION_STRING_VALUE_REGEX;
-
-    /**
-     * Regex expression used to read the attribute value provided within superInterfaces="" in the @Detach annotation
-     */
-    String DETACH_SUPERINTERFACES_REGEX = "superInterfaces=" + ANNOTATION_ARRAY_VALUE_REGEX;
-
-    /**
-     * Regex expression used to read the attribute value provided within firstSuperInterfaceGenerics="" in the @Detach annotation
-     */
-    String DETACH_FIRST_SUPERINTERFACE_GENERICS_REGEX = "firstSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
-
-    /**
-     * Regex expression used to read the attribute value provided within secondSuperInterfaceGenerics="" in the @Detach annotation
-     */
-    String DETACH_SECOND_SUPERINTERFACE_GENERICS_REGEX = "secondSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
-
-    /**
-     * Regex expression used to read the attribute value provided within thirdSuperInterfaceGenerics="" in the @Detach annotation
-     */
-    String DETACH_THIRD_SUPERINTERFACE_GENERICS_REGEX = "thirdSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
-
-    /**
-     * Regex expression used to read the attribute value provided within applyAnnotations="" in the @Detach annotation
-     */
-    String DETACH_APPLYANNOTATIONS_REGEX = "applyAnnotations=" + ANNOTATION_STRING_VALUE_REGEX;
-
-    /**
      * Fully qualified name of the {@link SealFor} annotation
      */
     String ORG_JISEL_SEAL_FOR = "org.jisel.annotations.SealFor";
@@ -465,6 +430,11 @@ public interface StringGenerator {
      * Keyword which may be used to indicate to "detach" the toplevel profile
      */
     String JISEL_KEYWORD_TOPLEVEL = "(toplevel)";
+
+    /**
+     * Regex expression to identify the use of (toplevel) case-insensitive
+     */
+    String JISEL_KEYWORD_TOPLEVEL_CI_REGEX = "(?i)(toplevel)";
 
     /**
      * Keyword used intenally by Jisel during annotation information parsing to replace "(toplevel)"
@@ -595,37 +565,7 @@ public interface StringGenerator {
      */
     static boolean isJiselKeyword(String profile) {
         var keywordsArray = new String[]{JISEL_KEYWORD_ALL, JISEL_KEYWORD_TOPLEVEL, JISEL_KEYWORD_TOPLEVEL_REPLACEMENT};
-        return stream(keywordsArray).anyMatch(keyword -> keyword.equals(profile));
-    }
-
-    /**
-     * Removes the trailing curly braces found in the string representation of a java array
-     *
-     * @param arrayRawStringValue the string representation of a java array
-     * @return the string representation of a java array without the trailing braces
-     */
-    static String removeAnnotationArrayTrailingBraces(String arrayRawStringValue) {
-        return removeTrailingStrings(arrayRawStringValue, OPENING_CURLY_BRACE, CLOSING_CURLY_BRACE);
-    }
-
-    /**
-     * Removes the trailing quotes found in the string representation of a java annotation String value
-     *
-     * @param attributeValueAsString the string representation of a java annotation String value
-     * @return the string representation of a java annotation String value without the trailing quotes
-     */
-    static String removeAnnotationAttributeTrailingQuotes(String attributeValueAsString) {
-        return removeTrailingStrings(attributeValueAsString, DOUBLE_QUOTES, DOUBLE_QUOTES);
-    }
-
-    /**
-     * Removes the trailing parentheses found in the string representation of a java annotation value
-     *
-     * @param attributeValueAsString the string representation of a java annotation value
-     * @return the string representation of a java annotation value without the trailing parentheses
-     */
-    static String removeAnnotationAttributeTrailingParentheses(String attributeValueAsString) {
-        return removeTrailingStrings(attributeValueAsString, OPENING_PARENTHESIS, CLOSING_PARENTHESIS);
+        return stream(keywordsArray).anyMatch(keyword -> keyword.equalsIgnoreCase(profile));
     }
 
     /**

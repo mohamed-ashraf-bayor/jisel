@@ -39,22 +39,20 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static org.jisel.generators.StringGenerator.ANNOTATION_STRING_VALUE_REGEX;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
-import static org.jisel.generators.StringGenerator.TMP_PLACEHOLDER;
 
 /**
- * Exposes contract to fulfill by any class dedicated to collecting necessary information from the annotated elements,
+ * Exposes contract to fulfill by a class collecting necessary information from the annotated elements,
  * in order to populate the {@link Map} containing the sealed interfaces information to be generated
  */
 public abstract sealed class AbstractSealedAnnotationInfoCollectionHandler implements JiselAnnotationHandler permits SealForAnnotationInfoCollectionHandler {
 
     /**
-     * Populates the Map containing the sealed interfaces information to be generated
+     * Populates the Map containing the sealed interfaces information to be generated information regarding the used annotations
      *
-     *                                                   information regarding the used annotations
      * @param allAnnotatedElements                       {@link Set} of {@link Element} instances representing all classes
      *                                                   annotated with &#64;{@link AddTo} and all abstract methods annotated
      *                                                   with &#64;{@link SealFor}
-     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
+     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
      *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a {@link Map} of profile name as the key and a Set of {@link Element} instances as the value.
@@ -88,7 +86,7 @@ public abstract sealed class AbstractSealedAnnotationInfoCollectionHandler imple
             var totalProfiles = profilesList.size();
             sealedInterfacesToGenerateByLargeInterface.putIfAbsent(interfaceElement, new HashMap<>());
             sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).putAll(annotatedMethodsByProfileByLargeInterface.get(interfaceElement));
-            for (int i = 0; i < totalProfiles - 1; i++) { // TODO eliminate i
+            for (int i = 0; i < totalProfiles - 1; i++) { // TODO try eliminitaing i
                 var allProcessedCommonMethodsByConcatenatedProfiles = concatenateProfilesBasedOnCommonMethods(profilesList.get(i), profilesList, methodsSetsList);
                 // remove all commonMethodElmnts 1 by 1 and in each profile
                 allProcessedCommonMethodsByConcatenatedProfiles.values().stream()

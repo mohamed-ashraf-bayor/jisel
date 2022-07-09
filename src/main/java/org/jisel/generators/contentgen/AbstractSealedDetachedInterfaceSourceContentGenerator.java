@@ -30,20 +30,29 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * TODO jdoc...
+ * Exposes contract to fulfill by classes generating content of detached interfaces
  */
 public abstract sealed class AbstractSealedDetachedInterfaceSourceContentGenerator extends AbstractSealedSourceContentGenerator
         permits DetachedInterfaceSourceContentGenerator {
 
     /**
-     * TODO jdoc...
+     * Passes through the received {@link ProcessingEnvironment} instance to the super constructor
      *
-     * @param processingEnvironment
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for report content generation
      */
     protected AbstractSealedDetachedInterfaceSourceContentGenerator(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);
     }
 
+    /**
+     * Generates the detached interface String content
+     *
+     * @param detachedInterfaceQualifiedName qualified name of the detached interface being generated
+     * @param detachAttribs                  {@link Map} storing all attributes passed through the &#64;{@link org.jisel.annotations.Detach} annotation
+     *                                       additionally to the abstract methods of the detached interface being generated
+     * @param largeInterfaceElement          {@link Element} instance of the large interface to process
+     * @return the detached interface String content
+     */
     public abstract String generateDetachedInterfaceSourceContent(String detachedInterfaceQualifiedName,
                                                                   Map<String, Object> detachAttribs,
                                                                   Element largeInterfaceElement);

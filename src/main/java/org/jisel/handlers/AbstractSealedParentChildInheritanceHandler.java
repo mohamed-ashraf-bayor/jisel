@@ -35,10 +35,9 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
-import static org.jisel.generators.StringGenerator.TMP_PLACEHOLDER;
 
 /**
- * Exposes contract to fulfill by any class dedicated to building parent-children relations based on information provided in
+ * Exposes contract to fulfill by a class building parent-children relations based on information provided in
  * the Map containing the sealed interfaces information to be generated
  */
 public abstract sealed class AbstractSealedParentChildInheritanceHandler implements JiselAnnotationHandler permits SealForParentChildInheritanceHandler {

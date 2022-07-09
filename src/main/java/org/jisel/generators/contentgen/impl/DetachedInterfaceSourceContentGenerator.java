@@ -54,16 +54,14 @@ import static org.jisel.generators.StringGenerator.extractSimpleName;
 import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
 
 /**
- * // TODO jdoc all
- * Generates the content of a detached interface
- * ...
+ * Generates the String content of a detached interface
  */
 public final class DetachedInterfaceSourceContentGenerator extends AbstractSealedDetachedInterfaceSourceContentGenerator {
 
     /**
-     * TODO jdoc...
+     * Passes through the received {@link ProcessingEnvironment} instance to the super constructor
      *
-     * @param processingEnvironment
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for report content generation
      */
     public DetachedInterfaceSourceContentGenerator(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);
@@ -91,8 +89,8 @@ public final class DetachedInterfaceSourceContentGenerator extends AbstractSeale
         // javaxgenerated
         buildJavaxGeneratedAnnotation(interfaceContent);
         // existing annotations
-        if (JISEL_KEYWORD_TOPLEVEL.equals(profile)
-                || JISEL_KEYWORD_TOPLEVEL_REPLACEMENT.equals(profile)
+        if (JISEL_KEYWORD_TOPLEVEL.equalsIgnoreCase(profile)
+                || JISEL_KEYWORD_TOPLEVEL_REPLACEMENT.equalsIgnoreCase(profile)
                 || largeInterfaceElement.getSimpleName().toString().equals(profile)) {
             annotationsGenerator.generateExistingAnnotations(interfaceContent, largeInterfaceElement);
         }

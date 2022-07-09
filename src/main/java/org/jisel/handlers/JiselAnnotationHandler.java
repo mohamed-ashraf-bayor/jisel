@@ -40,7 +40,7 @@ public sealed interface JiselAnnotationHandler
      * Reads values of all attributes provided through the use of Jisel annotations and populates the provided Map arguments
      *
      * @param allAnnotatedElements                       {@link Set} of {@link Element} instances representing all classes annotated with Jisel annotations
-     * @param sealedInterfacesToGenerateByLargeInterface Map containing information about the sealed interfaces to be generated.
+     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
      *                                                   To be populated and/or modified if needed. The key represents the Element instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a Map of profile name as the key and a Set of Element instances as the value.

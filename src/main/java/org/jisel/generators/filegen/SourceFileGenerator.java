@@ -28,19 +28,22 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * jdoc...
+ * Exposes contract to fulfill by classes generating Java source files
  */
 public sealed interface SourceFileGenerator permits AbstractSealedSourceFileGenerator {
 
     /**
-     * // TODO jdoc...
+     * Creates source files based on provided parameters and returns a {@link List} of the generated interfaces and classes qualified names
      *
-     * @param sealedInterfacesToGenerateByLargeInterface
-     * @param sealedInterfacesPermitsByLargeInterface
-     * @param unSealValueByLargeInterface
-     * @param detachedInterfacesToGenerateByLargeInterface
-     * @return
-     * @throws IOException
+     * @param sealedInterfacesToGenerateByLargeInterface   {@link Map} containing information about the sealed interfaces to
+     *                                                     be generated for each large interface
+     * @param sealedInterfacesPermitsByLargeInterface      {@link Map} containing information about the subtypes permitted by
+     *                                                     each one of the sealed interfaces to be generated for each large interface
+     * @param unSealValueByLargeInterface                  {@link Map} storing 'unSeal' boolean value for each large interface
+     * @param detachedInterfacesToGenerateByLargeInterface {@link Map} containing information about the detached interfaces to
+     *                                                     be generated for each large interface
+     * @return {@link List} of the generated interfaces and classes qualified names
+     * @throws IOException if an I/O error occured
      */
     List<String> createSourceFiles(Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                    Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,

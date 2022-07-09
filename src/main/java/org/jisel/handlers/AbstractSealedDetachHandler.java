@@ -35,30 +35,27 @@ import java.util.regex.Pattern;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.concat;
+import static org.jisel.generators.StringGenerator.ANNOTATION_ARRAY_VALUE_REGEX;
 import static org.jisel.generators.StringGenerator.ANNOTATION_STRING_VALUE_REGEX;
 import static org.jisel.generators.StringGenerator.AT_SIGN;
+import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.CLOSING_PARENTHESIS;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
 import static org.jisel.generators.StringGenerator.DETACH_APPLYANNOTATIONS;
-import static org.jisel.generators.StringGenerator.DETACH_APPLYANNOTATIONS_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_FIRST_SUPERINTERFACE_GENERICS;
-import static org.jisel.generators.StringGenerator.DETACH_FIRST_SUPERINTERFACE_GENERICS_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_PROFILE;
-import static org.jisel.generators.StringGenerator.DETACH_PROFILE_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_RENAME;
-import static org.jisel.generators.StringGenerator.DETACH_RENAME_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_REPORT_PROFILES_NOT_FOUND_MSG;
 import static org.jisel.generators.StringGenerator.DETACH_SECOND_SUPERINTERFACE_GENERICS;
-import static org.jisel.generators.StringGenerator.DETACH_SECOND_SUPERINTERFACE_GENERICS_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_SUPERINTERFACES;
-import static org.jisel.generators.StringGenerator.DETACH_SUPERINTERFACES_REGEX;
 import static org.jisel.generators.StringGenerator.DETACH_THIRD_SUPERINTERFACE_GENERICS;
-import static org.jisel.generators.StringGenerator.DETACH_THIRD_SUPERINTERFACE_GENERICS_REGEX;
+import static org.jisel.generators.StringGenerator.DOUBLE_QUOTES;
 import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.ESCAPED_DOUBLE_QUOTES;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_ALL;
-import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL;
+import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_CI_REGEX;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_REPLACEMENT;
+import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.OPENING_PARENTHESIS;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACH;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACHALL;
@@ -66,32 +63,92 @@ import static org.jisel.generators.StringGenerator.TMP_PLACEHOLDER;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL_AND_SEAL_FOR_REPORT_CHECK_MSG;
 import static org.jisel.generators.StringGenerator.VALUE;
 import static org.jisel.generators.StringGenerator.isJiselKeyword;
-import static org.jisel.generators.StringGenerator.removeAnnotationArrayTrailingBraces;
-import static org.jisel.generators.StringGenerator.removeAnnotationAttributeTrailingParentheses;
-import static org.jisel.generators.StringGenerator.removeAnnotationAttributeTrailingQuotes;
 import static org.jisel.generators.StringGenerator.removeTrailingStrings;
 
 /**
- * // TODO jdoc all ...
+ * Exposes contract to fulfill by classes reading information provided though the use of &#64;{@link org.jisel.annotations.Detach}
+ * and &#64;{@link org.jisel.annotations.DetachAll} annotations, along with a bunch of String constants and convenience methods
  */
 public abstract sealed class AbstractSealedDetachHandler implements JiselAnnotationHandler permits DetachHandler {
 
+    /**
+     * Regex expression used to read the attribute value provided within profile="" in the @Detach annotation
+     */
+    private static final String DETACH_PROFILE_REGEX = "profile=" + ANNOTATION_STRING_VALUE_REGEX;
+
+    /**
+     * Regex expression used to read the attribute value provided within rename="" in the @Detach annotation
+     */
+    private static final String DETACH_RENAME_REGEX = "rename=" + ANNOTATION_STRING_VALUE_REGEX;
+
+    /**
+     * Regex expression used to read the attribute value provided within superInterfaces="" in the @Detach annotation
+     */
+    private static final String DETACH_SUPERINTERFACES_REGEX = "superInterfaces=" + ANNOTATION_ARRAY_VALUE_REGEX;
+
+    /**
+     * Regex expression used to read the attribute value provided within firstSuperInterfaceGenerics="" in the @Detach annotation
+     */
+    private static final String DETACH_FIRST_SUPERINTERFACE_GENERICS_REGEX = "firstSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+
+    /**
+     * Regex expression used to read the attribute value provided within secondSuperInterfaceGenerics="" in the @Detach annotation
+     */
+    private static final String DETACH_SECOND_SUPERINTERFACE_GENERICS_REGEX = "secondSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+
+    /**
+     * Regex expression used to read the attribute value provided within thirdSuperInterfaceGenerics="" in the @Detach annotation
+     */
+    private static final String DETACH_THIRD_SUPERINTERFACE_GENERICS_REGEX = "thirdSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
+
+    /**
+     * Regex expression used to read the attribute value provided within applyAnnotations="" in the @Detach annotation
+     */
+    private static final String DETACH_APPLYANNOTATIONS_REGEX = "applyAnnotations=" + ANNOTATION_STRING_VALUE_REGEX;
+
+    /**
+     * {@link ProcessingEnvironment} instance needed to read annotations information
+     */
     protected final ProcessingEnvironment processingEnvironment;
 
+    /**
+     * Initializes the needed {@link ProcessingEnvironment} instance
+     *
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for performing low-level operations on {@link Element} instances
+     */
     protected AbstractSealedDetachHandler(ProcessingEnvironment processingEnvironment) {
         this.processingEnvironment = processingEnvironment;
     }
 
+    /**
+     * Reads information provided though the use of &#64;{@link org.jisel.annotations.Detach} and &#64;{@link org.jisel.annotations.DetachAll} annotations
+     *
+     * @param allAnnotatedElements                         {@link Set} of {@link Element} instances representing all classes annotated
+     *                                                     with &#64;{@link org.jisel.annotations.Detach} and &#64;{@link org.jisel.annotations.DetachAll} annotations
+     * @param sealedInterfacesToGenerateByLargeInterface   {@link Map} containing information about the sealed interfaces to
+     *                                                     be generated for each large interface
+     * @param sealedInterfacesPermitsByLargeInterface      {@link Map} containing information about the subtypes permitted by
+     *                                                     each one of the  sealed interfaces to be generated
+     * @param detachedInterfacesToGenerateByLargeInterface {@link Map} containing information about the detached interfaces to
+     *                                                     be generated for each large interface
+     * @return a {@link Map} containing a status report for each largeInterface tagged with &#64;{@link org.jisel.annotations.Detach}
+     * and &#64;{@link org.jisel.annotations.DetachAll} annotations.<br>If the processing went well, the map value would be empty,
+     * otherwise a text description of the encountered error
+     */
     public abstract Map<Element, String> handleDetachAnnotatedElements(Set<Element> allAnnotatedElements,
                                                                        Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
                                                                        Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface);
 
     /**
-     * // TODO jdoc...
+     * Reads information provided though the use of &#64;{@link org.jisel.annotations.DetachAll} annotations
      *
-     * @param detachedInterfacesToGenerateByLargeInterface
-     * @param largeInterfaceElement
+     * @param detachedInterfacesToGenerateByLargeInterface {@link Map} containing information about the detached interfaces to
+     *                                                     be generated for each large interface
+     * @param largeInterfaceElement                        {@link Element} instance of the large interface being processed
+     * @param sealedInterfacesToGenerateByLargeInterface   {@link Map} containing information about the sealed interfaces to
+     *                                                     be generated for each large interface
+     * @return If the processing went well, an empty String is returned, otherwise a text description of the encountered error
      */
     protected String handleDetachAllAnnotation(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
                                                Element largeInterfaceElement,
@@ -114,11 +171,14 @@ public abstract sealed class AbstractSealedDetachHandler implements JiselAnnotat
     }
 
     /**
-     * // TODO jdoc...
+     * Reads information provided though the use of a single &#64;{@link org.jisel.annotations.Detach} annotation
      *
-     * @param detachedInterfacesToGenerateByLargeInterface
-     * @param largeInterfaceElement
-     * @param sealedInterfacesToGenerateByLargeInterface
+     * @param detachedInterfacesToGenerateByLargeInterface {@link Map} containing information about the detached interfaces to
+     *                                                     be generated for each large interface
+     * @param largeInterfaceElement                        {@link Element} instance of the large interface being processed
+     * @param sealedInterfacesToGenerateByLargeInterface   {@link Map} containing information about the sealed interfaces to
+     *                                                     be generated for each large interface
+     * @return If the processing went well, an empty String is returned, otherwise a text description of the encountered error
      */
     protected String handleSingleDetachAnnotation(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
                                                   Element largeInterfaceElement,
@@ -158,12 +218,16 @@ public abstract sealed class AbstractSealedDetachHandler implements JiselAnnotat
     }
 
     /**
-     * // TODO jdoc...
+     * Reads information provided though the use of multiple &#64;{@link org.jisel.annotations.Detach} annotations
      *
-     * @param detachedInterfacesToGenerateByLargeInterface
-     * @param largeInterfaceElement
-     * @param detachsAnnotationMirror
-     * @param sealedInterfacesToGenerateByLargeInterface
+     * @param detachedInterfacesToGenerateByLargeInterface {@link Map} containing information about the detached interfaces to
+     *                                                     be generated for each large interface
+     * @param largeInterfaceElement                        {@link Element} instance of the large interface being processed
+     * @param detachsAnnotationMirror                      {@link AnnotationMirror} instance containing information regarding the
+     *                                                     use of multiple &#64;{@link org.jisel.annotations.Detach}
+     * @param sealedInterfacesToGenerateByLargeInterface   {@link Map} containing information about the sealed interfaces to
+     *                                                     be generated for each large interface
+     * @return If the processing went well, an empty String is returned, otherwise a text description of the encountered error
      */
     protected String handleMultipleDetachAnnotations(Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
                                                      Element largeInterfaceElement,
@@ -175,7 +239,7 @@ public abstract sealed class AbstractSealedDetachHandler implements JiselAnnotat
                 .get(0).getValue().getValue().toString();
         // detachsAnnotationRawContentString sample value:
         // @org.jisel.annotations.Detach(profile="(toplevel)", superInterfaces={com.bayor.Sociable.class, com.bayor.Processor.class}, applyAnnotations="@Deprecated @Annot2", rename="newName"),@org.jisel.annotations.Detach(profile="PRo1", ...)
-        var detachAnnotationRawContentList = stream(detachsAnnotationRawContentString.replace(JISEL_KEYWORD_TOPLEVEL, JISEL_KEYWORD_TOPLEVEL_REPLACEMENT).split(AT_SIGN + ORG_JISEL_DETACH))
+        var detachAnnotationRawContentList = stream(detachsAnnotationRawContentString.replace(JISEL_KEYWORD_TOPLEVEL_CI_REGEX, JISEL_KEYWORD_TOPLEVEL_REPLACEMENT).split(AT_SIGN + ORG_JISEL_DETACH))
                 .map(detachAnnotationRawContent -> removeAnnotationAttributeTrailingParentheses(removeTrailingStrings(detachAnnotationRawContent, OPENING_PARENTHESIS, COMMA_SEPARATOR)))
                 .toList();
         for (var detachAnnotationRawContent : detachAnnotationRawContentList) {
@@ -209,6 +273,18 @@ public abstract sealed class AbstractSealedDetachHandler implements JiselAnnotat
             );
         }
         return EMPTY_STRING;
+    }
+
+    private String removeAnnotationArrayTrailingBraces(String arrayRawStringValue) {
+        return removeTrailingStrings(arrayRawStringValue, OPENING_CURLY_BRACE, CLOSING_CURLY_BRACE);
+    }
+
+    private String removeAnnotationAttributeTrailingQuotes(String attributeValueAsString) {
+        return removeTrailingStrings(attributeValueAsString, DOUBLE_QUOTES, DOUBLE_QUOTES);
+    }
+
+    private String removeAnnotationAttributeTrailingParentheses(String attributeValueAsString) {
+        return removeTrailingStrings(attributeValueAsString, OPENING_PARENTHESIS, CLOSING_PARENTHESIS);
     }
 
     private String extractDetachAttributeValue(String detachAnnotationRawContentString, String detachAttribRegex) {

@@ -43,6 +43,11 @@ import static org.jisel.generators.contentgen.SourceContentGenerator.findAllAbst
  */
 public final class DetachHandler extends AbstractSealedDetachHandler {
 
+    /**
+     * Passes through the received {@link ProcessingEnvironment} instance to the super constructor
+     *
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for performing low-level operations on {@link Element} instances
+     */
     public DetachHandler(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);
     }

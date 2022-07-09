@@ -1,4 +1,3 @@
-// TODO licnse + jdoc all even protctd vars & mthds as well
 /**
  * Copyright (c) 2022 Mohamed Ashraf Bayor
  * <p>
@@ -58,26 +57,46 @@ import static org.jisel.generators.StringGenerator.UNDERSCORE;
 import static org.jisel.generators.StringGenerator.UNSEALED;
 import static org.jisel.generators.StringGenerator.generatePackageName;
 import static org.jisel.generators.contentgen.AbstractSealedReportContentGenerator.REPORT_FILENAME_SUFFIX;
-import static org.jisel.generators.contentgen.SourceContentGenerator.DETACHED_INTERFACE_NAME_OP;
+import static org.jisel.generators.contentgen.SourceContentGenerator.DETACHED_INTERFACE_NAME_FUNC;
 import static org.jisel.generators.contentgen.SourceContentGenerator.DETACHED_TOP_LEVEL_INTERFACE_NAME_FUNC;
 import static org.jisel.generators.contentgen.SourceContentGenerator.findAllAbstractMethodsForProfile;
 
 /**
- * TODO jdoc...
+ * Exposes contract to fulfill by classes generating Source files, along with a bunch of convenience methods
  */
 public abstract sealed class AbstractSealedSourceFileGenerator implements SourceFileGenerator permits InterfaceSourceFileGenerator {
 
+    /**
+     * {@link ProcessingEnvironment} instance needed to perform low-level operations on {@link javax.lang.model.element.Element} instances
+     */
     protected final ProcessingEnvironment processingEnvironment;
+
+    /**
+     * {@link AbstractSealedSourceContentGenerator} instance needed to generate interfaces source content
+     */
     protected final AbstractSealedSourceContentGenerator interfaceSourceContentGenerator;
+
+    /**
+     * {@link AbstractSealedDetachedInterfaceSourceContentGenerator} instance needed to generate detached interfaces source content
+     */
     protected final AbstractSealedDetachedInterfaceSourceContentGenerator detachedInterfaceSourceContentGenerator;
+
+    /**
+     * {@link AbstractSealedSourceContentGenerator} instance needed to generate the convenience final class content
+     */
     protected final AbstractSealedSourceContentGenerator finalClassSourceContentGenerator;
+
+    /**
+     * {@link AbstractSealedReportContentGenerator} instance needed to generate Jisel report file content
+     */
     protected final AbstractSealedReportContentGenerator reportContentGenerator;
 
     /**
-     * InterfaceSourceFileGenerator constructor. Injects needed instance of {@link ProcessingEnvironment} and creates
-     * needed instances of {@link InterfaceSourceContentGenerator}, {@link FinalClassSourceContentGenerator} and {@link ReportContentGenerator}
+     * Injects needed instance of {@link ProcessingEnvironment} and creates/initializes needed instances of
+     * {@link InterfaceSourceContentGenerator}, {@link DetachedInterfaceSourceContentGenerator}, {@link FinalClassSourceContentGenerator}
+     * and {@link ReportContentGenerator}
      *
-     * @param processingEnvironment
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for source content generation
      */
     protected AbstractSealedSourceFileGenerator(ProcessingEnvironment processingEnvironment) {
         this.processingEnvironment = processingEnvironment;
@@ -88,14 +107,16 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements Source
     }
 
     /**
-     * TODO jdoc...
+     * Creates source file of the generated sealed interface
      *
-     * @param largeInterfaceElement
-     * @param sealedInterfaceToGenerate
-     * @param sealedInterfacesPermitsMap
-     * @param generatedSealedInterfaceName
-     * @return
-     * @throws IOException
+     * @param largeInterfaceElement        {@link Element} instance of the large interface being segregated
+     * @param sealedInterfaceToGenerate    {@link Map.Entry} instance containing information about the sealed interface to generate
+     *                                     (profile as key and value is a Set of abstract methods {@link Element} instances)
+     * @param sealedInterfacesPermitsMap   {@link Map} containing information about the subtypes permitted by
+     *                                     each one of the sealed interfaces to be generated
+     * @param generatedSealedInterfaceName qualified name of the sealed interface file being generated
+     * @return qualified name of the generated sealed interface file
+     * @throws IOException if a severe error occurs during file creation
      */
     protected String createSealedInterfaceSourceFile(Element largeInterfaceElement,
                                                      Map.Entry<String, Set<Element>> sealedInterfaceToGenerate,
@@ -122,14 +143,16 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements Source
     }
 
     /**
-     * TODO jdoc...
+     * Creates source file of the generated sealed interface
      *
-     * @param largeInterfaceElement
-     * @param sealedInterfaceToGenerate
-     * @param sealedInterfacesPermitsMap
-     * @param generatedUnSealedInterfaceName
-     * @return
-     * @throws IOException
+     * @param largeInterfaceElement          {@link Element} instance of the large interface being segregated
+     * @param sealedInterfaceToGenerate      {@link Map.Entry} instance containing information about the sealed interface to generate
+     *                                       (profile as key and value is a Set of abstract methods {@link Element} instances)
+     * @param sealedInterfacesPermitsMap     {@link Map} containing information about the subtypes permitted by
+     *                                       each one of the sealed interfaces to be generated
+     * @param generatedUnSealedInterfaceName qualified name of the unsealed interface file being generated
+     * @return qualified name of the generated unsealed interface file
+     * @throws IOException if a severe error occurs during file creation
      */
     protected String createUnSealedInterfaceSourceFile(Element largeInterfaceElement,
                                                        Map.Entry<String, Set<Element>> sealedInterfaceToGenerate,
@@ -158,12 +181,13 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements Source
     }
 
     /**
-     * TODO jdoc...
+     * Creates source file of the generated convenience final class
      *
-     * @param largeInterfaceElement
-     * @param sealedInterfacesPermitsMap
-     * @return
-     * @throws IOException
+     * @param largeInterfaceElement      {@link Element} instance of the large interface being segregated
+     * @param sealedInterfacesPermitsMap {@link Map} containing information about the subtypes permitted by
+     *                                   each one of the sealed interfaces to be generated
+     * @return qualified name of the generated final class file
+     * @throws IOException if a severe error occurs during file creation
      */
     protected String createFinalClassFile(Element largeInterfaceElement,
                                           Map<String, List<String>> sealedInterfacesPermitsMap) throws IOException {
@@ -190,14 +214,17 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements Source
     }
 
     /**
-     * TODO jdoc...
+     * Creates source files for the detached interfaces
      *
-     * @param largeInterfaceElement
-     * @param detachedInterfacesToGenerateByLargeInterface
-     * @param sealedInterfacesToGenerateByLargeInterface
-     * @param sealedInterfacesPermitsByLargeInterface
-     * @return
-     * @throws IOException
+     * @param largeInterfaceElement                        {@link Element} instance of the large interface being segregated
+     * @param detachedInterfacesToGenerateByLargeInterface {@link Map} containing information about the detached interfaces to
+     *                                                     be generated for each large interface
+     * @param sealedInterfacesToGenerateByLargeInterface   {@link Map} containing information about the sealed interfaces to
+     *                                                     be generated for each large interface
+     * @param sealedInterfacesPermitsByLargeInterface      {@link Map} containing information about the subtypes permitted by each one of the
+     *                                                     sealed interfaces to be generated
+     * @return {@link List} of generated detached interfaces
+     * @throws IOException if a severe error occurs during file creation
      */
     protected List<String> createDetachedInterfacesSourceFiles(Element largeInterfaceElement,
                                                                Map<Element, Map<String, Map<String, Object>>> detachedInterfacesToGenerateByLargeInterface,
@@ -247,7 +274,7 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements Source
         Function<Boolean, String> allSubPackageFunc = detachAllFlag -> detachAllFlag.booleanValue() ? ALL + DOT : EMPTY_STRING;
         var packageNameOpt = generatePackageName(largeInterfaceElement);
         var detachedInterfaceSimpleName = DETACHED_TOP_LEVEL_INTERFACE_NAME_FUNC.apply(
-                DETACHED_INTERFACE_NAME_OP.apply(
+                DETACHED_INTERFACE_NAME_FUNC.apply(
                         detachAttribs.get(DETACH_PROFILE).toString(),
                         Optional.ofNullable(detachAttribs.get(DETACH_RENAME)).orElse(EMPTY_STRING).toString()
                 ),
@@ -270,14 +297,15 @@ public abstract sealed class AbstractSealedSourceFileGenerator implements Source
     }
 
     /**
-     * TODO jdoc...
+     * Creates the Jisel Generation Report file
      *
-     * @param largeInterfaceElement
-     * @param unSeal
-     * @param sealedInterfacesToGenerate
-     * @param sealedInterfacesPermitsMap
-     * @return
-     * @throws IOException
+     * @param largeInterfaceElement      {@link Element} instance of the large interface being segregated
+     * @param unSeal                     boolean, indicates whether to add the generated unselaed interfaces to the report
+     * @param sealedInterfacesToGenerate {@link Map} containing information about the generated sealed interfaces
+     * @param sealedInterfacesPermitsMap {@link Map} containing information about the subtypes permitted by each one of the
+     *                                   sealed interfaces to be generated
+     * @return qualified name of the generated report file
+     * @throws IOException if a severe error occurs during file creation
      */
     protected String createJiselReportFileForLargeInterface(Element largeInterfaceElement,
                                                             boolean unSeal,

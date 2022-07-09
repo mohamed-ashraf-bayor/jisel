@@ -45,6 +45,11 @@ import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention
  */
 public final class AddToHandler extends AbstractSealedAddToHandler {
 
+    /**
+     * Passes through the received {@link ProcessingEnvironment} instance to the super constructor
+     *
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for performing low-level operations on {@link Element} instances
+     */
     public AddToHandler(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);
     }

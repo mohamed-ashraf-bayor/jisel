@@ -40,7 +40,8 @@ import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention
 import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConvention;
 
 /**
- * TODO jdoc...
+ * Exposes contract to fulfill by classes generating Jisel Generation Report file, along with a bunch of
+ * String constants and convenience methods
  */
 public abstract sealed class AbstractSealedReportContentGenerator extends AbstractSealedSourceContentGenerator permits ReportContentGenerator {
 
@@ -52,17 +53,17 @@ public abstract sealed class AbstractSealedReportContentGenerator extends Abstra
     /**
      * Header displayed above the list of the generated sealed interfaces, in the Jisel Report file
      */
-    private static final String GENERATED_SEALED_INTERFACES_HEADER = "Generated sealed interfaces:";
+    private static final String GENERATED_SEALED_INTERFACES_HEADER = "Generated Sealed Interfaces:";
 
     /**
      * Header displayed above the list of the generated unsealed interfaces, in the Jisel Report file
      */
-    private static final String GENERATED_UNSEALED_INTERFACES_HEADER = "Generated unsealed interfaces:";
+    private static final String GENERATED_UNSEALED_INTERFACES_HEADER = "Generated Unsealed Interfaces:";
 
     /**
      * Header displayed above the list of the generated detached interfaces, in the Jisel Report file
      */
-    private static final String GENERATED_DETACHED_INTERFACES_HEADER = "Generated detached interfaces:";
+    private static final String GENERATED_DETACHED_INTERFACES_HEADER = "Generated Detached Interfaces:";
 
     /**
      * Header displayed above the list of the sub-types of the generated sealed interfaces, in the Jisel Report file
@@ -73,29 +74,31 @@ public abstract sealed class AbstractSealedReportContentGenerator extends Abstra
 
     private static final String HEADER_TITLE_FORMAT = "%s%n";
 
-    public static final String CHILDREN_HEADER_TITLE_FORMAT = "\t - %s%n";
-    public static final String CHILD_INTERFACE_NAME_FORMAT = "\t\t%s%n";
-    public static final String CHILDREN_NAMES_SEPARATOR = "%n\t\t";
+    private static final String CHILDREN_HEADER_TITLE_FORMAT = "\t - %s%n";
 
+    private static final String CHILD_INTERFACE_NAME_FORMAT = "\t\t%s%n";
+
+    private static final String CHILDREN_NAMES_SEPARATOR = "%n\t\t";
 
     /**
-     * TODO jdoc...
+     * Passes through the received {@link ProcessingEnvironment} instance to the super constructor
      *
-     * @param processingEnvironment
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for report content generation
      */
     protected AbstractSealedReportContentGenerator(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);
     }
 
     /**
-     * TODO ...
+     * Generates Jisel Generation Report file String content
      *
-     * @param largeInterfaceElement
-     * @param unSeal
-     * @param sealedInterfacesToGenerate
-     * @param sealedInterfacesPermitsMap
-     * @param generatedDetachedInterfaces
-     * @return
+     * @param largeInterfaceElement       {@link Element} instance of the large interface to process
+     * @param unSeal                      indicates whether the generate report content should include unsealed interfaces
+     * @param sealedInterfacesToGenerate  {@link Map} containing information about the generated sealed interfaces
+     * @param sealedInterfacesPermitsMap  {@link Map} containing information about the subtypes permitted by each one of the
+     *                                    sealed interfaces to be generated
+     * @param generatedDetachedInterfaces {@link Map} containing information about the generated detached interfaces
+     * @return Jisel Generation Report file String content
      */
     public abstract String generateReportContent(Element largeInterfaceElement,
                                                  boolean unSeal,
@@ -104,10 +107,13 @@ public abstract sealed class AbstractSealedReportContentGenerator extends Abstra
                                                  List<String> generatedDetachedInterfaces);
 
     /**
-     * @param largeInterfaceElement
-     * @param sealedInterfacesToGenerateMap
-     * @param sealedInterfacesPermitsMap
-     * @return
+     * Generates content for the 'Generated Sealed Interfaces' section of the report file
+     *
+     * @param largeInterfaceElement         {@link Element} instance of the large interface to process
+     * @param sealedInterfacesToGenerateMap {@link Map} containing information about the generated sealed interfaces
+     * @param sealedInterfacesPermitsMap    {@link Map} containing information about the subtypes permitted by each one of the
+     *                                      sealed interfaces to be generated
+     * @return String content for the 'Generated Sealed Interfaces' section of the report file
      */
     protected String generateSealedInterfacesReportContent(Element largeInterfaceElement,
                                                            Map<String, Set<Element>> sealedInterfacesToGenerateMap,
@@ -135,10 +141,13 @@ public abstract sealed class AbstractSealedReportContentGenerator extends Abstra
     }
 
     /**
-     * @param largeInterfaceElement
-     * @param sealedInterfacesToGenerateMap
-     * @param sealedInterfacesPermitsMap
-     * @return
+     * Generates content for the 'Generated UnSealed Interfaces' section of the report file
+     *
+     * @param largeInterfaceElement         {@link Element} instance of the large interface to process
+     * @param sealedInterfacesToGenerateMap {@link Map} containing information about the generated sealed interfaces
+     * @param sealedInterfacesPermitsMap    {@link Map} containing information about the subtypes permitted by each one of the
+     *                                      sealed interfaces to be generated
+     * @return String content for the 'Generated Unsealed Interfaces' section of the report file
      */
     protected String generateUnSealedInterfacesReportContent(Element largeInterfaceElement,
                                                              Map<String, Set<Element>> sealedInterfacesToGenerateMap,
@@ -169,6 +178,12 @@ public abstract sealed class AbstractSealedReportContentGenerator extends Abstra
         return reportContent.toString();
     }
 
+    /**
+     * Generates content for the 'Generated Detached Interfaces' section of the report file
+     *
+     * @param generatedDetachedInterfaces {@link List} of generated detached interfaces
+     * @return String content for the 'Generated Detached Interfaces' section of the report file
+     */
     protected String generateDetachedInterfacesReportContent(List<String> generatedDetachedInterfaces) {
         var reportContent = new StringBuilder();
         reportContent.append(format(HEADER_TITLE_FORMAT, GENERATED_DETACHED_INTERFACES_HEADER));

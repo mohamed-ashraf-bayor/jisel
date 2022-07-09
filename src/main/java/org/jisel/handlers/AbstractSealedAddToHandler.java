@@ -41,19 +41,31 @@ import static org.jisel.generators.StringGenerator.ANNOTATION_STRING_VALUE_REGEX
 import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
 import static org.jisel.generators.StringGenerator.DOT_CLASS;
+import static org.jisel.generators.StringGenerator.DOUBLE_QUOTES;
 import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.EQUALS_SIGN;
-import static org.jisel.generators.StringGenerator.DOUBLE_QUOTES;
 import static org.jisel.generators.StringGenerator.LARGE_INTERFACE;
 import static org.jisel.generators.StringGenerator.LARGE_INTERFACE_ATTRIBUTE_REGEX;
 import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.PROFILES;
 import static org.jisel.generators.StringGenerator.removeDotClass;
 
+/**
+ * Exposes convenience methods to be used by classes handling the &#64;{@link AddTo} annotated elements
+ */
 public abstract sealed class AbstractSealedAddToHandler implements JiselAnnotationHandler permits AddToHandler {
 
+    /**
+     * {@link ProcessingEnvironment} instance needed to perform low-level operations on {@link javax.lang.model.element.Element} instances
+     */
     protected final ProcessingEnvironment processingEnvironment;
 
+    /**
+     * Initializes the {@link ProcessingEnvironment} instance
+     *
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for performing low-level operations on
+     *                              {@link Element} instances
+     */
     protected AbstractSealedAddToHandler(ProcessingEnvironment processingEnvironment) {
         this.processingEnvironment = processingEnvironment;
     }
@@ -88,15 +100,7 @@ public abstract sealed class AbstractSealedAddToHandler implements JiselAnnotati
         return providedProfilesMap;
     }
 
-    /**
-     * Adds double quotes to the largeInterface attribute value and removes the ".class" string.<br>
-     * To be called while processing largeInterface attribute values provided though &#64;{@link AddTo}
-     *
-     * @param largeInterfaceAttributeRawString the toString representation of the provided largeInterface attribute value<br>
-     *                                         ex: largeInterface=com.bayor.Drivable.class
-     * @return string containing the largeInterface attribute value with
-     */
-    protected String addQuotesToLargeInterfaceValue(String largeInterfaceAttributeRawString) {
+    private String addQuotesToLargeInterfaceValue(String largeInterfaceAttributeRawString) {
         return largeInterfaceAttributeRawString
                 .replace(LARGE_INTERFACE + EQUALS_SIGN, LARGE_INTERFACE + EQUALS_SIGN + DOUBLE_QUOTES)
                 .replace(DOT_CLASS, DOUBLE_QUOTES);

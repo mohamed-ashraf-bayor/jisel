@@ -39,16 +39,14 @@ import static org.jisel.generators.StringGenerator.generatePackageName;
 import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
 
 /**
- * // TODO jdoc all
- * Generates the content of a sealed interface
- * ...
+ * Generates the content of an interface
  */
 public final class InterfaceSourceContentGenerator extends AbstractSealedSourceContentGenerator {
 
     /**
-     * TODO jdoc...
+     * Passes through the received {@link ProcessingEnvironment} instance to the super constructor
      *
-     * @param processingEnvironment
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for report content generation
      */
     public InterfaceSourceContentGenerator(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);

@@ -34,10 +34,9 @@ import static org.jisel.generators.StringGenerator.DOT;
 import static org.jisel.generators.StringGenerator.generatePackageName;
 
 /**
- * //TODO add classic interf generation parts in jdoc
- * Generates a Report file listing all generated sealed interfaces for the provided large interfaces.<br>
- * Sample report:<br>
- * com.bayor.jisel.annotation.client.hierarchicalinheritance.Sociable<br>
+ * Generates a Report file listing all generated sealed, unsealed and detached interfaces for the provided large interfaces.<br>
+ * Sample report:<br><br>
+ * com.bayor.jisel.annotation.client.hierarchicalinheritance.Sociable<br><br>
  * &#9;Created sealed interfaces:<br>
  * &#9;&#9;SealedActiveWorkerSociable<br>
  * &#9;&#9;- Children:<br>
@@ -53,13 +52,31 @@ import static org.jisel.generators.StringGenerator.generatePackageName;
  * &#9;&#9;- Children:<br>
  * &#9;&#9;&#9;SealedWorkerSociable<br>
  * &#9;&#9;&#9;SealedStudentSociable<br>
+ * <br>
+ * &#9;Created UnSealed interfaces:<br>
+ * &#9;&#9;ActiveWorkerSociable<br>
+ * &#9;&#9;WorkerSociable<br>
+ * &#9;&#9;- Children:<br>
+ * &#9;&#9;&#9;ActiveWorkerSociable<br>
+ * &#9;&#9;StudentSociable<br>
+ * &#9;&#9;Sociable<br>
+ * &#9;&#9;- Children:<br>
+ * &#9;&#9;&#9;WorkerSociable<br>
+ * &#9;&#9;&#9;StudentSociable<br>
+ * <br>
+ * &#9;Created Detached interfaces:<br>
+ * &#9;&#9;com.bayor.jisel.annotation.client.hierarchical.detached.all.ActiveWorker<br>
+ * &#9;&#9;com.bayor.jisel.annotation.client.hierarchical.detached.all.Worker<br>
+ * &#9;&#9;com.bayor.jisel.annotation.client.hierarchical.detached.all.Student<br>
+ * &#9;&#9;com.bayor.jisel.annotation.client.hierarchical.detached.all.Sociable<br>
+ * &#9;&#9;com.bayor.jisel.annotation.client.hierarchical.detached.Sociable<br>
  */
 public final class ReportContentGenerator extends AbstractSealedReportContentGenerator {
 
     /**
-     * TODO jdoc...
+     * Passes through the received {@link ProcessingEnvironment} instance to the super constructor
      *
-     * @param processingEnvironment
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for report content generation
      */
     public ReportContentGenerator(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);

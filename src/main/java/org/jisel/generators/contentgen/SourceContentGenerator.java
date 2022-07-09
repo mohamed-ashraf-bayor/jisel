@@ -34,12 +34,22 @@ import java.util.function.Function;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_REPLACEMENT;
 
+/**
+ * Exposes contract of a class generating the string content of a class or interface
+ */
 public sealed interface SourceContentGenerator permits AbstractSealedSourceContentGenerator {
 
-    BinaryOperator<String> DETACHED_INTERFACE_NAME_OP = (profile, rename) -> rename.isBlank() ? profile : rename;
+    /**
+     * Function returning the name of the detached interface being generated, based on the provided 'profile' and 'rename' attributes values<br>
+     * If 'rename' is empty (blank), interface name = 'profile', otherwise use the provided 'rename' value
+     */
+    BinaryOperator<String> DETACHED_INTERFACE_NAME_FUNC = (profile, rename) -> rename.isBlank() ? profile : rename;
 
+    /**
+     * Function returning the name of the detached interface being generated if the provided profile is "(toplevel)"
+     */
     BiFunction<String, Element, String> DETACHED_TOP_LEVEL_INTERFACE_NAME_FUNC = (profile, largeInterfaceElement) ->
-            JISEL_KEYWORD_TOPLEVEL.equals(profile) || JISEL_KEYWORD_TOPLEVEL_REPLACEMENT.equals(profile)
+            JISEL_KEYWORD_TOPLEVEL.equalsIgnoreCase(profile) || JISEL_KEYWORD_TOPLEVEL_REPLACEMENT.equalsIgnoreCase(profile)
                     ? largeInterfaceElement.getSimpleName().toString()
                     : profile;
 
@@ -62,21 +72,31 @@ public sealed interface SourceContentGenerator permits AbstractSealedSourceConte
                                  Map<String, List<String>> sealedInterfacesPermitsMap);
 
     /**
-     * // TODO jdoc
+     * Finds all abstract methods of the interface generated for the provided profile.<br>
+     * All parent and super-parent methods are also included
      *
-     * @param profile
-     * @param sealedInterfacesToGenerateByLargeInterface
-     * @param sealedInterfacesPermitsByLargeInterface
-     * @param largeInterfaceElement
-     * @return
+     * @param profile                                    name of the profile. Must be one of the profiles defined with the
+     *                                                   &#64;{@link org.jisel.annotations.SealFor} annotation
+     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the {@link Element} instance of
+     *                                                   each one of the large interfaces to be segregated, while the associated value is
+     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
+     *                                                   The Element instances represent each one of the abstract methods to be
+     *                                                   added to the generated sealed interface corresponding to a profile.
+     * @param sealedInterfacesPermitsByLargeInterface    {@link Map} containing information about the subtypes permitted by each one of the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   each one of the large interfaces to be segregated, while the associated value is
+     *                                                   a Map of profile name as the key and a List of profiles names as the value.
+     * @param largeInterfaceElement                      {@link Element} instance of the large interface being segregated
+     * @return a {@link Set} of method {@link Element} instances
      */
     static Set<Element> findAllAbstractMethodsForProfile(String profile,
                                                          Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                          Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
                                                          Element largeInterfaceElement) {
         var methodsElementSet = new HashSet<Element>();
-        if (JISEL_KEYWORD_TOPLEVEL.equals(profile)
-                || JISEL_KEYWORD_TOPLEVEL_REPLACEMENT.equals(profile)
+        if (JISEL_KEYWORD_TOPLEVEL.equalsIgnoreCase(profile)
+                || JISEL_KEYWORD_TOPLEVEL_REPLACEMENT.equalsIgnoreCase(profile)
                 || largeInterfaceElement.getSimpleName().toString().equals(profile)) {
             methodsElementSet.addAll(
                     sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(largeInterfaceElement.getSimpleName().toString())
@@ -94,15 +114,7 @@ public sealed interface SourceContentGenerator permits AbstractSealedSourceConte
         return methodsElementSet;
     }
 
-    /**
-     * TODO jdoc...
-     *
-     * @param processedProfile
-     * @param methodsElementSet
-     * @param largeInterfaceElement
-     * @param sealedInterfacesToGenerateByLargeInterface
-     * @param sealedInterfacesPermitsByLargeInterface
-     */
+    // recursive search for abstract methods for the provided profile
     private static void addMethodsFromParentProfiles(String processedProfile,
                                                      Set<Element> methodsElementSet,
                                                      Element largeInterfaceElement,

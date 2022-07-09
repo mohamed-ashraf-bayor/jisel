@@ -42,25 +42,47 @@ import static org.jisel.generators.AppInfoGenerator.INFO_APP_VERSION_PROPERTY_NA
 import static org.jisel.generators.AppInfoGenerator.JISEL_ANNOTATION_PROCESSOR_CLASSNAME;
 import static org.jisel.generators.AppInfoGenerator.getPropertyValueFromPropsFile;
 
-// TODO jdoc
-
 /**
- * Generates content of the final class generated for the provided large interface
- * ... ...
+ * Encapsulates objects needed by classes implementing {@link SourceContentGenerator}
  */
 public abstract sealed class AbstractSealedSourceContentGenerator implements SourceContentGenerator
         permits FinalClassSourceContentGenerator, InterfaceSourceContentGenerator, AbstractSealedReportContentGenerator,
         AbstractSealedDetachedInterfaceSourceContentGenerator {
 
+    /**
+     * {@link ProcessingEnvironment} instance needed to perform low-level operations on {@link javax.lang.model.element.Element} instances
+     */
     protected final ProcessingEnvironment processingEnvironment;
+
+    /**
+     * {@link AnnotationsGenerator} instance needed to generate annotations
+     */
     protected final AnnotationsGenerator annotationsGenerator;
+
+    /**
+     * {@link ExtendsGenerator} instance needed to generate content for the "extends" clause
+     */
     protected final ExtendsGenerator extendsGenerator;
+
+    /**
+     * {@link PermitsGenerator} instance needed to generate content for the "permits" clause
+     */
     protected final PermitsGenerator permitsGenerator;
+
+    /**
+     * {@link MethodsGenerator} instance needed to generate content for methods of generated interfaces or classes
+     */
     protected final MethodsGenerator methodsGenerator;
+
+    /**
+     * {@link DeclarationGenerator} instance needed to generate content for interfaces or classes declarations
+     */
     protected final DeclarationGenerator declarationGenerator;
 
     /**
-     * TODO jdoc...
+     * Creates instances of objects needed by classes implementing {@link SourceContentGenerator}
+     *
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for source content generation
      */
     protected AbstractSealedSourceContentGenerator(ProcessingEnvironment processingEnvironment) {
         this.processingEnvironment = processingEnvironment;
@@ -71,6 +93,11 @@ public abstract sealed class AbstractSealedSourceContentGenerator implements Sou
         this.declarationGenerator = new DeclarationGeneratorImpl();
     }
 
+    /**
+     * Convenience method sparing its callers from providing all params to {@link AnnotationsGenerator}.generateJavaxGeneratedAnnotation method
+     *
+     * @param classOrInterfaceContent StringBuilder object containing the code of the interface or class being generated
+     */
     protected void buildJavaxGeneratedAnnotation(StringBuilder classOrInterfaceContent) {
         annotationsGenerator.generateJavaxGeneratedAnnotation(
                 classOrInterfaceContent,

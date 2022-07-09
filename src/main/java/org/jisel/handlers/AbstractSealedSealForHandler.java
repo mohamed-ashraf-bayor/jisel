@@ -25,12 +25,17 @@ import org.jisel.handlers.impl.SealForAnnotationInfoCollectionHandler;
 import org.jisel.handlers.impl.SealForHandler;
 import org.jisel.handlers.impl.SealForParentChildInheritanceHandler;
 
-// TODO jdoc...
+/**
+ * Creates and encapsulates needed instances of {@link AbstractSealedAnnotationInfoCollectionHandler} and {@link AbstractSealedParentChildInheritanceHandler}
+ */
 public abstract sealed class AbstractSealedSealForHandler implements JiselAnnotationHandler permits SealForHandler {
 
     protected final AbstractSealedAnnotationInfoCollectionHandler annotationInfoCollectionHandler;
     protected final AbstractSealedParentChildInheritanceHandler parentChildInheritanceHandler;
 
+    /**
+     * Instanciates needed instances of {@link AbstractSealedAnnotationInfoCollectionHandler} and {@link AbstractSealedParentChildInheritanceHandler}
+     */
     protected AbstractSealedSealForHandler() {
         this.annotationInfoCollectionHandler = new SealForAnnotationInfoCollectionHandler();
         this.parentChildInheritanceHandler = new SealForParentChildInheritanceHandler();

@@ -57,9 +57,9 @@ public final class FinalClassSourceContentGenerator extends AbstractSealedSource
     private static final String[] METHODS_TO_EXCLUDE = {"getClass", "wait", "notifyAll", "hashCode", "equals", "notify", "toString"};
 
     /**
-     * TODO jdoc...
+     * Passes through the received {@link ProcessingEnvironment} instance to the super constructor
      *
-     * @param processingEnvironment
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for report content generation
      */
     public FinalClassSourceContentGenerator(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);
