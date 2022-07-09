@@ -21,7 +21,8 @@
  */
 package org.jisel.generators.codegen;
 
-import org.jisel.generators.codegen.impl.InterfaceAnnotationsGenerator;
+import org.jisel.generators.UnescapeJavaString;
+import org.jisel.generators.codegen.impl.AnnotationsGeneratorImpl;
 
 import javax.lang.model.element.Element;
 import java.time.ZonedDateTime;
@@ -35,79 +36,31 @@ import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.ESCAPED_NEW_LINE;
 import static org.jisel.generators.StringGenerator.JISEL_ANNOTATIONS_PACKAGE;
 import static org.jisel.generators.StringGenerator.NEW_LINE;
-import static org.jisel.generators.UnescapeJavaString.unescapeJavaString;
 
 /**
- * // TODO jdoc entire clss
- * Exposes contract to be fulfilled by a class generating annotations
+ * Exposes contract to be fulfilled by a class generating annotations, along with commonly needed default and static functions
  */
-public sealed interface AnnotationsGenerator extends CodeGenerator permits InterfaceAnnotationsGenerator {
-
-    void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent);
-
-    void buildExistingAnnotations(StringBuilder classOrInterfaceContent, Element element);
+public sealed interface AnnotationsGenerator extends CodeGenerator permits AnnotationsGeneratorImpl {
 
     /**
-     * ... excluding all jisel annots..
+     * Generates existing annotations of the provided {@link Element} instance and appends it to the provided {@link StringBuilder} instance
      *
-     * @param element
-     * @param separator
-     * @return
+     * @param classOrInterfaceContent StringBuilder object containing the code of the interface or class being generated
+     * @param element                 {@link Element} instance of the interface, class, method or parameter to generate the existing annotations for
      */
-    static String buildExistingAnnotations(Element element, String separator) {
-        String existingAnnotations = element.getAnnotationMirrors().stream()
-                .map(Object::toString)
-                .filter(annotationString -> !annotationString.contains(JISEL_ANNOTATIONS_PACKAGE))
-                .collect(joining(separator));
-        return existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations + separator;
-    }
-
-    static String[] splitApplyAnnotationsRawValue(String applyAnnotationsRawValue) {
-        var strippedApplyAnnotationsRawValue = applyAnnotationsRawValue.strip();
-        if (!applyAnnotationsRawValue.isBlank()) {
-            return stream(applyAnnotationsRawValue.split(ESCAPED_NEW_LINE))
-                    .map(String::strip)
-                    .toList()
-                    .toArray(String[]::new);
-        }
-        return new String[]{strippedApplyAnnotationsRawValue};
-    }
+    void generateExistingAnnotations(StringBuilder classOrInterfaceContent, Element element);
 
     /**
-     * ...
+     * Generates the {@link javax.annotation.processing.Generated} annotation section at the top of the generated interfaces or
+     * classes along with the attributes: value, date and comments
      *
-     * @param classOrInterfaceContent
-     * @param annotationsRawStrings
+     * @param classOrInterfaceContent      StringBuilder object containing the code of the interface or class being generated
+     * @param annotationProcessorClassname Qualified name of the Java annotation processor, displayed as the "value" attribute within
+     *                                     the &#64;{@link javax.annotation.processing.Generated} annotation
+     * @param appVersion                   Current version of the app, displayed as part of the "comments" attribute within the
+     *                                     &#64;{@link javax.annotation.processing.Generated} annotation
      */
-    default void applyAnnotations(StringBuilder classOrInterfaceContent, String[] annotationsRawStrings) {
-        generateCode(
-                classOrInterfaceContent,
-                stream(annotationsRawStrings).map(AnnotationsGenerator::cleanUpApplyAnnotation).toList()
-        );
-    }
-
-    /**
-     * ...
-     *
-     * @param annotationString
-     * @return
-     */
-    private static String cleanUpApplyAnnotation(String annotationString) {
-        var strippedString = annotationString.strip();
-        if (!strippedString.isBlank()) {
-            return unescapeJavaString(annotationString);
-        }
-        return strippedString;
-    }
-
-    /**
-     * todo ...
-     *
-     * @param classOrInterfaceContent
-     * @param annotationProcessorClassname
-     * @param appVersion
-     */
-    default void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent, String annotationProcessorClassname, String appVersion) {
+    default void generateJavaxGeneratedAnnotation(StringBuilder classOrInterfaceContent, String annotationProcessorClassname, String appVersion) {
         generateCode(
                 classOrInterfaceContent,
                 List.of(
@@ -123,6 +76,42 @@ public sealed interface AnnotationsGenerator extends CodeGenerator permits Inter
                                 appVersion
                         )
                 ));
+    }
+
+    /**
+     * Finds all existing annotations (excluding Jisel annotations) of the provided {@link Element} instance and joins them
+     * with the provided separator string value
+     *
+     * @param element   {@link Element} instance of the interface, class, method or parameter to generate the existing annotations for
+     * @param separator String used to join the annotations
+     * @return String containing the existing annotations joined by the provided separator String
+     */
+    static String buildExistingAnnotations(Element element, String separator) {
+        var existingAnnotations = element.getAnnotationMirrors().stream()
+                .map(Object::toString)
+                .filter(annotationString -> !annotationString.contains(JISEL_ANNOTATIONS_PACKAGE))
+                .collect(joining(separator));
+        return existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations + separator;
+    }
+
+    /**
+     * Cleans up the annotations provided through the 'applyAnnotations' attribute of the &#64;{@link org.jisel.annotations.Detach}
+     * annotation and appends it to the provided {@link StringBuilder} instance
+     *
+     * @param classOrInterfaceContent  StringBuilder object containing the code of the interface or class being generated
+     * @param applyAnnotationsRawValue String containing the provided 'applyAnnotations' attribute value
+     */
+    default void applyAnnotations(StringBuilder classOrInterfaceContent, String applyAnnotationsRawValue) {
+        var strippedApplyAnnotationsRawValue = applyAnnotationsRawValue.strip();
+        if (!strippedApplyAnnotationsRawValue.isBlank()) {
+            generateCode(
+                    classOrInterfaceContent,
+                    stream(strippedApplyAnnotationsRawValue.split(ESCAPED_NEW_LINE))
+                            .map(String::strip)
+                            .map(UnescapeJavaString::unescapeJavaString)
+                            .toList()
+            );
+        }
     }
 
     @Override

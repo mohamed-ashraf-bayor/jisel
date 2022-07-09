@@ -26,31 +26,15 @@ import org.jisel.generators.codegen.AnnotationsGenerator;
 import javax.lang.model.element.Element;
 import java.util.List;
 
-import static org.jisel.generators.AppInfoGenerator.APPLICATION_PROPERTIES_FILENAME;
-import static org.jisel.generators.AppInfoGenerator.DEFAULT_APP_VERSION;
-import static org.jisel.generators.AppInfoGenerator.INFO_APP_VERSION_PROPERTY_NAME;
-import static org.jisel.generators.AppInfoGenerator.JISEL_ANNOTATION_PROCESSOR_CLASSNAME;
-import static org.jisel.generators.AppInfoGenerator.getPropertyValueFromPropsFile;
 import static org.jisel.generators.StringGenerator.NEW_LINE;
 
 /**
- * TODO rwrte jdoc
- * Generates the {@link javax.annotation.processing.Generated} annotation section at the top of the generated interfaces or
- * classes with the attributes: value, date and comments
+ * Class dedicated to generating annotations
  */
-public final class InterfaceAnnotationsGenerator implements AnnotationsGenerator {
+public final class AnnotationsGeneratorImpl implements AnnotationsGenerator {
 
     @Override
-    public void buildJavaxGeneratedAnnotationSection(StringBuilder classOrInterfaceContent) {
-        buildJavaxGeneratedAnnotationSection(
-                classOrInterfaceContent,
-                JISEL_ANNOTATION_PROCESSOR_CLASSNAME,
-                getPropertyValueFromPropsFile(APPLICATION_PROPERTIES_FILENAME, INFO_APP_VERSION_PROPERTY_NAME, DEFAULT_APP_VERSION)
-        );
-    }
-
-    @Override
-    public void buildExistingAnnotations(StringBuilder classOrInterfaceContent, Element element) {
+    public void generateExistingAnnotations(StringBuilder classOrInterfaceContent, Element element) {
         generateCode(classOrInterfaceContent, List.of(AnnotationsGenerator.buildExistingAnnotations(element, NEW_LINE)));
     }
 }

@@ -32,14 +32,14 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL;
-import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_TRANSFORMED;
+import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_REPLACEMENT;
 
 public sealed interface SourceContentGenerator permits AbstractSealedSourceContentGenerator {
 
     BinaryOperator<String> DETACHED_INTERFACE_NAME_OP = (profile, rename) -> rename.isBlank() ? profile : rename;
 
     BiFunction<String, Element, String> DETACHED_TOP_LEVEL_INTERFACE_NAME_FUNC = (profile, largeInterfaceElement) ->
-            JISEL_KEYWORD_TOPLEVEL.equals(profile) || JISEL_KEYWORD_TOPLEVEL_TRANSFORMED.equals(profile)
+            JISEL_KEYWORD_TOPLEVEL.equals(profile) || JISEL_KEYWORD_TOPLEVEL_REPLACEMENT.equals(profile)
                     ? largeInterfaceElement.getSimpleName().toString()
                     : profile;
 
@@ -75,11 +75,21 @@ public sealed interface SourceContentGenerator permits AbstractSealedSourceConte
                                                          Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface,
                                                          Element largeInterfaceElement) {
         var methodsElementSet = new HashSet<Element>();
-        if (JISEL_KEYWORD_TOPLEVEL.equals(profile) || JISEL_KEYWORD_TOPLEVEL_TRANSFORMED.equals(profile) || largeInterfaceElement.getSimpleName().toString().equals(profile)) {
-            methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(largeInterfaceElement.getSimpleName().toString()));
+        if (JISEL_KEYWORD_TOPLEVEL.equals(profile)
+                || JISEL_KEYWORD_TOPLEVEL_REPLACEMENT.equals(profile)
+                || largeInterfaceElement.getSimpleName().toString().equals(profile)) {
+            methodsElementSet.addAll(
+                    sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(largeInterfaceElement.getSimpleName().toString())
+            );
         } else {
             methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(profile));
-            addMethodsFromParentProfiles(profile, methodsElementSet, largeInterfaceElement, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+            addMethodsFromParentProfiles(
+                    profile,
+                    methodsElementSet,
+                    largeInterfaceElement,
+                    sealedInterfacesToGenerateByLargeInterface,
+                    sealedInterfacesPermitsByLargeInterface
+            );
         }
         return methodsElementSet;
     }
@@ -98,14 +108,21 @@ public sealed interface SourceContentGenerator permits AbstractSealedSourceConte
                                                      Element largeInterfaceElement,
                                                      Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                      Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
-        Function<String, Optional<Map.Entry<String, List<String>>>> findProfileAsChild = profile -> sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement).entrySet().stream()
-                .filter(mapEntry -> mapEntry.getValue().contains(profile))
-                .findFirst();
+        Function<String, Optional<Map.Entry<String, List<String>>>> findProfileAsChild = profile ->
+                sealedInterfacesPermitsByLargeInterface.get(largeInterfaceElement).entrySet().stream()
+                        .filter(mapEntry -> mapEntry.getValue().contains(profile))
+                        .findFirst();
         var profileOpt = findProfileAsChild.apply(processedProfile);
         if (profileOpt.isPresent()) {
             var parentProfile = profileOpt.get().getKey();
             methodsElementSet.addAll(sealedInterfacesToGenerateByLargeInterface.get(largeInterfaceElement).get(parentProfile));
-            addMethodsFromParentProfiles(parentProfile, methodsElementSet, largeInterfaceElement, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface);
+            addMethodsFromParentProfiles(
+                    parentProfile,
+                    methodsElementSet,
+                    largeInterfaceElement,
+                    sealedInterfacesToGenerateByLargeInterface,
+                    sealedInterfacesPermitsByLargeInterface
+            );
         }
     }
 }

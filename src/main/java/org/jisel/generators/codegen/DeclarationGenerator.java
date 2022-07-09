@@ -21,7 +21,7 @@
  */
 package org.jisel.generators.codegen;
 
-import org.jisel.generators.codegen.impl.InterfaceDeclarationGenerator;
+import org.jisel.generators.codegen.impl.DeclarationGeneratorImpl;
 
 import javax.lang.model.element.Element;
 import java.util.List;
@@ -31,15 +31,15 @@ import static java.util.stream.Collectors.joining;
 import static org.jisel.generators.StringGenerator.WHITESPACE;
 
 /**
- * Exposes contract to be fulfilled by a class generating the interface or class declaration section
+ * Exposes contract to be fulfilled by a class generating the interface or class declaration section (modifiers + name)
  */
-public sealed interface DeclarationGenerator extends CodeGenerator permits InterfaceDeclarationGenerator {
+public sealed interface DeclarationGenerator extends CodeGenerator permits DeclarationGeneratorImpl {
 
     /**
      * Generates the interface or class declaration section
      *
-     * @param interfaceContent      {@link StringBuilder} object containing the sealed interface code being generated
-     * @param profile               name of the profile whose sealed interface is being generated
+     * @param interfaceContent      {@link StringBuilder} object containing the interface or class code being generated
+     * @param profile               name of the profile whose interface is being generated
      * @param largeInterfaceElement {@link Element} instance of the large interface being segregated
      * @param unSeal                indicates whether the interface declaration should include "sealed"
      */

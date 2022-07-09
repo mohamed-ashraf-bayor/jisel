@@ -37,9 +37,9 @@ import static org.jisel.generators.StringGenerator.WHITESPACE;
 import static org.jisel.generators.codegen.AnnotationsGenerator.buildExistingAnnotations;
 
 /**
- * Generates the list of abstracts methods of a sealed interface being generated
+ * Generates the list of methods of an interface or a class being generated
  */
-public final class InterfaceMethodsGenerator implements MethodsGenerator {
+public final class MethodsGeneratorImpl implements MethodsGenerator {
 
     @Override
     public void generateAbstractMethodsFromElementsSet(StringBuilder sealedInterfaceContent, Set<Element> methodsSet) {

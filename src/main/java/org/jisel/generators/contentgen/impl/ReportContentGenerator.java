@@ -81,7 +81,9 @@ public final class ReportContentGenerator extends AbstractSealedReportContentGen
         if (unSeal) {
             reportContent.append(generateUnSealedInterfacesReportContent(largeInterfaceElement, sealedInterfacesToGenerate, sealedInterfacesPermitsMap));
         }
-        reportContent.append(generateDetachedInterfacesReportContent(generatedDetachedInterfaces));
+        if (!generatedDetachedInterfaces.isEmpty()) {
+            reportContent.append(generateDetachedInterfacesReportContent(generatedDetachedInterfaces));
+        }
         return reportContent.toString();
     }
 }

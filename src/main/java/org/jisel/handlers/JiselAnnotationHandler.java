@@ -50,7 +50,6 @@ public sealed interface JiselAnnotationHandler
      *                                                   To be populated and/or modified if needed. The key represents the Element instance of
      *                                                   each one of the large interfaces to be segregated, while the associated value is
      *                                                   a Map of profile name as the key and a List of profiles names as the value.
-     *                                                   // @param detachedInterfacesToGenerateByLargeInterface // TODO map content: Set<Element> methodsSet | String rename() | Class<?>[] superInterfaces | Class<?>[] firstSuperInterfaceGenerics | Class<?>[] secondSuperInterfaceGenerics | Class<?>[] thirdSuperInterfaceGenerics | String[] applyAnnotations
      * @return a status report as a string value for each one of the large interfaces to be segregated
      */
     Map<Element, String> handleAnnotatedElements(Set<Element> allAnnotatedElements,

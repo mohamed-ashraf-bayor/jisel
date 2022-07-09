@@ -43,11 +43,11 @@ import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConventi
 /**
  * Generates the "extends" clause of an interface declaration, along with the list of the parent interfaces
  */
-public final class InterfaceExtendsGenerator implements ExtendsGenerator {
+public final class ExtendsGeneratorImpl implements ExtendsGenerator {
 
     private final ProcessingEnvironment processingEnvironment;
 
-    public InterfaceExtendsGenerator(ProcessingEnvironment processingEnvironment) {
+    public ExtendsGeneratorImpl(ProcessingEnvironment processingEnvironment) {
         this.processingEnvironment = processingEnvironment;
     }
 

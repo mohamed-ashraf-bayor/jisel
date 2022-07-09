@@ -58,7 +58,7 @@ import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 import static org.jisel.generators.StringGenerator.ESCAPED_DOUBLE_QUOTES;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_ALL;
 import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL;
-import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_TRANSFORMED;
+import static org.jisel.generators.StringGenerator.JISEL_KEYWORD_TOPLEVEL_REPLACEMENT;
 import static org.jisel.generators.StringGenerator.OPENING_PARENTHESIS;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACH;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_DETACHALL;
@@ -175,7 +175,7 @@ public abstract sealed class AbstractSealedDetachHandler implements JiselAnnotat
                 .get(0).getValue().getValue().toString();
         // detachsAnnotationRawContentString sample value:
         // @org.jisel.annotations.Detach(profile="(toplevel)", superInterfaces={com.bayor.Sociable.class, com.bayor.Processor.class}, applyAnnotations="@Deprecated @Annot2", rename="newName"),@org.jisel.annotations.Detach(profile="PRo1", ...)
-        var detachAnnotationRawContentList = stream(detachsAnnotationRawContentString.replace(JISEL_KEYWORD_TOPLEVEL, JISEL_KEYWORD_TOPLEVEL_TRANSFORMED).split(AT_SIGN + ORG_JISEL_DETACH))
+        var detachAnnotationRawContentList = stream(detachsAnnotationRawContentString.replace(JISEL_KEYWORD_TOPLEVEL, JISEL_KEYWORD_TOPLEVEL_REPLACEMENT).split(AT_SIGN + ORG_JISEL_DETACH))
                 .map(detachAnnotationRawContent -> removeAnnotationAttributeTrailingParentheses(removeTrailingStrings(detachAnnotationRawContent, OPENING_PARENTHESIS, COMMA_SEPARATOR)))
                 .toList();
         for (var detachAnnotationRawContent : detachAnnotationRawContentList) {

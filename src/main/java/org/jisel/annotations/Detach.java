@@ -30,8 +30,13 @@ import java.lang.annotation.Target;
 import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 
 /**
- * // TODO jdoc
- * ...
+ * Repeatable annotation to apply on top of a large interface being segregated.<br>
+ * Expects a mandatory "profile" attribute String value corresponding to one of the profiles provided using the &#64;{@link SealFor} annotation.<br>
+ * Result will be an (unsealed) interface generated for the specified profile containing all abstract methods which have
+ * been tagged for the specified profile using &#64;{@link SealFor}.<br>
+ * Also, as the generated interface is "detached" from the generated sealed hierarchy, no inheritance declaration clause ("extends") is generated.<br>
+ * Flexibility is offered allowing to choose a new name for the generated interface, specify which superInterfaces (along with generics)
+ * the generated interface should extend, and annotations to be added on top of the generated interface.
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
@@ -39,27 +44,55 @@ import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 public @interface Detach {
 
     /**
-     * ... Jisel keyword expected: "(toplevel)"
+     * Allows to specify the name of the profile to be "detached" from the sealed hierarchy.<br>
+     * In case you need to detach the Top Level profile, then use the Jisel keyword <b>"(toplevel)"</b>
      *
      * @return the profile name to detach
      */
     String profile();
 
+    /**
+     * Allows to rename the generated interface for the specified profile name.<br>
+     * If empty or not provided, the interface is generated with the profile name.
+     *
+     * @return the interface name to be used
+     */
     String rename() default EMPTY_STRING;
 
     /**
-     * allows specifying a list of interfaces to be extended by the detached interface
+     * Allows to specify a list of interfaces to be extended by the generated detached interface
      *
      * @return an array of .class values
      */
     Class<?>[] superInterfaces() default {};
 
+    /**
+     * Allows to specify an array of .class values to be used as generics for the first superInterface specified though the superInterfaces attribute
+     *
+     * @return an array of .class values
+     */
     Class<?>[] firstSuperInterfaceGenerics() default {};
 
+    /**
+     * Allows to specify an array of .class values to be used as generics for the second superInterface specified though the superInterfaces attribute
+     *
+     * @return an array of .class values
+     */
     Class<?>[] secondSuperInterfaceGenerics() default {};
 
+    /**
+     * Allows to specify an array of .class values to be used as generics for the third superInterface specified though the superInterfaces attribute
+     *
+     * @return an array of .class values
+     */
     Class<?>[] thirdSuperInterfaceGenerics() default {};
 
+    /**
+     * Allows to specify 1 or multiple annotations to be applied on top of the generated interface.<br>
+     * In case multiple annotations need to be specified, the use of Java text blocks is recommended for clarity.
+     *
+     * @return a String containing all annotations to be applied
+     */
     String applyAnnotations() default EMPTY_STRING;
 
     /**

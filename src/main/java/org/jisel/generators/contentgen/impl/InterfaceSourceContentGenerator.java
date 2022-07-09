@@ -70,10 +70,10 @@ public final class InterfaceSourceContentGenerator extends AbstractSealedSourceC
         }
         interfaceContent.append(format(";%n%n"));
         // javaxgenerated
-        annotationsGenerator.buildJavaxGeneratedAnnotationSection(interfaceContent);
+        buildJavaxGeneratedAnnotation(interfaceContent);
         // existing annotations
         if (largeInterfaceElement.getSimpleName().toString().equals(profile)) {
-            annotationsGenerator.buildExistingAnnotations(interfaceContent, largeInterfaceElement);
+            annotationsGenerator.generateExistingAnnotations(interfaceContent, largeInterfaceElement);
         }
         // declaration: public (sealed) interface
         declarationGenerator.generateModifiersAndName(interfaceContent, profile, largeInterfaceElement, unSeal);

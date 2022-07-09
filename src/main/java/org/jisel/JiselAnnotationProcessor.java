@@ -55,8 +55,6 @@ import java.util.logging.Logger;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
-import static org.jisel.generators.StringGenerator.FILE_GENERATION_ERROR;
-import static org.jisel.generators.StringGenerator.FILE_GENERATION_SUCCESS;
 import static org.jisel.generators.StringGenerator.NEW_LINE;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_ADD_TO;
 import static org.jisel.generators.StringGenerator.ORG_JISEL_ADD_TOS;

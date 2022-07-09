@@ -26,15 +26,21 @@ import org.jisel.generators.codegen.DeclarationGenerator;
 import org.jisel.generators.codegen.ExtendsGenerator;
 import org.jisel.generators.codegen.MethodsGenerator;
 import org.jisel.generators.codegen.PermitsGenerator;
-import org.jisel.generators.codegen.impl.InterfaceAnnotationsGenerator;
-import org.jisel.generators.codegen.impl.InterfaceDeclarationGenerator;
-import org.jisel.generators.codegen.impl.InterfaceExtendsGenerator;
-import org.jisel.generators.codegen.impl.InterfaceMethodsGenerator;
-import org.jisel.generators.codegen.impl.SealedInterfacePermitsGenerator;
+import org.jisel.generators.codegen.impl.AnnotationsGeneratorImpl;
+import org.jisel.generators.codegen.impl.DeclarationGeneratorImpl;
+import org.jisel.generators.codegen.impl.ExtendsGeneratorImpl;
+import org.jisel.generators.codegen.impl.MethodsGeneratorImpl;
+import org.jisel.generators.codegen.impl.PermitsGeneratorImpl;
 import org.jisel.generators.contentgen.impl.FinalClassSourceContentGenerator;
 import org.jisel.generators.contentgen.impl.InterfaceSourceContentGenerator;
 
 import javax.annotation.processing.ProcessingEnvironment;
+
+import static org.jisel.generators.AppInfoGenerator.APPLICATION_PROPERTIES_FILENAME;
+import static org.jisel.generators.AppInfoGenerator.DEFAULT_APP_VERSION;
+import static org.jisel.generators.AppInfoGenerator.INFO_APP_VERSION_PROPERTY_NAME;
+import static org.jisel.generators.AppInfoGenerator.JISEL_ANNOTATION_PROCESSOR_CLASSNAME;
+import static org.jisel.generators.AppInfoGenerator.getPropertyValueFromPropsFile;
 
 // TODO jdoc
 
@@ -58,10 +64,18 @@ public abstract sealed class AbstractSealedSourceContentGenerator implements Sou
      */
     protected AbstractSealedSourceContentGenerator(ProcessingEnvironment processingEnvironment) {
         this.processingEnvironment = processingEnvironment;
-        this.annotationsGenerator = new InterfaceAnnotationsGenerator();
-        this.extendsGenerator = new InterfaceExtendsGenerator(this.processingEnvironment);
-        this.permitsGenerator = new SealedInterfacePermitsGenerator();
-        this.methodsGenerator = new InterfaceMethodsGenerator();
-        this.declarationGenerator = new InterfaceDeclarationGenerator();
+        this.annotationsGenerator = new AnnotationsGeneratorImpl();
+        this.extendsGenerator = new ExtendsGeneratorImpl(this.processingEnvironment);
+        this.permitsGenerator = new PermitsGeneratorImpl();
+        this.methodsGenerator = new MethodsGeneratorImpl();
+        this.declarationGenerator = new DeclarationGeneratorImpl();
+    }
+
+    protected void buildJavaxGeneratedAnnotation(StringBuilder classOrInterfaceContent) {
+        annotationsGenerator.generateJavaxGeneratedAnnotation(
+                classOrInterfaceContent,
+                JISEL_ANNOTATION_PROCESSOR_CLASSNAME,
+                getPropertyValueFromPropsFile(APPLICATION_PROPERTIES_FILENAME, INFO_APP_VERSION_PROPERTY_NAME, DEFAULT_APP_VERSION)
+        );
     }
 }

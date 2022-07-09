@@ -21,7 +21,7 @@
  */
 package org.jisel.generators.codegen;
 
-import org.jisel.generators.codegen.impl.InterfaceExtendsGenerator;
+import org.jisel.generators.codegen.impl.ExtendsGeneratorImpl;
 
 import javax.lang.model.element.Element;
 import java.util.List;
@@ -40,10 +40,10 @@ import static org.jisel.generators.StringGenerator.WHITESPACE;
  * Exposes contract to be fulfilled by a class generating the "extends" clause of an interface declaration, or the "implements"
  * clause of a class declaration, along with the list of the parent interfaces or classes
  */
-public sealed interface ExtendsGenerator extends CodeGenerator permits InterfaceExtendsGenerator {
+public sealed interface ExtendsGenerator extends CodeGenerator permits ExtendsGeneratorImpl {
 
     /**
-     * Generates the "extends" clause of the interface being generated, along with the list of parent interfaces, based on
+     * Generates the "extends"/"implements" clause of the interface/class being generated, along with the list of parent interfaces, based on
      * a provided {@link Map} containing parents/subtypes information (the permits Map) and the name of the profile for which the
      * sealed interface will be generated
      *
@@ -61,15 +61,21 @@ public sealed interface ExtendsGenerator extends CodeGenerator permits Interface
                                                                 boolean unSeal);
 
     /**
-     * TODO ...
+     * Generates the "extends" clause of the interface being generated, along with the list of parent interfaces with
+     * their corresponding provided generic classes
      *
-     * @param sealedInterfaceContent
-     * @param superinterfaces
-     * @param superinterfacesGenerics
+     * @param sealedInterfaceContent  {@link StringBuilder} object containing the sealed interface code being generated
+     * @param superInterfaces         provided {@link List} of superInterfaces to display besides the "extends" clause
+     * @param superInterfacesGenerics {@link Map} providing {@link List} of qualified names of interfaces or classes to
+     *                                display as generics for each one of the provided superInterfaces
      */
     void generateExtendsClauseFromSuperInterfacesList(StringBuilder sealedInterfaceContent,
-                                                      List<String> superinterfaces,
-                                                      Map<String, List<String>> superinterfacesGenerics);
+                                                      List<String> superInterfaces,
+                                                      Map<String, List<String>> superInterfacesGenerics);
+
+    private boolean isInterface(String classOrInterfaceContent) {
+        return classOrInterfaceContent.contains(INTERFACE + WHITESPACE) && !classOrInterfaceContent.contains(CLASS + WHITESPACE);
+    }
 
     @Override
     default void generateCode(StringBuilder classOrInterfaceContent, List<String> params) {
@@ -78,9 +84,5 @@ public sealed interface ExtendsGenerator extends CodeGenerator permits Interface
                 isInterface(classOrInterfaceContent.toString()) ? EXTENDS : IMPLEMENTS,
                 params.stream().collect(joining(COMMA_SEPARATOR + WHITESPACE))
         ));
-    }
-
-    private boolean isInterface(String classOrInterfaceContent) {
-        return classOrInterfaceContent.contains(INTERFACE + WHITESPACE) && !classOrInterfaceContent.contains(CLASS + WHITESPACE);
     }
 }

@@ -27,13 +27,14 @@ import javax.lang.model.element.Element;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import static org.jisel.generators.StringGenerator.sealedInterfaceNameConventionForList;
 
 /**
  * Generates the "permits" clause of a sealed interface definition, along with the list of the subtypes classes or
  * interfaces permitted by the sealed interface being generated
  */
-public final class SealedInterfacePermitsGenerator implements PermitsGenerator {
+public final class PermitsGeneratorImpl implements PermitsGenerator {
     @Override
     public void generatePermitsClauseFromPermitsMapAndProcessedProfile(StringBuilder sealedInterfaceContent,
                                                                        Map<String, List<String>> permitsMap,

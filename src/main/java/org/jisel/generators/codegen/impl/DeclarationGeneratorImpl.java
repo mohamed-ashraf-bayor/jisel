@@ -34,7 +34,7 @@ import static org.jisel.generators.StringGenerator.unSealedInterfaceNameConventi
 /**
  * Generates the interface declaration section (modifiers + name)
  */
-public final class InterfaceDeclarationGenerator implements DeclarationGenerator {
+public final class DeclarationGeneratorImpl implements DeclarationGenerator {
     @Override
     public void generateModifiersAndName(StringBuilder interfaceContent, String profile, Element largeInterfaceElement, boolean unSeal) {
         generateCode(

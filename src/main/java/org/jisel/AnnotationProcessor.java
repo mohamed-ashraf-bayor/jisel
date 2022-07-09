@@ -44,7 +44,6 @@ import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
 import static org.jisel.generators.StringGenerator.DETACH;
 import static org.jisel.generators.StringGenerator.DETACH_ALL;
 import static org.jisel.generators.StringGenerator.SEAL_FOR;
-import static org.jisel.generators.StringGenerator.STATUS_REPORT_TITLE;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL_REPORT_NOT_FOUND_MSG;
 import static org.jisel.generators.StringGenerator.UNSEAL;
@@ -54,11 +53,46 @@ import static org.jisel.generators.StringGenerator.WHITESPACE;
 // TODO jdoc entire clss
 public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
 
+    /**
+     *
+     */
     String ALL_ANNOTATED_SEALFOR_ELEMENTS = "allAnnotatedSealForElements";
+
+    /**
+     *
+     */
     String ALL_ANNOTATED_TOPLEVEL_ELEMENTS = "allAnnotatedTopLevelElements";
+
+    /**
+     *
+     */
     String ALL_ANNOTATED_ADDTO_ELEMENTS = "allAnnotatedAddToElements";
+
+    /**
+     *
+     */
     String ALL_ANNOTATED_UNSEAL_ELEMENTS = "allAnnotatedUnSealElements";
+
+    /**
+     *
+     */
     String ALL_ANNOTATED_DETACH_ELEMENTS = "allAnnotatedDetachElements";
+
+    /**
+     * Title of the text report displayed in the logs during compilation.<br>
+     * The report is displayed only when an unexpected scenario was encountered (ex: More than 1 top-level parent interfaces found, profile not existing,...)
+     */
+    String STATUS_REPORT_TITLE = "JISEL GENERATION REPORT";
+
+    /**
+     * Displayed only when a "severe" error occurred while a sealed interface file was being generated
+     */
+    String FILE_GENERATION_ERROR = "Error generating sealed interfaces";
+
+    /**
+     * Displayed as a header while listing the successfully generated files
+     */
+    String FILE_GENERATION_SUCCESS = "Successfully generated";
 
     void notifyReportDisplay(String reportText);
 

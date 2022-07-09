@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation to be applied only on top of abstract methods of an interface you intend to segregate.<br>
- * Picked up and processed <b>ONLY</b> if at least 1 of the abstract methods of the large interface has been annotated with &#64;TopLevel.<br>
+ * Picked up and processed <b>ONLY</b> if at least 1 of the abstract methods of the large interface has been annotated with &#64;{@link TopLevel}.<br>
  * Ignored if combined with &#64;{@link TopLevel} on the same abstract method.<br><br>
  * Expects an array of String values corresponding to the list of profiles you want to seal the method for.<br><br>
  * For each one of the specified profile names, a sealed interface will be generated following the naming convention:

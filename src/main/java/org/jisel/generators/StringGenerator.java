@@ -307,51 +307,80 @@ public interface StringGenerator {
      */
     String ADD_TO_REGEX = "AddTo\\((.*?)\\)";
 
+    /**
+     * "profile" attribute used in @Detach annotation
+     */
     String DETACH_PROFILE = PROFILE;
 
+    /**
+     * "rename" attribute used in @Detach annotation
+     */
     String DETACH_RENAME = "rename";
 
+    /**
+     * "superInterfaces" attribute used in @Detach annotation
+     */
     String DETACH_SUPERINTERFACES = "superInterfaces";
 
+    /**
+     * "firstSuperInterfaceGenerics" attribute used in @Detach annotation
+     */
     String DETACH_FIRST_SUPERINTERFACE_GENERICS = "firstSuperInterfaceGenerics";
 
+    /**
+     * "secondSuperInterfaceGenerics" attribute used in @Detach annotation
+     */
     String DETACH_SECOND_SUPERINTERFACE_GENERICS = "secondSuperInterfaceGenerics";
 
+    /**
+     * "thirdSuperInterfaceGenerics" attribute used in @Detach annotation
+     */
     String DETACH_THIRD_SUPERINTERFACE_GENERICS = "thirdSuperInterfaceGenerics";
 
+    /**
+     * "applyAnnotations" attribute used in @Detach annotation
+     */
     String DETACH_APPLYANNOTATIONS = "applyAnnotations";
 
+    /**
+     * Map key used to store the collection of abstract methods for the detached interface
+     */
     String DETACH_METHODS = "methods";
 
+    /**
+     * Regex expression used to read the attribute value provided within profile="" in the @Detach annotation
+     */
     String DETACH_PROFILE_REGEX = "profile=" + ANNOTATION_STRING_VALUE_REGEX;
 
+    /**
+     * Regex expression used to read the attribute value provided within rename="" in the @Detach annotation
+     */
     String DETACH_RENAME_REGEX = "rename=" + ANNOTATION_STRING_VALUE_REGEX;
 
+    /**
+     * Regex expression used to read the attribute value provided within superInterfaces="" in the @Detach annotation
+     */
     String DETACH_SUPERINTERFACES_REGEX = "superInterfaces=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
+    /**
+     * Regex expression used to read the attribute value provided within firstSuperInterfaceGenerics="" in the @Detach annotation
+     */
     String DETACH_FIRST_SUPERINTERFACE_GENERICS_REGEX = "firstSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
+    /**
+     * Regex expression used to read the attribute value provided within secondSuperInterfaceGenerics="" in the @Detach annotation
+     */
     String DETACH_SECOND_SUPERINTERFACE_GENERICS_REGEX = "secondSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
+    /**
+     * Regex expression used to read the attribute value provided within thirdSuperInterfaceGenerics="" in the @Detach annotation
+     */
     String DETACH_THIRD_SUPERINTERFACE_GENERICS_REGEX = "thirdSuperInterfaceGenerics=" + ANNOTATION_ARRAY_VALUE_REGEX;
 
+    /**
+     * Regex expression used to read the attribute value provided within applyAnnotations="" in the @Detach annotation
+     */
     String DETACH_APPLYANNOTATIONS_REGEX = "applyAnnotations=" + ANNOTATION_STRING_VALUE_REGEX;
-
-    /**
-     * Title of the text report displayed in the logs during compilation.<br>
-     * The report is displayed only when an unexpected scenario was encountered (ex: More than 1 top-level parent interfaces found, profile not existing,...)
-     */
-    String STATUS_REPORT_TITLE = "JISEL GENERATION REPORT";
-
-    /**
-     * Displayed only when a "severe" error occurred while a sealed interface file was being generated
-     */
-    String FILE_GENERATION_ERROR = "Error generating sealed interfaces";
-
-    /**
-     * Displayed as a header while listing the successfully generated files
-     */
-    String FILE_GENERATION_SUCCESS = "Successfully generated";
 
     /**
      * Fully qualified name of the {@link SealFor} annotation
@@ -401,26 +430,6 @@ public interface StringGenerator {
     String JISEL_ANNOTATIONS_PACKAGE = "org.jisel.annotations";
 
     /**
-     * Default value to use for boolean returned values
-     */
-    String DEFAULT_BOOLEAN_VALUE = FALSE;
-
-    /**
-     * Default value to use for numeric returned values (int, long, float, double,...)
-     */
-    String DEFAULT_NUMBER_VALUE = "0";
-
-    /**
-     * Default value to use for Object returned values
-     */
-    String DEFAULT_NULL_VALUE = "null";
-
-    /**
-     * Array of methods to exclude while pulling the list of all inherited methods of a class or interface
-     */
-    String[] METHODS_TO_EXCLUDE = {"getClass", "wait", "notifyAll", "hashCode", "equals", "notify", "toString"};
-
-    /**
      * Message displayed during compilation when 1 or many provided profiles are not found in the provided parent interfaces.
      */
     String ADD_TO_REPORT_PROFILES_NOT_FOUND_MSG = "1 or many provided profiles are not found in the provided parent interfaces. " +
@@ -447,13 +456,20 @@ public interface StringGenerator {
      */
     String DETACH_REPORT_PROFILES_NOT_FOUND_MSG = "1 or many provided profiles are not found in the @SealFor mappings. ";
 
-    // TODO updt all jdocs
+    /**
+     * Keyword used internally by Jisel to indicate that @DetachAll was used on a large interface
+     */
+    String JISEL_KEYWORD_ALL = "(all)";
 
-    String JISEL_KEYWORD_ALL = "(all)"; // internal use only
+    /**
+     * Keyword which may be used to indicate to "detach" the toplevel profile
+     */
+    String JISEL_KEYWORD_TOPLEVEL = "(toplevel)";
 
-    String JISEL_KEYWORD_TOPLEVEL = "(toplevel)"; // make public. can be used by user
-
-    String JISEL_KEYWORD_TOPLEVEL_TRANSFORMED = "_toplevel_"; // internal use only
+    /**
+     * Keyword used intenally by Jisel during annotation information parsing to replace "(toplevel)"
+     */
+    String JISEL_KEYWORD_TOPLEVEL_REPLACEMENT = "_toplevel_";
 
     /**
      * Replace all double occurences of whitespace ("  ") into a single whitespace (" ")
@@ -550,10 +566,10 @@ public interface StringGenerator {
     }
 
     /**
-     * // TODO ...
+     * Extracts package name from the provided qualified class name
      *
-     * @param qualifiedClassName
-     * @return
+     * @param qualifiedClassName qualified name of the class or interface
+     * @return the package name extracted from the provided qualified class or interface name
      */
     static Optional<String> extractPackageName(String qualifiedClassName) {
         int lastDot = qualifiedClassName.lastIndexOf(DOT);
@@ -561,10 +577,10 @@ public interface StringGenerator {
     }
 
     /**
-     * // TODO ...
+     * Extracts the simple name from the provided qualified class or interface name
      *
-     * @param qualifiedClassName
-     * @return
+     * @param qualifiedClassName qualified name of the class or interface
+     * @return the simple name extracted from the provided qualified class or interface name
      */
     static Optional<String> extractSimpleName(String qualifiedClassName) {
         int lastDot = qualifiedClassName.lastIndexOf(DOT);
@@ -572,59 +588,58 @@ public interface StringGenerator {
     }
 
     /**
-     * // TODO jdoc...
+     * Checks whether the provided profile name is one of the Jisel keywords
      *
-     * @param profile
-     * @return
+     * @param profile the profile name
+     * @return true if the provided profile name is one of the Jisel keywords
      */
     static boolean isJiselKeyword(String profile) {
-        var keywordsArray = new String[]{JISEL_KEYWORD_ALL, JISEL_KEYWORD_TOPLEVEL, JISEL_KEYWORD_TOPLEVEL_TRANSFORMED};
+        var keywordsArray = new String[]{JISEL_KEYWORD_ALL, JISEL_KEYWORD_TOPLEVEL, JISEL_KEYWORD_TOPLEVEL_REPLACEMENT};
         return stream(keywordsArray).anyMatch(keyword -> keyword.equals(profile));
     }
 
-
     /**
-     * ...remoev trailing curly braces
+     * Removes the trailing curly braces found in the string representation of a java array
      *
-     * @param arrayRawStringValue
-     * @return
+     * @param arrayRawStringValue the string representation of a java array
+     * @return the string representation of a java array without the trailing braces
      */
     static String removeAnnotationArrayTrailingBraces(String arrayRawStringValue) {
         return removeTrailingStrings(arrayRawStringValue, OPENING_CURLY_BRACE, CLOSING_CURLY_BRACE);
     }
 
     /**
-     * TODO jdoc...
+     * Removes the trailing quotes found in the string representation of a java annotation String value
      *
-     * @param attributeValueAsString
-     * @return
+     * @param attributeValueAsString the string representation of a java annotation String value
+     * @return the string representation of a java annotation String value without the trailing quotes
      */
     static String removeAnnotationAttributeTrailingQuotes(String attributeValueAsString) {
         return removeTrailingStrings(attributeValueAsString, DOUBLE_QUOTES, DOUBLE_QUOTES);
     }
 
     /**
-     * TODO jdoc...
+     * Removes the trailing parentheses found in the string representation of a java annotation value
      *
-     * @param attributeValueAsString
-     * @return
+     * @param attributeValueAsString the string representation of a java annotation value
+     * @return the string representation of a java annotation value without the trailing parentheses
      */
     static String removeAnnotationAttributeTrailingParentheses(String attributeValueAsString) {
         return removeTrailingStrings(attributeValueAsString, OPENING_PARENTHESIS, CLOSING_PARENTHESIS);
     }
 
     /**
-     * TODO ...
+     * Removes strings from the beginning and end of the provided string
      *
-     * @param processString
-     * @param leftTrailingString
-     * @param rightTrailingString
-     * @return
+     * @param providedString      the string to remove trailing strings from
+     * @param leftTrailingString  string to be removed from the beginning of the provided string
+     * @param rightTrailingString string to be removed from the end of the provided string
+     * @return the provided string without the left and right trailing strings
      */
-    static String removeTrailingStrings(String processString, String leftTrailingString, String rightTrailingString) {
+    static String removeTrailingStrings(String providedString, String leftTrailingString, String rightTrailingString) {
         UnaryOperator<String> removeLQuoteOp = string -> string.startsWith(leftTrailingString) ? string.substring(1) : string;
         UnaryOperator<String> removeRQuoteOp = string -> string.endsWith(rightTrailingString) ? string.substring(0, string.strip().length() - 1) : string;
-        var strippedString = processString.strip();
+        var strippedString = providedString.strip();
         if (!strippedString.isBlank()) {
             return removeLQuoteOp.andThen(removeRQuoteOp).apply(strippedString);
         }

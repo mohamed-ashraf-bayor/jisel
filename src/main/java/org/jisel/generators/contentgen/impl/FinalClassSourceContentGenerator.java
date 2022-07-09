@@ -36,7 +36,6 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.jisel.generators.StringGenerator.CLOSING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.FINAL_CLASS_SUFFIX;
-import static org.jisel.generators.StringGenerator.METHODS_TO_EXCLUDE;
 import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
 import static org.jisel.generators.StringGenerator.OPENING_PARENTHESIS;
 import static org.jisel.generators.StringGenerator.PACKAGE;
@@ -51,6 +50,11 @@ import static org.jisel.generators.StringGenerator.removeDoubleSpaceOccurrences;
  * The generated final class implements the provided large interface and implements all its methods by providing default return values for each.
  */
 public final class FinalClassSourceContentGenerator extends AbstractSealedSourceContentGenerator {
+
+    /**
+     * Array of methods to exclude while pulling the list of all inherited methods of a class or interface
+     */
+    private static final String[] METHODS_TO_EXCLUDE = {"getClass", "wait", "notifyAll", "hashCode", "equals", "notify", "toString"};
 
     /**
      * TODO jdoc...
@@ -71,7 +75,7 @@ public final class FinalClassSourceContentGenerator extends AbstractSealedSource
         // package name
         generatePackageName(largeInterfaceElement).ifPresent(name -> finalClassContent.append(format("%s %s;%n%n", PACKAGE, name)));
         // javaxgenerated
-        annotationsGenerator.buildJavaxGeneratedAnnotationSection(finalClassContent);
+        buildJavaxGeneratedAnnotation(finalClassContent);
         // public final class
         finalClassContent.append(format(
                 "%s %s ",
@@ -93,7 +97,8 @@ public final class FinalClassSourceContentGenerator extends AbstractSealedSource
                 finalClassContent,
                 processingEnvironment.getElementUtils().getAllMembers((TypeElement) largeInterfaceElement).stream()
                         .filter(element -> ElementKind.METHOD.equals(element.getKind()))
-                        .filter(element -> asList(METHODS_TO_EXCLUDE).stream().noneMatch(excludedMeth -> element.toString().contains(excludedMeth + OPENING_PARENTHESIS)))
+                        .filter(element -> asList(METHODS_TO_EXCLUDE).stream()
+                                .noneMatch(excludedMeth -> element.toString().contains(excludedMeth + OPENING_PARENTHESIS)))
                         .collect(toSet())
         );
         // closing bracket

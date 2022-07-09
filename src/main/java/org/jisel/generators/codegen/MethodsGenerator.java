@@ -21,7 +21,7 @@
  */
 package org.jisel.generators.codegen;
 
-import org.jisel.generators.codegen.impl.InterfaceMethodsGenerator;
+import org.jisel.generators.codegen.impl.MethodsGeneratorImpl;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -32,21 +32,34 @@ import java.util.Set;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
-import static org.jisel.generators.StringGenerator.DEFAULT_BOOLEAN_VALUE;
-import static org.jisel.generators.StringGenerator.DEFAULT_NULL_VALUE;
-import static org.jisel.generators.StringGenerator.DEFAULT_NUMBER_VALUE;
+import static org.jisel.generators.StringGenerator.FALSE;
 import static org.jisel.generators.StringGenerator.RETURN;
 import static org.jisel.generators.StringGenerator.WHITESPACE;
 import static org.jisel.generators.codegen.AnnotationsGenerator.buildExistingAnnotations;
 
 /**
- * Exposes contract to be fulfilled by a class generating the list of abstracts methods of a sealed interface being generated.<br>
+ * Exposes contract to be fulfilled by a class generating the list of abstracts methods of an interface being generated.<br>
  * Same is also used to generate the list of concrete methods of the convenience final class generated for the bottom-level generated sealed interfaces
  */
-public sealed interface MethodsGenerator extends CodeGenerator permits InterfaceMethodsGenerator {
+public sealed interface MethodsGenerator extends CodeGenerator permits MethodsGeneratorImpl {
 
     /**
-     * Generates a list of abstracts methods definitions and appends it to the sealed interface code being generated
+     * Default value to use for boolean returned values
+     */
+    String DEFAULT_BOOLEAN_VALUE = FALSE;
+
+    /**
+     * Default value to use for numeric returned values (int, long, float, double,...)
+     */
+    String DEFAULT_NUMBER_VALUE = "0";
+
+    /**
+     * Default value to use for Object returned values
+     */
+    String DEFAULT_NULL_VALUE = "null";
+
+    /**
+     * Generates a list of abstracts methods definitions and appends it to the interface code being generated
      *
      * @param sealedInterfaceContent {@link StringBuilder} object containing the sealed interface code being generated
      * @param methodsSet             {@link Set} of {@link Element} instances representing each one of the abstract methods to generate
@@ -63,9 +76,9 @@ public sealed interface MethodsGenerator extends CodeGenerator permits Interface
     void generateEmptyConcreteMethodsFromElementsSet(StringBuilder sealedInterfaceContent, Set<Element> methodsSet);
 
     /**
-     * Returns a string representing the fully qualified name of a method return type
+     * Returns a string representing the qualified name of a method return type
      *
-     * @param methodElement method {@link Element} instance
+     * @param methodElement the provided method {@link Element} instance
      * @return a string representing the fully qualified name of the provided method's return type
      */
     default String generateReturnType(Element methodElement) {
@@ -73,10 +86,10 @@ public sealed interface MethodsGenerator extends CodeGenerator permits Interface
     }
 
     /**
-     * // TODO add jdoc abt annots
-     * Constructs a string containing a method name and parameters formatted as per the method signature
+     * Constructs a string containing the signature (method name and parameters definition) for the provided method {@link Element} instance.<br>
+     * All annotations present on the method's parameters are also part of the signature.
      *
-     * @param methodElement method {@link Element} instance
+     * @param methodElement the provided method {@link Element} instance
      * @return a string containing a method name and parameters formatted as per the method signature
      */
     default String generateMethodNameAndParameters(Element methodElement) {
