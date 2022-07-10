@@ -30,7 +30,16 @@ import org.jisel.handlers.impl.SealForParentChildInheritanceHandler;
  */
 public abstract sealed class AbstractSealedSealForHandler implements JiselAnnotationHandler permits SealForHandler {
 
+    /**
+     * {@link AbstractSealedAnnotationInfoCollectionHandler} instance needed to collect info provided through the
+     * &#64;{@link org.jisel.annotations.SealFor} annotation
+     */
     protected final AbstractSealedAnnotationInfoCollectionHandler annotationInfoCollectionHandler;
+
+    /**
+     * {@link AbstractSealedParentChildInheritanceHandler} instance needed to build info regarding inheritance relationships between
+     * the interfaces to be generated
+     */
     protected final AbstractSealedParentChildInheritanceHandler parentChildInheritanceHandler;
 
     /**

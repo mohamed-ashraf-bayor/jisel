@@ -43,9 +43,10 @@ import static org.jisel.generators.StringGenerator.sealedInterfaceNameConvention
 public final class InterfaceSourceFileGenerator extends AbstractSealedSourceFileGenerator {
 
     /**
-     * InterfaceSourceFileGenerator constructor. Injects needed instance of {@link ProcessingEnvironment}
+     * InterfaceSourceFileGenerator constructor. Injects needed instance of {@link ProcessingEnvironment} and passes it
+     * to the super constructor
      *
-     * @param processingEnvironment
+     * @param processingEnvironment instance needed for performing low-level operations on {@link Element} instances
      */
     public InterfaceSourceFileGenerator(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);

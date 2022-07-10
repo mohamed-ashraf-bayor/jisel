@@ -47,6 +47,11 @@ public final class ExtendsGeneratorImpl implements ExtendsGenerator {
 
     private final ProcessingEnvironment processingEnvironment;
 
+    /**
+     * Injects needed instance of {@link ProcessingEnvironment}
+     *
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for performing low-level operations on {@link Element} instances
+     */
     public ExtendsGeneratorImpl(ProcessingEnvironment processingEnvironment) {
         this.processingEnvironment = processingEnvironment;
     }

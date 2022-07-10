@@ -83,7 +83,7 @@ public abstract sealed class AbstractSealedReportContentGenerator extends Abstra
     /**
      * Passes through the received {@link ProcessingEnvironment} instance to the super constructor
      *
-     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for report content generation
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for performing low-level operations on {@link Element} instances
      */
     protected AbstractSealedReportContentGenerator(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);

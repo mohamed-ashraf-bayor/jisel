@@ -46,7 +46,7 @@ public final class InterfaceSourceContentGenerator extends AbstractSealedSourceC
     /**
      * Passes through the received {@link ProcessingEnvironment} instance to the super constructor
      *
-     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for report content generation
+     * @param processingEnvironment {@link ProcessingEnvironment} instance needed for performing low-level operations on {@link Element} instances
      */
     public InterfaceSourceContentGenerator(ProcessingEnvironment processingEnvironment) {
         super(processingEnvironment);

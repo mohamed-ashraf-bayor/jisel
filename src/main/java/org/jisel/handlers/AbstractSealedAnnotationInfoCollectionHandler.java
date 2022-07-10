@@ -86,7 +86,7 @@ public abstract sealed class AbstractSealedAnnotationInfoCollectionHandler imple
             var totalProfiles = profilesList.size();
             sealedInterfacesToGenerateByLargeInterface.putIfAbsent(interfaceElement, new HashMap<>());
             sealedInterfacesToGenerateByLargeInterface.get(interfaceElement).putAll(annotatedMethodsByProfileByLargeInterface.get(interfaceElement));
-            for (int i = 0; i < totalProfiles - 1; i++) { // TODO try eliminitaing i
+            for (int i = 0; i < totalProfiles - 1; i++) { // TODO try eliminating i
                 var allProcessedCommonMethodsByConcatenatedProfiles = concatenateProfilesBasedOnCommonMethods(profilesList.get(i), profilesList, methodsSetsList);
                 // remove all commonMethodElmnts 1 by 1 and in each profile
                 allProcessedCommonMethodsByConcatenatedProfiles.values().stream()
@@ -111,7 +111,7 @@ public abstract sealed class AbstractSealedAnnotationInfoCollectionHandler imple
         for (var methodElement : methodsSetsList.get(processProfileIndex)) {
             var concatenatedProfiles = new StringBuilder(processProfileName);
             var found = false;
-            for (int j = processProfileIndex + 1; j < totalProfiles; j++) { // TODO try eliminitaing j and found
+            for (int j = processProfileIndex + 1; j < totalProfiles; j++) { // TODO try eliminating j and found
                 if (methodsSetsList.get(j).contains(methodElement)) {
                     concatenatedProfiles.append(COMMA_SEPARATOR).append(profilesList.get(j));
                     found = true;

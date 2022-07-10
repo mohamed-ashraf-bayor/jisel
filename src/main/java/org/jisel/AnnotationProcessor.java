@@ -50,37 +50,40 @@ import static org.jisel.generators.StringGenerator.UNSEAL;
 import static org.jisel.generators.StringGenerator.UNSEAL_REPORT_NO_TOPLEVEL_MSG;
 import static org.jisel.generators.StringGenerator.WHITESPACE;
 
-// TODO jdoc entire clss
+/**
+ * Exposes contract to be fulfilled by Jisel annotation processor main class
+ */
 public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
 
     /**
-     *
+     * String used as a Map key to store all {@link Element} instances annotated with &#64;{@link org.jisel.annotations.SealFor}
      */
     String ALL_ANNOTATED_SEALFOR_ELEMENTS = "allAnnotatedSealForElements";
 
     /**
-     *
+     * String used as a Map key to store all {@link Element} instances annotated with &#64;{@link org.jisel.annotations.TopLevel}
      */
     String ALL_ANNOTATED_TOPLEVEL_ELEMENTS = "allAnnotatedTopLevelElements";
 
     /**
-     *
+     * String used as a Map key to store all {@link Element} instances annotated with &#64;{@link org.jisel.annotations.AddTo}
      */
     String ALL_ANNOTATED_ADDTO_ELEMENTS = "allAnnotatedAddToElements";
 
     /**
-     *
+     * String used as a Map key to store all {@link Element} instances annotated with &#64;{@link org.jisel.annotations.UnSeal}
      */
     String ALL_ANNOTATED_UNSEAL_ELEMENTS = "allAnnotatedUnSealElements";
 
     /**
-     *
+     * String used as a Map key to store all {@link Element} instances annotated with &#64;{@link org.jisel.annotations.Detach}
      */
     String ALL_ANNOTATED_DETACH_ELEMENTS = "allAnnotatedDetachElements";
 
     /**
      * Title of the text report displayed in the logs during compilation.<br>
-     * The report is displayed only when an unexpected scenario was encountered (ex: More than 1 top-level parent interfaces found, profile not existing,...)
+     * The report is displayed only when an unexpected scenario was encountered <br>
+     * (ex: More than 1 top-level parent interfaces found, profile not existing,...)
      */
     String STATUS_REPORT_TITLE = "JISEL GENERATION REPORT";
 
@@ -94,13 +97,25 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
      */
     String FILE_GENERATION_SUCCESS = "Successfully generated";
 
-    void notifyReportDisplay(String reportText);
+    /**
+     * Displays the provided statusReport text information.<br>
+     * Called once the processing of annotated elements completes
+     *
+     * @param statusReportText status report text info to be displayed by the caller
+     */
+    void notifyStatusReportDisplay(String statusReportText);
 
+    /**
+     * Populates the provided {@link Map} based on content of the provided {@link Set} of {@link TypeElement}s
+     *
+     * @param annotations             the annotation interfaces requested to be processed
+     * @param roundEnv                environment for information about the current and prior round
+     * @param allAnnotatedElementsMap {@link Map} to be populated with {@link Set}s of annotated {@link Element} instances
+     */
     default void populateAllAnnotatedElementsSets(Set<? extends TypeElement> annotations,
                                                   RoundEnvironment roundEnv,
                                                   Map<String, Set<Element>> allAnnotatedElementsMap) {
         for (var annotation : annotations) {
-            // TODO create a func and reuse: think of a consumer ?
             if (annotation.getSimpleName().toString().contains(TOP_LEVEL)) {
                 allAnnotatedElementsMap.get(ALL_ANNOTATED_TOPLEVEL_ELEMENTS).addAll(roundEnv.getElementsAnnotatedWith(annotation));
             }
@@ -119,6 +134,29 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         }
     }
 
+    /**
+     * Processes {@link Element} instances annotated with &#64;{@link org.jisel.annotations.TopLevel} and &#64;{{@link org.jisel.annotations.SealFor}
+     * annotations and populates the provided {@link Map}s with the collected information
+     *
+     * @param topLevelHandler                            {@link org.jisel.handlers.impl.TopLevelHandler} instance needed to
+     *                                                   process elements annotated with &#64;{@link org.jisel.annotations.TopLevel}
+     * @param sealForHandler                             {@link org.jisel.handlers.impl.SealForHandler} instance needed to
+     *                                                   process elements annotated with &#64;{@link org.jisel.annotations.SealFor}
+     * @param allAnnotatedElementsMap                    {@link Map} containing grouped {@link Element} instances annotated with
+     *                                                   &#64;{@link org.jisel.annotations.TopLevel} and
+     *                                                   &#64;{{@link org.jisel.annotations.SealFor}
+     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   each one of the large interfaces to be segregated, while the associated value is
+     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
+     *                                                   The Element instances represent each one of the abstract methods to be
+     *                                                   added to the generated sealed interface corresponding to a profile.
+     * @param sealedInterfacesPermitsByLargeInterface    {@link Map} containing information about the subtypes permitted by
+     *                                                   each one of the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   each one of the large interfaces to be segregated, while the associated value is
+     *                                                   a Map of profile name as the key and a List of profiles names as the value.
+     */
     default void processTopLevelAndSealForAnnotatedElements(JiselAnnotationHandler topLevelHandler,
                                                             AbstractSealedSealForHandler sealForHandler,
                                                             Map<String, Set<Element>> allAnnotatedElementsMap,
@@ -139,6 +177,21 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         displayStatusReport(extractLargeInterfacesWithNoTopLevel(sealForStatusReport, topLevelStatusReport), SEAL_FOR, TOP_LEVEL);
     }
 
+    /**
+     * Processes {@link Element} instances annotated with &#64;{@link org.jisel.annotations.UnSeal} and populates the
+     * provided {@link Map}s with the collected information
+     *
+     * @param unSealHandler                              {@link org.jisel.handlers.impl.UnSealHandler} instance needed to
+     *                                                   process elements annotated with &#64;{@link org.jisel.annotations.UnSeal}
+     * @param allAnnotatedUnSealElements                 {@link Set} of {@link Element} instances annotated with &#64;{@link org.jisel.annotations.UnSeal}
+     * @param unSealValueByLargeInterface                {@link Map} storing 'unSeal' boolean value for each large interface
+     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   each one of the large interfaces to be segregated, while the associated value is
+     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
+     *                                                   The Element instances represent each one of the abstract methods to be
+     *                                                   added to the generated sealed interface corresponding to a profile.
+     */
     default void processUnSealAnnotatedElements(JiselAnnotationHandler unSealHandler,
                                                 Set<Element> allAnnotatedUnSealElements,
                                                 Map<Element, Boolean> unSealValueByLargeInterface,
@@ -153,6 +206,29 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         displayStatusReport(extractUnSealedInterfacesWithNoTopLevel(unSealStatusReport, sealedInterfacesToGenerateByLargeInterface), UNSEAL);
     }
 
+    /**
+     * Processes {@link Element} instances annotated with &#64;{@link org.jisel.annotations.Detach} and &#64;{@link org.jisel.annotations.DetachAll}
+     * and populates the provided {@link Map}s with the collected information
+     *
+     * @param detachHandler                                {@link org.jisel.handlers.impl.DetachHandler} instance needed to
+     *                                                     process elements annotated with &#64;{@link org.jisel.annotations.Detach}
+     *                                                     and &#64;{@link org.jisel.annotations.DetachAll}
+     * @param allAnnotatedDetachElements                   {@link Set} of {@link Element} instances annotated with &#64;{@link org.jisel.annotations.Detach}
+     *                                                     and &#64;{@link org.jisel.annotations.DetachAll}
+     * @param sealedInterfacesToGenerateByLargeInterface   {@link Map} containing information about the sealed interfaces to be generated.
+     *                                                     To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                     each one of the large interfaces to be segregated, while the associated value is
+     *                                                     a Map of profile name as the key and a Set of Element instances as the value.
+     *                                                     The Element instances represent each one of the abstract methods to be
+     *                                                     added to the generated sealed interface corresponding to a profile.
+     * @param sealedInterfacesPermitsByLargeInterface      {@link Map} containing information about the subtypes permitted by
+     *                                                     each one of the sealed interfaces to be generated.
+     *                                                     To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                     each one of the large interfaces to be segregated, while the associated value is
+     *                                                     a Map of profile name as the key and a List of profiles names as the value.
+     * @param detachedInterfacesToGenerateByLargeInterface {@link Map} containing information about the detached interfaces to
+     *                                                     be generated for each large interface
+     */
     default void processDetachAnnotatedElements(AbstractSealedDetachHandler detachHandler,
                                                 Set<Element> allAnnotatedDetachElements,
                                                 Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
@@ -167,6 +243,25 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
         displayStatusReport(detachStatusReport, DETACH, DETACH_ALL);
     }
 
+    /**
+     * Processes {@link Element} instances annotated with &#64;{@link org.jisel.annotations.AddTo} and populates the
+     * provided {@link Map}s with the collected information
+     *
+     * @param addToHandler                               {@link org.jisel.handlers.impl.AddToHandler} instance needed to
+     *                                                   process elements annotated with &#64;{@link org.jisel.annotations.AddTo}
+     * @param allAnnotatedAddToElements                  {@link Set} of {@link Element} instances annotated with &#64;{@link org.jisel.annotations.AddTo}
+     * @param sealedInterfacesToGenerateByLargeInterface {@link Map} containing information about the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   each one of the large interfaces to be segregated, while the associated value is
+     *                                                   a Map of profile name as the key and a Set of Element instances as the value.
+     *                                                   The Element instances represent each one of the abstract methods to be
+     *                                                   added to the generated sealed interface corresponding to a profile.
+     * @param sealedInterfacesPermitsByLargeInterface    {@link Map} containing information about the subtypes permitted by
+     *                                                   each one of the sealed interfaces to be generated.
+     *                                                   To be populated and/or modified if needed. The key represents the Element instance of
+     *                                                   each one of the large interfaces to be segregated, while the associated value is
+     *                                                   a Map of profile name as the key and a List of profiles names as the value.
+     */
     default void processAddToAnnotatedElements(AbstractSealedAddToHandler addToHandler,
                                                Set<Element> allAnnotatedAddToElements,
                                                Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
@@ -207,7 +302,7 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
                     output.append(format("\t> %s: %s%n", mapEntry.getKey().toString(), mapEntry.getValue()));
                 }
             });
-            notifyReportDisplay(output.toString());
+            notifyStatusReportDisplay(output.toString());
         }
     }
 }

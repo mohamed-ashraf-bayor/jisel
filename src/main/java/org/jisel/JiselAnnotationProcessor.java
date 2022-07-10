@@ -24,6 +24,7 @@ package org.jisel;
 import com.google.auto.service.AutoService;
 import org.jisel.annotations.AddTo;
 import org.jisel.annotations.Detach;
+import org.jisel.annotations.DetachAll;
 import org.jisel.annotations.SealFor;
 import org.jisel.annotations.TopLevel;
 import org.jisel.annotations.UnSeal;
@@ -68,7 +69,7 @@ import static org.jisel.generators.StringGenerator.ORG_JISEL_UNSEAL;
 
 /**
  * Jisel annotation processor class. Picks up and processes all elements annotated with &#64;{@link SealFor},
- * &#64;{@link AddTo}, &#64;{@link TopLevel}, &#64;{@link UnSeal} and &#64;{@link Detach}<br>
+ * &#64;{@link AddTo}, &#64;{@link TopLevel}, &#64;{@link UnSeal}, &#64;{@link Detach} and &#64;{@link DetachAll}
  */
 @SupportedAnnotationTypes({ORG_JISEL_TOP_LEVEL, ORG_JISEL_ADD_TO, ORG_JISEL_SEAL_FOR, ORG_JISEL_SEAL_FORS, ORG_JISEL_ADD_TOS,
         ORG_JISEL_UNSEAL, ORG_JISEL_DETACH, ORG_JISEL_DETACHALL, ORG_JISEL_DETACHS})
@@ -95,6 +96,7 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
+        // the following 3 objects must be instantiating only when processingEnv is != null
         var addToHandler = new AddToHandler(processingEnv);
         var detachHandler = new DetachHandler(processingEnv);
         var interfaceSourceFileGenerator = new InterfaceSourceFileGenerator(processingEnv);
@@ -177,7 +179,7 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
     }
 
     @Override
-    public void notifyReportDisplay(String reportText) {
-        log.warning(reportText::toString);
+    public void notifyStatusReportDisplay(String statusReportText) {
+        log.warning(statusReportText::toString);
     }
 }

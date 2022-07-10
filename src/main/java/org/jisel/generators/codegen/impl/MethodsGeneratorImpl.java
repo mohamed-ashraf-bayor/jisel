@@ -48,10 +48,10 @@ public final class MethodsGeneratorImpl implements MethodsGenerator {
                 methodsSet.stream()
                         .map(element -> {
                             var thrownExceptions = generateThrownExceptions(element);
-                            var existingAnnotations = buildExistingAnnotations(element, NEW_LINE);
+                            var existingAnnotations = buildExistingAnnotations(element, NEW_LINE + TAB);
                             return format(
                                     "%s%s %s%s",
-                                    existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations + TAB,
+                                    existingAnnotations.isEmpty() ? EMPTY_STRING : existingAnnotations,
                                     generateReturnType(element),
                                     generateMethodNameAndParameters(element),
                                     thrownExceptions.isEmpty() ? SEMICOLON : format(" throws %s", thrownExceptions + SEMICOLON)
