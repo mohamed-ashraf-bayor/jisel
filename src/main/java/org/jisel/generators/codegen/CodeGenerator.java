@@ -29,7 +29,7 @@ import java.util.List;
 public sealed interface CodeGenerator permits AnnotationsGenerator, DeclarationGenerator, ExtendsGenerator, MethodsGenerator, PermitsGenerator {
 
     /**
-     * Generates piece of code requested, based on the parameters provided in the params object and appends it to the provided classOrInterfaceContent param
+     * Generates the piece of code requested, based on the parameters provided in the params object and appends it to the provided classOrInterfaceContent param
      *
      * @param classOrInterfaceContent StringBuilder object containing the code of the interface or class being generated
      * @param params                  Expected parameters to be used in the code generation process

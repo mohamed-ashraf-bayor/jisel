@@ -43,7 +43,7 @@ import static org.jisel.generators.StringGenerator.WHITESPACE;
 public sealed interface ExtendsGenerator extends CodeGenerator permits ExtendsGeneratorImpl {
 
     /**
-     * Generates the "extends"/"implements" clause of the interface/class being generated, along with the list of parent interfaces, based on
+     * Generates the extends/implements clause of the interface/class being generated, along with the list of parent interfaces, based on
      * a provided {@link Map} containing parents/subtypes information (the permits Map) and the name of the profile for which the
      * sealed interface will be generated
      *
@@ -61,7 +61,7 @@ public sealed interface ExtendsGenerator extends CodeGenerator permits ExtendsGe
                                                                 boolean unSeal);
 
     /**
-     * Generates the "extends" clause of the interface being generated, along with the list of parent interfaces with
+     * Generates the extends clause of the interface being generated, along with the list of parent interfaces with
      * their corresponding provided generic classes
      *
      * @param sealedInterfaceContent  {@link StringBuilder} object containing the sealed interface code being generated

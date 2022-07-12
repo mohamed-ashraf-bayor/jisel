@@ -39,7 +39,7 @@ import java.lang.annotation.Target;
 public @interface UnSeal {
 
     /**
-     * if set to false the "un-sealed" interfaces hierarchy is not generated
+     * if set to false the unsealed interfaces hierarchy is not generated
      *
      * @return true (default value) if requested to generate the unsealed hierarchy, false if not
      */

@@ -43,7 +43,7 @@ import static org.jisel.generators.StringGenerator.NEW_LINE;
 public sealed interface AnnotationsGenerator extends CodeGenerator permits AnnotationsGeneratorImpl {
 
     /**
-     * Generates existing annotations of the provided {@link Element} instance and appends it to the provided {@link StringBuilder} instance
+     * Generates existing annotations of the provided {@link Element} instance and appends them to the provided {@link StringBuilder} instance
      *
      * @param classOrInterfaceContent StringBuilder object containing the code of the interface or class being generated
      * @param element                 {@link Element} instance of the interface, class, method or parameter to generate the existing annotations for
@@ -96,7 +96,7 @@ public sealed interface AnnotationsGenerator extends CodeGenerator permits Annot
 
     /**
      * Cleans up the annotations provided through the 'applyAnnotations' attribute of the &#64;{@link org.jisel.annotations.Detach}
-     * annotation and appends it to the provided {@link StringBuilder} instance
+     * annotation and appends the result to the provided {@link StringBuilder} instance
      *
      * @param classOrInterfaceContent  StringBuilder object containing the code of the interface or class being generated
      * @param applyAnnotationsRawValue String containing the provided 'applyAnnotations' attribute value
