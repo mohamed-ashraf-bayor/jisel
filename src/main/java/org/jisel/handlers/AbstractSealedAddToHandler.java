@@ -47,6 +47,7 @@ import static org.jisel.generators.StringGenerator.EQUALS_SIGN;
 import static org.jisel.generators.StringGenerator.LARGE_INTERFACE;
 import static org.jisel.generators.StringGenerator.LARGE_INTERFACE_ATTRIBUTE_REGEX;
 import static org.jisel.generators.StringGenerator.OPENING_CURLY_BRACE;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_ADD_TO;
 import static org.jisel.generators.StringGenerator.PROFILES;
 import static org.jisel.generators.StringGenerator.removeDotClass;
 
@@ -80,6 +81,7 @@ public abstract sealed class AbstractSealedAddToHandler implements JiselAnnotati
     protected Map<String, Set<String>> buildAddToProvidedProfilesMap(Element annotatedClassOrInterface) {
         var providedProfilesMap = new HashMap<String, Set<String>>();
         var annotationRawValueAsString = annotatedClassOrInterface.getAnnotationMirrors().stream()
+                .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_ADD_TO))
                 .map(Object::toString)
                 .collect(joining(COMMA_SEPARATOR));
         // sample values for annotationRawValueAsString:

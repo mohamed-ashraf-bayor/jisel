@@ -43,9 +43,11 @@ import static org.jisel.generators.StringGenerator.AT_SIGN;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
 import static org.jisel.generators.StringGenerator.DETACH;
 import static org.jisel.generators.StringGenerator.DETACH_ALL;
+import static org.jisel.generators.StringGenerator.FINAL_CLASS_SUFFIX;
 import static org.jisel.generators.StringGenerator.SEAL_FOR;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL;
 import static org.jisel.generators.StringGenerator.TOP_LEVEL_REPORT_NOT_FOUND_MSG;
+import static org.jisel.generators.StringGenerator.UNDERSCORE;
 import static org.jisel.generators.StringGenerator.UNSEAL;
 import static org.jisel.generators.StringGenerator.UNSEAL_REPORT_NO_TOPLEVEL_MSG;
 import static org.jisel.generators.StringGenerator.WHITESPACE;
@@ -273,6 +275,25 @@ public sealed interface AnnotationProcessor permits JiselAnnotationProcessor {
                 sealedInterfacesPermitsByLargeInterface
         );
         displayStatusReport(addToStatusReport, ADD_TO);
+    }
+
+    /**
+     * At the end of all annotated elements processing, checks whether the permits {@link Map} has only 1 single entry (which is
+     * the top-level interface) with an empty children list. If so, modify the permits map by adding the generated final class.
+     *
+     * @param sealedInterfacesPermitsByLargeInterface {@link Map} containing information about the subtypes permitted by
+     *                                                each one of the sealed interfaces to be generated
+     */
+    default void checkForPermitsMapWithSingleEntryPerLargeInterface(Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+        sealedInterfacesPermitsByLargeInterface.entrySet().stream().forEach(
+                mapEntry -> {
+                    var largeInterfaceElementSimpleName = mapEntry.getKey().getSimpleName().toString();
+                    var permitsMap = mapEntry.getValue();
+                    if (permitsMap.size() == 1 && permitsMap.get(largeInterfaceElementSimpleName).isEmpty()) {
+                        permitsMap.put(largeInterfaceElementSimpleName, List.of(UNDERSCORE + largeInterfaceElementSimpleName + FINAL_CLASS_SUFFIX));
+                    }
+                }
+        );
     }
 
     private Map<Element, String> extractLargeInterfacesWithNoTopLevel(Map<Element, String> sealForStatusReport,

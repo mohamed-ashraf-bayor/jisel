@@ -29,8 +29,8 @@ import java.lang.annotation.Target;
 /**
  * Annotation to be applied only on top of large interfaces to segregate.<br>
  * Generates a classic pre-java 17 interfaces hierarchy, which is basically the Interface Segregation Principle applied
- * without sealing the hierarchy. The unsealed hierarchy is generated (besides the sealed hierarchy generated files, and stored
- * within the created <i>unsealed</i> sub-folder.<br>
+ * without sealing the hierarchy. The unsealed hierarchy interfaces are generated additionally to the sealed hierarchy generated files,
+ * and stored in the created <i>unsealed</i> sub-package.<br>
  * Each one of the generated interfaces follows the naming convention: <b>&#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62;</b><br>
  * (<b>&#60;LargeInterfaceSimpleName&#62;</b> is the simplename of the large interface being segregated).<br><br>
  */

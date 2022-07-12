@@ -36,7 +36,8 @@ import static org.jisel.generators.StringGenerator.EMPTY_STRING;
  * been tagged for the specified profile using &#64;{@link SealFor}.<br>
  * Also, as the generated interface is "detached" from the generated sealed hierarchy, no inheritance declaration clause ("extends") is generated.<br>
  * Flexibility is offered allowing to choose a new name for the generated interface, specify which superInterfaces (along with generics)
- * the generated interface should extend, and annotations to be added on top of the generated interface.
+ * the generated interface should extend, and annotations to be added on top of the generated interface.<br>
+ * All generated detached interfaces are stored in the created <i>detached</i> sub-package.
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)

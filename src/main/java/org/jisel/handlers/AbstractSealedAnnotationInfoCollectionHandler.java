@@ -39,6 +39,7 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static org.jisel.generators.StringGenerator.ANNOTATION_STRING_VALUE_REGEX;
 import static org.jisel.generators.StringGenerator.COMMA_SEPARATOR;
+import static org.jisel.generators.StringGenerator.ORG_JISEL_SEAL_FOR;
 
 /**
  * Exposes contract to fulfill by a class collecting necessary information from the annotated elements,
@@ -102,14 +103,14 @@ public abstract sealed class AbstractSealedAnnotationInfoCollectionHandler imple
         });
     }
 
-    private Map<String, Set<Element>> concatenateProfilesBasedOnCommonMethods(String processProfileName,
+    private Map<String, Set<Element>> concatenateProfilesBasedOnCommonMethods(String processedProfileName,
                                                                               List<String> profilesList,
                                                                               List<Set<Element>> methodsSetsList) {
         var allProcessedCommonMethodsByConcatenatedProfiles = new HashMap<String, Set<Element>>();
         var totalProfiles = profilesList.size();
-        var processProfileIndex = profilesList.indexOf(processProfileName);
+        var processProfileIndex = profilesList.indexOf(processedProfileName);
         for (var methodElement : methodsSetsList.get(processProfileIndex)) {
-            var concatenatedProfiles = new StringBuilder(processProfileName);
+            var concatenatedProfiles = new StringBuilder(processedProfileName);
             var found = false;
             for (int j = processProfileIndex + 1; j < totalProfiles; j++) { // TODO try eliminating j and found
                 if (methodsSetsList.get(j).contains(methodElement)) {
@@ -129,8 +130,7 @@ public abstract sealed class AbstractSealedAnnotationInfoCollectionHandler imple
     }
 
     /**
-     * For a specified large interface abstract method annotated with #64;{@link SealFor}, constructs a Set storing
-     * all the provided profiles names
+     * For a specified abstract method annotated with #64;{@link SealFor}, constructs a Set storing all the provided profiles names
      *
      * @param annotatedMethod {@link Element} instance representing the annotated method of the large interface
      * @return a Set storing all the provided profiles names
@@ -138,6 +138,7 @@ public abstract sealed class AbstractSealedAnnotationInfoCollectionHandler imple
     protected Set<String> buildSealForProvidedProfilesSet(Element annotatedMethod) {
         var providedProfilesSet = new HashSet<String>();
         annotatedMethod.getAnnotationMirrors().stream()
+                .filter(annotationMirror -> annotationMirror.toString().contains(ORG_JISEL_SEAL_FOR))
                 .flatMap(annotationMirror -> annotationMirror.getElementValues().entrySet().stream())
                 .map(entry -> entry.getValue().toString())
                 .forEach(annotationRawValueAsString -> {

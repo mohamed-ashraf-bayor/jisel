@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
@@ -58,17 +59,18 @@ public final class AddToHandler extends AbstractSealedAddToHandler {
     public Map<Element, String> handleAnnotatedElements(Set<Element> allAnnotatedElements,
                                                         Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
                                                         Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+        var statusReport = new HashMap<Element, String>();
         var annotatedClassesAndInterfaces = allAnnotatedElements.stream()
                 .filter(element -> !element.getClass().isEnum())
                 .filter(element -> ElementKind.CLASS.equals(element.getKind())
                         || ElementKind.INTERFACE.equals(element.getKind())
                         || ElementKind.RECORD.equals(element.getKind()))
                 .collect(toSet());
-        var statusReport = new HashMap<Element, String>();
-        annotatedClassesAndInterfaces.forEach(annotatedClassOrInterface -> statusReport.put(
-                annotatedClassOrInterface,
-                processAnnotatedElement(annotatedClassOrInterface, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface)
-        ));
+        annotatedClassesAndInterfaces.forEach(annotatedClassOrInterface ->
+                statusReport.put(
+                        annotatedClassOrInterface,
+                        processAnnotatedElement(annotatedClassOrInterface, sealedInterfacesToGenerateByLargeInterface, sealedInterfacesPermitsByLargeInterface)
+                ));
         return statusReport;
     }
 
@@ -78,7 +80,7 @@ public final class AddToHandler extends AbstractSealedAddToHandler {
         var statusReport = new StringBuilder();
         var addToProfileProvidedProfilesMap = buildAddToProvidedProfilesMap(annotatedClassOrInterface);
         if (addToProfileProvidedProfilesMap.isEmpty()) {
-            // do not process if no profiles are provided
+            // do not process if no profiles and no largeInterfaces are provided
             return statusReport.toString();
         }
         var profileFound = false;
@@ -115,15 +117,17 @@ public final class AddToHandler extends AbstractSealedAddToHandler {
                                                                          Element annotatedClassOrInterface,
                                                                          Set<String> providedProfilesForProvidedLargeInterface,
                                                                          Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
-        var notFoundProfiles = new HashSet<String>();
-        for (var providedProfile : providedProfilesForProvidedLargeInterface) {
-            if (providedProfile.isBlank()) {
-                // only for provided empty profiles, add to the largeInterface sealed profile permits list
+        Consumer<String> updateSealedInterfacesPermitsMapConsumer = profile ->
                 sealedInterfacesPermitsByLargeInterface.get(providedLargeInterfaceElement).merge(
-                        providedLargeInterfaceElement.getSimpleName().toString(),
+                        profile,
                         asList(annotatedClassOrInterface.toString()),
                         (currentList, newList) -> concat(currentList.stream(), newList.stream()).toList()
                 );
+        var notFoundProfiles = new HashSet<String>();
+        for (var providedProfile : providedProfilesForProvidedLargeInterface) {
+            if (providedProfile.isBlank()) {
+                // for provided empty profiles, add to the largeInterface sealed profile permits list
+                updateSealedInterfacesPermitsMapConsumer.accept(providedLargeInterfaceElement.getSimpleName().toString());
                 continue;
             }
             var foundProvidedProfile = false;
@@ -133,11 +137,7 @@ public final class AddToHandler extends AbstractSealedAddToHandler {
                 }
                 if (sealedInterfaceNameConvention(providedProfile, providedLargeInterfaceElement)
                         .equals(sealedInterfaceNameConvention(profile, providedLargeInterfaceElement))) {
-                    sealedInterfacesPermitsByLargeInterface.get(providedLargeInterfaceElement).merge(
-                            providedProfile,
-                            asList(annotatedClassOrInterface.toString()),
-                            (currentList, newList) -> concat(currentList.stream(), newList.stream()).toList()
-                    );
+                    updateSealedInterfacesPermitsMapConsumer.accept(providedProfile);
                     foundProvidedProfile = true;
                 }
             }

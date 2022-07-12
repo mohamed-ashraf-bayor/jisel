@@ -160,6 +160,8 @@ public final class JiselAnnotationProcessor extends AbstractProcessor implements
                     sealedInterfacesPermitsByLargeInterface
             );
 
+            checkForPermitsMapWithSingleEntryPerLargeInterface(sealedInterfacesPermitsByLargeInterface);
+
             try {
                 var generatedFiles = interfaceSourceFileGenerator.createSourceFiles(
                         sealedInterfacesToGenerateByLargeInterface,

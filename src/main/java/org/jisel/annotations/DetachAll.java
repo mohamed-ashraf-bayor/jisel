@@ -30,7 +30,8 @@ import java.lang.annotation.Target;
  * Annotation to apply on top of a large interface being segregated.<br>
  * Result will be (unsealed) interfaces generated, each one corresponding to each profile provided through the use of the
  * &#64;{@link SealFor} annotation, and containing all tagged abstract methods for each profile.<br>
- * Does not provide as much flexibility as the &#64;{@link Detach} annotation.
+ * Does not provide as much flexibility as the &#64;{@link Detach} annotation.<br>
+ * All generated detached interfaces are stored in the created <i>detached.all</i> sub-package.
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE})

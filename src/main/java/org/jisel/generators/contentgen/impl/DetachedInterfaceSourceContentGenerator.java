@@ -115,13 +115,16 @@ public final class DetachedInterfaceSourceContentGenerator extends AbstractSeale
                     interfaceContent,
                     asList(superInterfacesArray),
                     Map.of(
-                            elementAtIndex.apply(superInterfacesArray, 0), firstSuperInterfaceGenericsRawValue.isBlank()
+                            elementAtIndex.apply(superInterfacesArray, 0),
+                            firstSuperInterfaceGenericsRawValue.isBlank()
                                     ? List.of()
                                     : asList(firstSuperInterfaceGenericsRawValue.split(COMMA_SEPARATOR)),
-                            elementAtIndex.apply(superInterfacesArray, 1), secondSuperInterfaceGenericsRawValue.isBlank()
+                            elementAtIndex.apply(superInterfacesArray, 1),
+                            secondSuperInterfaceGenericsRawValue.isBlank()
                                     ? List.of()
                                     : asList(secondSuperInterfaceGenericsRawValue.split(COMMA_SEPARATOR)),
-                            elementAtIndex.apply(superInterfacesArray, 2), thirdSuperInterfaceGenericsRawValue.isBlank()
+                            elementAtIndex.apply(superInterfacesArray, 2),
+                            thirdSuperInterfaceGenericsRawValue.isBlank()
                                     ? List.of()
                                     : asList(thirdSuperInterfaceGenericsRawValue.split(COMMA_SEPARATOR))
                     )
