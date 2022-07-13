@@ -30,14 +30,12 @@ import java.lang.annotation.Target;
 import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 
 /**
- * Repeatable annotation to apply on top of a large interface being segregated.<br>
- * Expects a mandatory "profile" attribute String value corresponding to one of the profiles provided using the &#64;{@link SealFor} annotation.<br>
- * Result will be an (unsealed) interface generated for the specified profile containing all abstract methods which have
- * been tagged for the specified profile using &#64;{@link SealFor}.<br>
- * Also, as the generated interface is "detached" from the generated sealed hierarchy, no inheritance declaration clause ("extends") is generated.<br>
- * Flexibility is offered allowing to choose a new name for the generated interface, specify which superInterfaces (along with generics)
- * the generated interface should extend, and annotations to be added on top of the generated interface.<br>
- * All generated detached interfaces are stored in the created <i>detached</i> sub-package.
+ * Repeatable annotation to apply on top of a large interface being segregated. <br>
+ * Expects a mandatory <i>profile</i> attribute String value corresponding to one of the profiles provided using the <i>@SealFor</i> annotation. <br>
+ * Result will be the generation of an (unsealed) interface for the specified profile. The generated interface contains all abstract methods which have been tagged for the specified profile (through the use of <i>@SealFor</i>).<br>
+ * Also, as the generated interface is "detached" from the generated sealed hierarchy, no inheritance declaration clause (<i>extends</i>) is generated. <br>
+ * Flexibility is offered, allowing to choose a new name for the generated interface, specify which superInterfaces (along with generics) the generated interface should extend, and list qualified names of annotations (along with their attributes/values) to be added on top of the generated interface. <br>
+ * All generated detached interfaces are stored in the created <i>detached</i> sub-package.<br>
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
