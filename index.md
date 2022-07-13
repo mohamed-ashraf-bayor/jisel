@@ -133,8 +133,8 @@ public final class StudentWorkerHybrid implements SealedStudentSociable, SealedW
 ### @UnSeal
 Annotation to be applied only on top of large interfaces to segregate. <br>
 Generates a classic pre-java 17 interfaces hierarchy, which is basically the Interface Segregation Principle applied without sealing the hierarchy. <br>
-The unsealed hierarchy interfaces are generated additionally to the sealed hierarchy generated files, and stored in the created _unsealed_ sub-package. Each one of the generated interfaces follows the naming convention: <ProfileName><LargeInterfaceSimpleName> (<LargeInterfaceSimpleName> is the simplename of the large interface being segregated).<br>
-**Note:** This annotation will not work if **&#64;TopLevel** is NOT used anywhere within the large interface.
+The unsealed hierarchy interfaces are generated additionally to the sealed hierarchy generated files, and stored in the created _unsealed_ sub-package. Each one of the generated interfaces follows the naming convention: &#60;ProfileName&#62;&#60;LargeInterfaceSimpleName&#62; (&#60;LargeInterfaceSimpleName&#62; is the simplename of the large interface being segregated).<br>
+<b>Note:</b> This annotation will not work if <b>&#64;TopLevel</b> is NOT used anywhere within the large interface.
 <br>
 
 ```java
