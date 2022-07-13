@@ -230,7 +230,7 @@ public interface Sociable {
 ### Sample interfaces and classes for testing
 [https://github.com/mohamed-ashraf-bayor/jisel-annotation-client](https://github.com/mohamed-ashraf-bayor/jisel-annotation-client)
 
-### Integration with Sping Framework / Spring Boot
+### Integration with Spring Framework / Spring Boot
 [https://github.com/mohamed-ashraf-bayor/jisel-integration-with-spring](https://github.com/mohamed-ashraf-bayor/jisel-integration-with-spring)
 
 ### Issues, Bugs, Suggestions
