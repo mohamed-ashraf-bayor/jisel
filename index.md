@@ -9,7 +9,7 @@
 
 Integrating Jisel with Spring: Segregation of a Spring Data JPA Repository - PDF
 
-v1.2: UnSeal & Detach - [https://youtu.be/Yu3bR8ZkpYE](https://youtu.be/HOssFTKPQRM)
+v1.2: UnSeal & Detach - [https://youtu.be/HOssFTKPQRM](https://youtu.be/HOssFTKPQRM)
 
 v1.1 Quick Intro - [https://youtu.be/cbYdt8NRUaM](https://youtu.be/cbYdt8NRUaM)
 
