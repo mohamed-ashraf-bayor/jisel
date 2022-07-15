@@ -19,11 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.jisel.handlers;
+package org.jisel.handlers.impl;
 
 import org.jisel.annotations.TopLevel;
+import org.jisel.handlers.JiselAnnotationHandler;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import java.util.HashMap;
@@ -33,6 +33,7 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
+import static org.jisel.generators.StringGenerator.EMPTY_STRING;
 
 /**
  * Handles all elements annotated with &#64;{@link TopLevel}
@@ -40,10 +41,9 @@ import static java.util.stream.Collectors.toSet;
 public final class TopLevelHandler implements JiselAnnotationHandler {
 
     @Override
-    public Map<Element, String> handleAnnotatedElements(final ProcessingEnvironment processingEnv,
-                                                        final Set<Element> allAnnotatedElements,
-                                                        final Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
-                                                        final Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
+    public Map<Element, String> handleAnnotatedElements(Set<Element> allAnnotatedElements,
+                                                        Map<Element, Map<String, Set<Element>>> sealedInterfacesToGenerateByLargeInterface,
+                                                        Map<Element, Map<String, List<String>>> sealedInterfacesPermitsByLargeInterface) {
         var statusReport = new HashMap<Element, String>();
         allAnnotatedElements.stream()
                 .filter(element -> ElementKind.METHOD.equals(element.getKind()))
