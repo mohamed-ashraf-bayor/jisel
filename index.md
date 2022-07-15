@@ -7,7 +7,7 @@
 
 ## Quick Overview
 
-Integrating Jisel with Spring: Segregation of a Spring Data JPA Repository - PDF
+Integrating Jisel with Spring: Segregation of a Spring Data JPA Repository - [PDF](https://github.com/mohamed-ashraf-bayor/jisel-integration-with-spring/blob/master/Jisel_Integration_with_SpringDataJPA.pdf)
 
 v1.2: UnSeal & Detach - [https://youtu.be/HOssFTKPQRM](https://youtu.be/HOssFTKPQRM)
 
