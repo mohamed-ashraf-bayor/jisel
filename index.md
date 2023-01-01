@@ -36,7 +36,7 @@ You will also need to include the same dependency as an additional annotation pr
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
+                <version>3.10.1</version>
                 <configuration>
                     <release>17</release>
                     <compilerArgs>-Xlint:unchecked</compilerArgs>
