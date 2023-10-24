@@ -53,7 +53,12 @@ You will also need to include the same dependency as an additional annotation pr
     </build>
 ```
 
-For other build tools, please check: [Maven Central](https://search.maven.org/artifact/org.jisel/jisel/1.1/jar).
+For other build tools, please check: [Maven Central](https://search.maven.org/artifact/org.jisel/jisel/1.2/jar).
+
+<br>
+
+## Javadoc
+[https://javadoc.io/doc/org.jisel/jisel/latest/jisel](https://javadoc.io/doc/org.jisel/jisel/latest/jisel)
 
 <br>
 
