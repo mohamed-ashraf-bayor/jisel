@@ -241,4 +241,4 @@ Contribute to the project's growth by reporting issues or making improvement sug
 <br>
 <br>
 
-###### &#169; 2022-2023, [Jisel](https://github.com/mohamed-ashraf-bayor/jisel) is an open source project, currently distributed under the [MIT License](https://github.com/mohamed-ashraf-bayor/jisel/blob/master/LICENSE)
+###### &#169; 2022-2025, [Jisel](https://github.com/mohamed-ashraf-bayor/jisel) is an open source project, currently distributed under the [MIT License](https://github.com/mohamed-ashraf-bayor/jisel/blob/master/LICENSE)
